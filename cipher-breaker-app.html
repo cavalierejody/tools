@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Cipher Breaker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Stile per la scrollbar per un look più integrato */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; 
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white antialiased">
+    <div class="absolute top-0 left-0 w-full h-full bg-cover bg-center opacity-10" style="background-image: url(https://www.transparenttextures.com/patterns/cubes.png)"></div>
+    <div id="app" class="relative max-w-4xl mx-auto">
+        
+        <!-- Header -->
+        <header class="text-center p-4 md:p-6 border-b border-gray-700/50">
+            <h1 class="text-3xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-500">Universal Cipher Breaker</h1>
+            <p class="text-gray-400 mt-2 text-sm md:text-base">Uno strumento moderno per l'analisi e la decifrazione di cifrari classici.</p>
+        </header>
+
+        <main>
+            <!-- Input Section -->
+            <div class="p-4 md:p-6">
+                <textarea id="ciphertext-input" class="w-full h-48 p-4 bg-gray-900/80 border-2 border-gray-700 rounded-lg text-gray-200 font-mono focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-300 resize-none" placeholder="Incolla qui il tuo testo cifrato..."></textarea>
+                <div class="flex justify-between items-center mt-4">
+                    <p id="char-count" class="text-sm text-gray-500">0 caratteri</p>
+                    <button id="analyze-button" class="px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold rounded-lg shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 transition-all duration-300">Analizza</button>
+                </div>
+            </div>
+
+            <!-- Progress Section -->
+            <div id="progress-section" class="px-6 py-2 h-16 hidden">
+                <div class="w-full bg-gray-700 rounded-full h-2.5">
+                    <div id="progress-bar" class="bg-gradient-to-r from-amber-400 to-orange-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <p id="status-text" class="text-center text-sm text-gray-400 mt-2 transition-opacity duration-300">Pronto per l'analisi.</p>
+            </div>
+            
+            <!-- Analysis Dashboard -->
+            <div id="analysis-dashboard" class="p-4 md:p-6 mt-4 bg-gray-900/50 rounded-lg border border-gray-700/50 hidden">
+                 <h3 class="text-xl font-semibold text-gray-200 mb-4">Dashboard di Pre-Analisi</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="bg-gray-800/50 p-3 rounded-lg">
+                        <p class="text-gray-400">IC (Ipotesi Italiano)</p>
+                        <p id="ic-it" class="text-2xl font-bold text-amber-400">0.0000</p>
+                    </div>
+                    <div class="bg-gray-800/50 p-3 rounded-lg">
+                        <p class="text-gray-400">IC (Ipotesi Inglese)</p>
+                        <p id="ic-en" class="text-2xl font-bold text-amber-400">0.0000</p>
+                    </div>
+                </div>
+                <div class="mt-4 bg-gray-800/50 p-3 rounded-lg">
+                    <p class="text-gray-400 mb-2">Frequenza Lettere nel Cifrato (Alfabeto EN)</p>
+                    <div id="freq-chart" class="w-full h-40 flex items-end gap-1">
+                        <!-- Le barre del grafico verranno inserite qui da JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results-section" class="p-4 md:p-6 hidden">
+                <h2 class="text-2xl font-semibold text-gray-200 mb-4">Risultati Migliori</h2>
+                <div id="results-container" class="grid grid-cols-1 gap-4">
+                    <!-- Le card dei risultati verranno inserite qui da JS -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="text-center p-4 text-gray-600 text-xs border-t border-gray-800 mt-8">
+            <p>Algoritmo di decifrazione gerarchico. Creato con HTML, Tailwind CSS e JavaScript.</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- DOM ELEMENTS ---
+        const ciphertextInput = document.getElementById('ciphertext-input');
+        const charCount = document.getElementById('char-count');
+        const analyzeButton = document.getElementById('analyze-button');
+        const progressSection = document.getElementById('progress-section');
+        const progressBar = document.getElementById('progress-bar');
+        const statusText = document.getElementById('status-text');
+        const analysisDashboard = document.getElementById('analysis-dashboard');
+        const icIt = document.getElementById('ic-it');
+        const icEn = document.getElementById('ic-en');
+        const freqChart = document.getElementById('freq-chart');
+        const resultsSection = document.getElementById('results-section');
+        const resultsContainer = document.getElementById('results-container');
+
+        // --- CONSTANTS AND CONFIGURATION ---
+        const ITALIAN_ALPHABET = 'ABCDEFGHILMNOPQRSTUVZ';
+        const ENGLISH_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const ITALIAN_FREQ = { A: 11.74, B: 0.92, C: 4.50, D: 3.73, E: 11.79, F: 0.95, G: 1.64, H: 1.54, I: 11.28, L: 6.51, M: 2.51, N: 6.88, O: 9.83, P: 3.05, Q: 0.51, R: 6.37, S: 4.98, T: 5.62, U: 3.01, V: 2.10, Z: 0.49 };
+        const ENGLISH_FREQ = { A: 8.2, B: 1.5, C: 2.8, D: 4.3, E: 12.7, F: 2.2, G: 2.0, H: 6.1, I: 7.0, J: 0.15, K: 0.77, L: 4.0, M: 2.4, N: 6.7, O: 7.5, P: 1.9, Q: 0.095, R: 6.0, S: 6.3, T: 9.1, U: 2.8, V: 0.98, W: 2.4, X: 0.15, Y: 2.0, Z: 0.074 };
+        const ITALIAN_BIGRAMS = ['CH', 'ES', 'DE', 'LA', 'IL', 'RE', 'DI', 'EN', 'ON', 'ST', 'CO', 'NT', 'RA', 'AL', 'AN', 'ER', 'TO', 'NE', 'TE', 'TA'];
+        const ITALIAN_TRIGRAMS = ['CHE', 'ERE', 'ARE', 'ONE', 'ENT', 'CON', 'DEL', 'NON', 'PER', 'ALE', 'EST', 'MEN', 'NTE', 'ALL', 'ELL'];
+        const ITALIAN_QUADRIGRAMS = ['ZION', 'MENT', 'ELLA', 'DELL', 'ENTE', 'QUES', 'ALLA', 'TRAN', 'ATOR', 'ECON'];
+        const ITALIAN_COMMON_WORDS = ['E', 'LA', 'IL', 'UN', 'DI', 'A', 'CHE', 'NON', 'PER', 'CON', 'SONO', 'MA', 'SI', 'HA', 'DA'];
+        const ENGLISH_BIGRAMS = ['TH', 'HE', 'IN', 'ER', 'AN', 'RE', 'ES', 'ON', 'ST', 'NT', 'EN', 'AT', 'ED', 'TO', 'OR', 'EA', 'HI', 'IS', 'OU', 'AR'];
+        const ENGLISH_TRIGRAMS = ['THE', 'AND', 'ING', 'HER', 'ERE', 'ENT', 'THA', 'NTH', 'WAS', 'ETH', 'FOR', 'DTH'];
+        const ENGLISH_QUADRIGRAMS = ['TION', 'THAT', 'THER', 'WITH', 'MENT', 'IONS', 'THIS', 'HERE', 'FROM', 'OUGH'];
+        const ENGLISH_COMMON_WORDS = ['THE', 'BE', 'TO', 'OF', 'AND', 'A', 'IN', 'THAT', 'HAVE', 'I', 'IT', 'FOR', 'NOT', 'ON', 'WITH'];
+
+        // --- HELPER FUNCTIONS ---
+        const normalizeText = (text, alphabet) => text.toUpperCase().split('').filter(char => alphabet.includes(char)).join('');
+        const calculateIC = (normalizedText, alphabet) => {
+            const counts = {};
+            for (const char of alphabet) counts[char] = 0;
+            for (const char of normalizedText) if (counts[char] !== undefined) counts[char]++;
+            let ic = 0;
+            const n = normalizedText.length;
+            if (n > 1) {
+                for (const char of alphabet) {
+                    ic += counts[char] * (counts[char] - 1);
+                }
+                ic /= (n * (n - 1));
+            }
+            return ic;
+        };
+
+        // --- SCORING ENGINE ---
+        const calculateScore = (text, lang) => {
+            if (!text || text.length === 0) return 0;
+            const alphabet = lang === 'it' ? ITALIAN_ALPHABET : ENGLISH_ALPHABET;
+            const expectedFreq = lang === 'it' ? ITALIAN_FREQ : ENGLISH_FREQ;
+            const commonBigrams = lang === 'it' ? ITALIAN_BIGRAMS : ENGLISH_BIGRAMS;
+            const commonTrigrams = lang === 'it' ? ITALIAN_TRIGRAMS : ENGLISH_TRIGRAMS;
+            const commonQuadrigrams = lang === 'it' ? ITALIAN_QUADRIGRAMS : ENGLISH_QUADRIGRAMS;
+            const commonWords = lang === 'it' ? ITALIAN_COMMON_WORDS : ENGLISH_COMMON_WORDS;
+            const cleanedText = normalizeText(text, alphabet);
+            if (cleanedText.length === 0) return 0;
+            
+            // 1. Letter Frequency Score (Chi-squared)
+            const counts = {};
+            for (const char of alphabet) counts[char] = 0;
+            for (const char of cleanedText) if (counts[char] !== undefined) counts[char]++;
+            let chiSquared = 0;
+            for (const char of alphabet) {
+                const expected = (expectedFreq[char] / 100) * cleanedText.length;
+                const observed = counts[char];
+                chiSquared += Math.pow(observed - expected, 2) / (expected || 1);
+            }
+            const freqScore = Math.max(0, 100 - chiSquared / cleanedText.length * 5);
+
+            // 2. N-gram Scores
+            let bigramScore = 0;
+            for (let i = 0; i < cleanedText.length - 1; i++) if (commonBigrams.includes(cleanedText.substring(i, i + 2))) bigramScore++;
+            const normalizedBigramScore = cleanedText.length > 1 ? (bigramScore / (cleanedText.length - 1)) * 200 : 0;
+            
+            let trigramScore = 0;
+            for (let i = 0; i < cleanedText.length - 2; i++) if (commonTrigrams.includes(cleanedText.substring(i, i + 3))) trigramScore++;
+            const normalizedTrigramScore = cleanedText.length > 2 ? (trigramScore / (cleanedText.length - 2)) * 300 : 0;
+            
+            let quadrigramScore = 0;
+            for (let i = 0; i < cleanedText.length - 3; i++) if (commonQuadrigrams.includes(cleanedText.substring(i, i + 4))) quadrigramScore++;
+            const normalizedQuadrigramScore = cleanedText.length > 3 ? (quadrigramScore / (cleanedText.length - 3)) * 400 : 0;
+
+            // 3. Word Recognition Score
+            const words = text.toUpperCase().split(/[^A-Z]+/);
+            let wordScore = 0;
+            if (words.length > 0) {
+                const foundWords = words.filter(word => commonWords.includes(word));
+                wordScore = (foundWords.length / words.length) * 100;
+            }
+
+            // Weighted final score
+            const totalScore = (freqScore * 0.30) + (normalizedBigramScore * 0.25) + (normalizedTrigramScore * 0.20) + (normalizedQuadrigramScore * 0.15) + (wordScore * 0.10);
+            return Math.min(100, Math.max(0, totalScore));
+        };
+
+        // --- DECRYPTION ALGORITHMS ---
+        const decryptCaesar = (ciphertext, alphabet) => {
+            const results = [];
+            for (let shift = 1; shift < alphabet.length; shift++) {
+                let plaintext = '';
+                for (const char of ciphertext) {
+                    const upperChar = char.toUpperCase();
+                    const index = alphabet.indexOf(upperChar);
+                    if (index !== -1) {
+                        const newIndex = (index - shift + alphabet.length) % alphabet.length;
+                        plaintext += (char === upperChar) ? alphabet[newIndex] : alphabet[newIndex].toLowerCase();
+                    } else {
+                        plaintext += char;
+                    }
+                }
+                results.push({ method: 'Cifrario di Cesare', plaintext, key: shift });
+            }
+            return results;
+        };
+
+        const decryptReverse = (ciphertext) => [{ method: 'Testo Invertito', plaintext: ciphertext.split('').reverse().join(''), key: 'N/A' }];
+
+        const decryptA1Z26 = (ciphertext, alphabet) => {
+            const numbers = ciphertext.match(/\d+/g);
+            if (!numbers) return [];
+            try {
+                const plaintext = numbers.map(n => alphabet[parseInt(n, 10) - 1] || '?').join('');
+                if (plaintext.includes('?')) return [];
+                return [{ method: 'A1Z26', plaintext, key: 'N/A' }];
+            } catch (e) { return []; }
+        };
+
+        const decryptRailFence = (ciphertext, alphabet) => {
+            const results = [];
+            const normalizedCipher = normalizeText(ciphertext, alphabet);
+            const len = normalizedCipher.length;
+            if (len < 3) return [];
+
+            for (let rails = 2; rails < Math.min(10, len / 2); rails++) {
+                const railLens = new Array(rails).fill(0);
+                let rail = 0, dir = 1;
+                for (let i = 0; i < len; i++) {
+                    railLens[rail]++;
+                    rail += dir;
+                    if (rail === 0 || rail === rails - 1) dir *= -1;
+                }
+                
+                const railStrings = [];
+                let pos = 0;
+                for (let i = 0; i < rails; i++) {
+                    railStrings.push(normalizedCipher.substring(pos, pos + railLens[i]));
+                    pos += railLens[i];
+                }
+
+                let decryptedNormalized = '';
+                rail = 0; dir = 1;
+                const railIndices = new Array(rails).fill(0);
+                for (let i = 0; i < len; i++) {
+                    decryptedNormalized += railStrings[rail][railIndices[rail]];
+                    railIndices[rail]++;
+                    rail += dir;
+                    if (rail === 0 || rail === rails - 1) dir *= -1;
+                }
+                
+                let plaintext = '';
+                let normalizedIndex = 0;
+                for (const char of ciphertext) {
+                    if (alphabet.includes(char.toUpperCase())) {
+                        const decryptedChar = decryptedNormalized[normalizedIndex++];
+                        plaintext += (char === char.toUpperCase()) ? decryptedChar : decryptedChar.toLowerCase();
+                    } else {
+                        plaintext += char;
+                    }
+                }
+                results.push({ method: 'Rail Fence (Staccionata)', plaintext, key: `${rails} rails` });
+            }
+            return results;
+        };
+        
+        const decryptSimpleSubstitution = (ciphertext, alphabet, lang) => {
+            const normalizedForFreq = normalizeText(ciphertext, alphabet);
+            const expectedFreqOrder = Object.entries(lang === 'it' ? ITALIAN_FREQ : ENGLISH_FREQ)
+                .sort(([, a], [, b]) => b - a)
+                .map(([l]) => l);
+
+            const textFreq = {};
+            for (const char of normalizedForFreq) textFreq[char] = (textFreq[char] || 0) + 1;
+            const textFreqOrder = Object.entries(textFreq).sort(([, a], [, b]) => b - a).map(([l]) => l);
+
+            const keyMap = {};
+            for (let i = 0; i < textFreqOrder.length; i++) keyMap[textFreqOrder[i]] = expectedFreqOrder[i];
+
+            let plaintext = '';
+            for (const char of ciphertext) {
+                const upperChar = char.toUpperCase();
+                const decryptedChar = keyMap[upperChar];
+                plaintext += decryptedChar ? ((char === upperChar) ? decryptedChar : decryptedChar.toLowerCase()) : char;
+            }
+            return [{ method: 'Sostituzione Monoalfabetica (Freq.)', plaintext, key: 'Analisi Frequenza' }];
+        };
+
+        const findKeyLength = (text, alphabet) => {
+            const MAX_KEY_LENGTH = 15;
+            const coincidences = [];
+            const targetIc = alphabet.length === 21 ? 0.074 : 0.067;
+
+            for (let keyLen = 1; keyLen <= MAX_KEY_LENGTH; keyLen++) {
+                let totalIc = 0;
+                let validSubtexts = 0;
+                for (let i = 0; i < keyLen; i++) {
+                    const subtext = text.split('').filter((_, j) => (j - i) % keyLen === 0).join('');
+                    if (subtext.length < 2) continue;
+                    validSubtexts++;
+                    totalIc += calculateIC(subtext, alphabet);
+                }
+                coincidences.push(validSubtexts > 0 ? totalIc / validSubtexts : 0);
+            }
+            
+            let bestLen = 1;
+            let minDiff = Infinity;
+            coincidences.forEach((ic, i) => {
+                const diff = Math.abs(ic - targetIc);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    bestLen = i + 1;
+                }
+            });
+            return bestLen;
+        };
+
+        const decryptVigenere = (ciphertext, alphabet, lang) => {
+            const normalizedForAnalysis = normalizeText(ciphertext, alphabet);
+            if (normalizedForAnalysis.length < 5) return [];
+
+            const keyLength = findKeyLength(normalizedForAnalysis, alphabet);
+            const expectedFreq = lang === 'it' ? ITALIAN_FREQ : ENGLISH_FREQ;
+            let key = '';
+
+            for (let i = 0; i < keyLength; i++) {
+                const subtext = normalizedForAnalysis.split('').filter((_, j) => (j - i) % keyLength === 0).join('');
+                if (subtext.length === 0) continue;
+                
+                let bestShift = 0;
+                let minChiSquared = Infinity;
+                for (let shift = 0; shift < alphabet.length; shift++) {
+                    const counts = {};
+                    for (const char of alphabet) counts[char] = 0;
+                    for (const char of subtext) {
+                        const decryptedChar = alphabet[(alphabet.indexOf(char) - shift + alphabet.length) % alphabet.length];
+                        counts[decryptedChar]++;
+                    }
+                    let chiSquared = 0;
+                    for (const char of alphabet) {
+                        const expected = (expectedFreq[char] / 100) * subtext.length;
+                        chiSquared += Math.pow(counts[char] - expected, 2) / (expected || 1);
+                    }
+                    if (chiSquared < minChiSquared) {
+                        minChiSquared = chiSquared;
+                        bestShift = shift;
+                    }
+                }
+                key += alphabet[bestShift];
+            }
+
+            let plaintext = '';
+            let keyIndex = 0;
+            for (const char of ciphertext) {
+                const upperChar = char.toUpperCase();
+                const charIndex = alphabet.indexOf(upperChar);
+                if (charIndex !== -1) {
+                    const keyChar = key[keyIndex % key.length];
+                    const keyCharIndex = alphabet.indexOf(keyChar);
+                    const newIndex = (charIndex - keyCharIndex + alphabet.length) % alphabet.length;
+                    plaintext += (char === upperChar) ? alphabet[newIndex] : alphabet[newIndex].toLowerCase();
+                    keyIndex++;
+                } else {
+                    plaintext += char;
+                }
+            }
+            return [{ method: 'Vigenère', plaintext, key }];
+        };
+
+        const decryptPolybius = (ciphertext) => {
+            const cleaned = ciphertext.replace(/[^1-5]/g, '');
+            if (cleaned.length % 2 !== 0 || cleaned.length === 0) return [];
+            
+            const polybiusSquare = [['A', 'B', 'C', 'D', 'E'], ['F', 'G', 'H', 'I', 'K'], ['L', 'M', 'N', 'O', 'P'], ['Q', 'R', 'S', 'T', 'U'], ['V', 'W', 'X', 'Y', 'Z']];
+            let plaintext = '';
+            for (let i = 0; i < cleaned.length; i += 2) {
+                const row = parseInt(cleaned[i], 10) - 1;
+                const col = parseInt(cleaned[i+1], 10) - 1;
+                if (row >= 0 && row < 5 && col >= 0 && col < 5) {
+                    plaintext += polybiusSquare[row][col];
+                } else {
+                    return [];
+                }
+            }
+            return [{ method: 'Quadrato di Polibio', plaintext, key: 'Standard 5x5' }];
+        };
+
+        // --- UI UPDATE FUNCTIONS ---
+        function updateProgress(progress, status) {
+            progressBar.style.width = `${progress}%`;
+            statusText.textContent = status;
+        }
+
+        function createResultCard(result) {
+            const scoreColor = result.score > 70 ? 'bg-green-500/20 text-green-300' : result.score > 40 ? 'bg-yellow-500/20 text-yellow-300' : 'bg-red-500/20 text-red-300';
+            const langColor = result.lang === 'it' ? 'text-green-300 bg-green-900/50' : 'text-blue-300 bg-blue-900/50';
+
+            const card = document.createElement('div');
+            card.className = "bg-gray-800/50 backdrop-blur-sm border border-gray-700/60 rounded-xl p-4 transition-all hover:border-amber-500/80 hover:scale-[1.02]";
+            card.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-amber-500 bg-amber-900/50">${result.method}</span>
+                        <span class="text-xs font-bold inline-block py-1 px-2 uppercase rounded-full ml-2 ${langColor}">${result.displayName}</span>
+                        <p class="text-gray-400 text-sm mt-1">Chiave: <span class="font-mono text-amber-300">${result.key}</span></p>
+                    </div>
+                    <div class="text-lg font-bold p-2 rounded-lg ${scoreColor}">${result.score.toFixed(1)}%</div>
+                </div>
+                <div class="mt-3 p-3 bg-gray-900/70 rounded-md">
+                    <p class="font-mono text-gray-200 break-words">${result.plaintext.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+                </div>
+                <button class="copy-button text-xs text-gray-500 hover:text-amber-400 mt-3 transition-colors">Copia Testo</button>
+            `;
+            card.querySelector('.copy-button').addEventListener('click', (e) => {
+                navigator.clipboard.writeText(result.plaintext);
+                e.target.textContent = 'Copiato!';
+                setTimeout(() => { e.target.textContent = 'Copia Testo'; }, 2000);
+            });
+            return card;
+        }
+
+        function displayDashboard(stats) {
+            icIt.textContent = stats.ic.it.toFixed(4);
+            icEn.textContent = stats.ic.en.toFixed(4);
+            
+            freqChart.innerHTML = ''; // Clear previous chart
+            const freqData = Object.entries(stats.frequencies || {}).sort((a,b) => b[1] - a[1]);
+            if (freqData.length > 0 && freqData[0][1] > 0) {
+                const maxCount = freqData[0][1];
+                ENGLISH_ALPHABET.split('').forEach(char => {
+                    const count = stats.frequencies[char] || 0;
+                    const height = (count / maxCount) * 100;
+                    const barContainer = document.createElement('div');
+                    barContainer.className = "flex-1 flex flex-col items-center justify-end h-full";
+                    barContainer.innerHTML = `
+                        <div class="w-full bg-gradient-to-t from-amber-600 to-orange-500 rounded-t-sm" style="height: ${height}%"></div>
+                        <span class="text-xs text-gray-400 mt-1">${char}</span>
+                    `;
+                    freqChart.appendChild(barContainer);
+                });
+            }
+            analysisDashboard.classList.remove('hidden');
+        }
+
+        // --- MAIN ANALYSIS LOGIC ---
+        async function runAnalysis() {
+            const ciphertext = ciphertextInput.value;
+            if (!ciphertext) return;
+
+            // --- Reset UI ---
+            analyzeButton.disabled = true;
+            analyzeButton.textContent = 'Analizzando...';
+            resultsContainer.innerHTML = '';
+            resultsSection.classList.add('hidden');
+            analysisDashboard.classList.add('hidden');
+            progressSection.classList.remove('hidden');
+            updateProgress(0, 'Inizializzazione...');
+            await new Promise(res => setTimeout(res, 100));
+
+            // --- Pre-analysis for Dashboard ---
+            const normIt = normalizeText(ciphertext, ITALIAN_ALPHABET);
+            const normEn = normalizeText(ciphertext, ENGLISH_ALPHABET);
+            const freqsEn = {};
+            for (const char of ENGLISH_ALPHABET) freqsEn[char] = 0;
+            for (const char of normEn) if (freqsEn[char] !== undefined) freqsEn[char]++;
+            
+            const stats = {
+                ic: {
+                    it: calculateIC(normIt, ITALIAN_ALPHABET),
+                    en: calculateIC(normEn, ENGLISH_ALPHABET),
+                },
+                frequencies: freqsEn,
+            };
+            
+            // --- Full Analysis ---
+            let allResults = [];
+            const languageSetups = [
+                { lang: 'it', name: 'Italiano (21 lettere)', alphabet: ITALIAN_ALPHABET },
+                { lang: 'it', name: 'Italiano (26 lettere)', alphabet: ENGLISH_ALPHABET },
+                { lang: 'en', name: 'Inglese', alphabet: ENGLISH_ALPHABET }
+            ];
+
+            let currentProgress = 10;
+            const progressPerLang = 80 / languageSetups.length;
+            updateProgress(currentProgress, 'Avvio analisi...');
+
+            for (const { lang, name, alphabet } of languageSetups) {
+                updateProgress(currentProgress, `Inizio analisi per la lingua: ${name}`);
+                
+                const decryptionSteps = [
+                    { name: 'Testo Invertito', func: () => decryptReverse(ciphertext) },
+                    { name: 'A1Z26', func: () => decryptA1Z26(ciphertext, alphabet) },
+                    { name: 'Cifrario di Cesare', func: () => decryptCaesar(ciphertext, alphabet) },
+                    { name: 'Rail Fence', func: () => decryptRailFence(ciphertext, alphabet) },
+                    { name: 'Sostituzione Monoalfabetica', func: () => decryptSimpleSubstitution(ciphertext, alphabet, lang) },
+                    { name: 'Vigenère', func: () => decryptVigenere(ciphertext, alphabet, lang) },
+                    { name: 'Quadrato di Polibio', func: () => decryptPolybius(ciphertext) },
+                ];
+
+                for (let i = 0; i < decryptionSteps.length; i++) {
+                    const step = decryptionSteps[i];
+                    updateProgress(currentProgress, `[${name}] Tentativo: ${step.name}...`);
+                    await new Promise(res => setTimeout(res, 50));
+                    
+                    try {
+                        const decrypted = step.func();
+                        const scoredResults = decrypted.map(res => ({
+                            ...res,
+                            score: calculateScore(res.plaintext, lang),
+                            lang: lang,
+                            displayName: name,
+                        }));
+                        allResults.push(...scoredResults);
+                    } catch (error) {
+                        console.error(`Errore durante ${step.name} per ${name}:`, error);
+                    }
+                    
+                    currentProgress += (progressPerLang / decryptionSteps.length);
+                    updateProgress(currentProgress, `[${name}] Tentativo: ${step.name}...`);
+                }
+            }
+
+            updateProgress(95, 'Ordinamento dei risultati...');
+            await new Promise(res => setTimeout(res, 100));
+
+            allResults.sort((a, b) => b.score - a.score);
+            
+            // --- Display Results ---
+            allResults.slice(0, 20).forEach(res => { // Mostra solo i primi 20 risultati
+                resultsContainer.appendChild(createResultCard(res));
+            });
+            resultsSection.classList.remove('hidden');
+            displayDashboard(stats);
+
+            updateProgress(100, 'Analisi completata.');
+            progressSection.classList.add('hidden');
+            analyzeButton.disabled = false;
+            analyzeButton.textContent = 'Analizza';
+        }
+
+        // --- EVENT LISTENERS ---
+        ciphertextInput.addEventListener('input', () => {
+            charCount.textContent = `${ciphertextInput.value.length} caratteri`;
+            analyzeButton.disabled = !ciphertextInput.value;
+        });
+
+        analyzeButton.addEventListener('click', runAnalysis);
+
+        // Initial state
+        analyzeButton.disabled = true;
+
+    </script>
+</body>
+</html>

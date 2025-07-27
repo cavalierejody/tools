@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stimatore Backlog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -5px;
+            background-color: #3b82f6;
+            height: 1.25rem;
+            width: 1.25rem;
+            border-radius: 9999px;
+            cursor: pointer;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            @apply slider-thumb;
+        }
+        input[type=range]::-moz-range-thumb {
+            @apply slider-thumb;
+            border: none;
+        }
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .param-group {
+            @apply p-4 bg-white/60 rounded-lg border border-gray-200;
+        }
+        .adjust-btn {
+            @apply w-7 h-7 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors flex-shrink-0;
+        }
+    </style>
+</head>
+<body class="bg-white lg:bg-gray-50 text-gray-800 flex items-center justify-center min-h-screen p-0 lg:p-4">
+
+    <div class="w-full max-w-6xl bg-white p-4 lg:p-8 lg:rounded-2xl lg:shadow-lg min-h-screen lg:min-h-0">
+        
+        <div class="text-center mb-8 pt-4 lg:pt-0">
+            <h1 class="text-3xl lg:text-4xl font-bold text-gray-900">Stimatore Backlog</h1>
+            <p class="mt-2 text-gray-600 px-2">Ottieni una previsione probabilistica mediante l'uso di metodi Monte Carlo per la simulazione</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Pannello di Controllo -->
+            <div class="bg-gray-100 p-6 rounded-xl">
+                <h2 class="text-xl font-semibold mb-6 text-gray-800">Parametri di Simulazione</h2>
+                
+                <div class="space-y-4">
+                    <!-- Parametri Globali -->
+                    <div class="param-group space-y-4">
+                        <div>
+                            <label for="startDate" class="block text-sm font-medium text-gray-700">Data inizio lavori</label>
+                            <input type="date" id="startDate" class="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Difetti iniziali nel backlog</label>
+                            <div class="flex items-center space-x-2 mt-2">
+                                <input type="range" id="initialDefects" min="0" max="200" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                <div class="flex items-center space-x-2">
+                                    <button class="adjust-btn" data-target="initialDefects" data-step="-1">-</button>
+                                    <span id="initialDefectsValue" class="font-semibold text-blue-600 bg-blue-100 py-1 px-3 rounded-md w-16 text-center">100</span>
+                                    <button class="adjust-btn" data-target="initialDefects" data-step="1">+</button>
+                                </div>
+                            </div>
+                        </div>
+                         <div>
+                            <label class="block text-sm font-medium text-gray-700">Tasso di difetti riaperti (%)</label>
+                            <div class="flex items-center space-x-2 mt-2">
+                                <input type="range" id="reopenedRate" min="0" max="50" value="10" step="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                 <div class="flex items-center space-x-2">
+                                    <button class="adjust-btn" data-target="reopenedRate" data-step="-1">-</button>
+                                    <span id="reopenedRateValue" class="font-semibold text-orange-600 bg-orange-100 py-1 px-3 rounded-md w-16 text-center">10%</span>
+                                    <button class="adjust-btn" data-target="reopenedRate" data-step="1">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sviluppatori Senior -->
+                    <div class="param-group">
+                        <h3 class="font-semibold text-gray-700 mb-3">Sviluppatori Senior</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600">Numero di sviluppatori Senior</label>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <input type="range" id="numSenior" min="0" max="15" value="2" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="adjust-btn" data-target="numSenior" data-step="-1">-</button>
+                                        <span id="numSeniorValue" class="font-semibold text-purple-600 bg-purple-100 py-1 px-3 rounded-md w-16 text-center">2</span>
+                                        <button class="adjust-btn" data-target="numSenior" data-step="1">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600">Tempo dedicato ai difetti (Focus %)</label>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <input type="range" id="focusFactorSenior" min="10" max="100" value="60" step="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="adjust-btn" data-target="focusFactorSenior" data-step="-5">-</button>
+                                        <span id="focusFactorSeniorValue" class="font-semibold text-indigo-600 bg-indigo-100 py-1 px-3 rounded-md w-16 text-center">60%</span>
+                                        <button class="adjust-btn" data-target="focusFactorSenior" data-step="5">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600">Difetti/settimana per dev Senior (Min-Max)</label>
+                                <div class="mt-2 space-y-3">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-sm font-medium text-gray-500 w-8">Min</span>
+                                        <input type="range" id="defectsPerSeniorMin" min="1" max="15" value="4" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <div class="flex items-center space-x-2">
+                                            <button class="adjust-btn" data-target="defectsPerSeniorMin" data-step="-1">-</button>
+                                            <span id="defectsPerSeniorMinValue" class="font-semibold text-green-600 bg-green-100 py-1 px-2 rounded-md w-12 text-center">4</span>
+                                            <button class="adjust-btn" data-target="defectsPerSeniorMin" data-step="1">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-sm font-medium text-gray-500 w-8">Max</span>
+                                        <input type="range" id="defectsPerSeniorMax" min="1" max="15" value="7" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <div class="flex items-center space-x-2">
+                                            <button class="adjust-btn" data-target="defectsPerSeniorMax" data-step="-1">-</button>
+                                            <span id="defectsPerSeniorMaxValue" class="font-semibold text-green-600 bg-green-100 py-1 px-2 rounded-md w-12 text-center">7</span>
+                                            <button class="adjust-btn" data-target="defectsPerSeniorMax" data-step="1">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sviluppatori Junior -->
+                     <div class="param-group">
+                        <h3 class="font-semibold text-gray-700 mb-3">Sviluppatori Junior</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600">Numero di sviluppatori Junior</label>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <input type="range" id="numJunior" min="0" max="15" value="3" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="adjust-btn" data-target="numJunior" data-step="-1">-</button>
+                                        <span id="numJuniorValue" class="font-semibold text-purple-600 bg-purple-100 py-1 px-3 rounded-md w-16 text-center">3</span>
+                                        <button class="adjust-btn" data-target="numJunior" data-step="1">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                             <div>
+                                <label class="block text-xs font-medium text-gray-600">Tempo dedicato ai difetti (Focus %)</label>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <input type="range" id="focusFactorJunior" min="10" max="100" value="80" step="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="adjust-btn" data-target="focusFactorJunior" data-step="-5">-</button>
+                                        <span id="focusFactorJuniorValue" class="font-semibold text-indigo-600 bg-indigo-100 py-1 px-3 rounded-md w-16 text-center">80%</span>
+                                        <button class="adjust-btn" data-target="focusFactorJunior" data-step="5">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600">Difetti/settimana per dev Junior (Min-Max)</label>
+                                <div class="mt-2 space-y-3">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-sm font-medium text-gray-500 w-8">Min</span>
+                                        <input type="range" id="defectsPerJuniorMin" min="1" max="15" value="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <div class="flex items-center space-x-2">
+                                            <button class="adjust-btn" data-target="defectsPerJuniorMin" data-step="-1">-</button>
+                                            <span id="defectsPerJuniorMinValue" class="font-semibold text-green-600 bg-green-100 py-1 px-2 rounded-md w-12 text-center">1</span>
+                                            <button class="adjust-btn" data-target="defectsPerJuniorMin" data-step="1">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-sm font-medium text-gray-500 w-8">Max</span>
+                                        <input type="range" id="defectsPerJuniorMax" min="1" max="15" value="3" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <div class="flex items-center space-x-2">
+                                            <button class="adjust-btn" data-target="defectsPerJuniorMax" data-step="-1">-</button>
+                                            <span id="defectsPerJuniorMaxValue" class="font-semibold text-green-600 bg-green-100 py-1 px-2 rounded-md w-12 text-center">3</span>
+                                            <button class="adjust-btn" data-target="defectsPerJuniorMax" data-step="1">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nuovi Difetti -->
+                    <div class="param-group">
+                         <h3 class="font-semibold text-gray-700 mb-3">Nuovi Difetti</h3>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600">Nuovi difetti creati a settimana (Min-Max)</label>
+                            <div class="mt-2 space-y-3">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-sm font-medium text-gray-500 w-8">Min</span>
+                                        <input type="range" id="newPerWeekMin" min="0" max="50" value="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <div class="flex items-center space-x-2">
+                                            <button class="adjust-btn" data-target="newPerWeekMin" data-step="-1">-</button>
+                                            <span id="newPerWeekMinValue" class="font-semibold text-red-600 bg-red-100 py-1 px-2 rounded-md w-12 text-center">5</span>
+                                            <button class="adjust-btn" data-target="newPerWeekMin" data-step="1">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-sm font-medium text-gray-500 w-8">Max</span>
+                                        <input type="range" id="newPerWeekMax" min="0" max="50" value="15" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <div class="flex items-center space-x-2">
+                                            <button class="adjust-btn" data-target="newPerWeekMax" data-step="-1">-</button>
+                                            <span id="newPerWeekMaxValue" class="font-semibold text-red-600 bg-red-100 py-1 px-2 rounded-md w-12 text-center">15</span>
+                                            <button class="adjust-btn" data-target="newPerWeekMax" data-step="1">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4">
+                        <button id="runButton" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Esegui Simulazione
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pannello dei Risultati e Grafico -->
+            <div class="lg:col-span-1">
+                <div id="resultsPanel" class="bg-blue-50 p-6 rounded-xl text-center hidden">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">Previsioni di Consegna</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <p class="text-sm text-gray-500">50% Probabilità</p>
+                            <p id="p50_weeks" class="text-xl md:text-2xl font-bold text-blue-700"></p>
+                            <p id="p50_date" class="text-xs text-gray-400"></p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <p class="text-sm text-gray-500">85% Probabilità</p>
+                            <p id="p85_weeks" class="text-xl md:text-2xl font-bold text-blue-700"></p>
+                            <p id="p85_date" class="text-xs text-gray-400"></p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <p class="text-sm text-gray-500">95% Probabilità</p>
+                            <p id="p95_weeks" class="text-xl md:text-2xl font-bold text-blue-700"></p>
+                            <p id="p95_date" class="text-xs text-gray-400"></p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm border-2 border-red-200">
+                            <p class="text-sm text-red-600">99% Probabilità</p>
+                            <p id="p99_weeks" class="text-xl md:text-2xl font-bold text-red-700"></p>
+                            <p id="p99_date" class="text-xs text-gray-400"></p>
+                        </div>
+                    </div>
+                     <div id="warning" class="mt-4 text-amber-700 bg-amber-100 p-3 rounded-lg font-medium hidden w-full"></div>
+                     <div class="mt-4">
+                        <button id="downloadXlsxButton" class="w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                            </svg>
+                            Scarica Report (XLSX)
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="loaderPanel" class="flex flex-col items-center justify-center h-full text-center">
+                    <div class="loader"></div>
+                    <p class="mt-4 text-gray-600 font-semibold">In esecuzione...</p>
+                    <p class="text-sm text-gray-500">Calcolo di migliaia di possibili futuri...</p>
+                </div>
+
+                <div class="mt-6">
+                    <div class="bg-white p-4 rounded-xl shadow-inner border border-gray-200 h-80">
+                        <canvas id="backlogChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURAZIONE ---
+        const NUM_SIMULATIONS = 2000;
+        const MAX_WEEKS = 52 * 10; // 10 anni
+        const PARAMS_STORAGE_KEY = 'backlogEstimatorParams_v2'; // Changed key for new structure
+
+        // --- RIFERIMENTI DOM ---
+        const inputs = {
+            startDate: document.getElementById('startDate'),
+            initialDefects: document.getElementById('initialDefects'),
+            reopenedRate: document.getElementById('reopenedRate'),
+            numSenior: document.getElementById('numSenior'),
+            focusFactorSenior: document.getElementById('focusFactorSenior'),
+            defectsPerSeniorMin: document.getElementById('defectsPerSeniorMin'),
+            defectsPerSeniorMax: document.getElementById('defectsPerSeniorMax'),
+            numJunior: document.getElementById('numJunior'),
+            focusFactorJunior: document.getElementById('focusFactorJunior'),
+            defectsPerJuniorMin: document.getElementById('defectsPerJuniorMin'),
+            defectsPerJuniorMax: document.getElementById('defectsPerJuniorMax'),
+            newPerWeekMin: document.getElementById('newPerWeekMin'),
+            newPerWeekMax: document.getElementById('newPerWeekMax'),
+        };
+        const values = {
+            initialDefects: document.getElementById('initialDefectsValue'),
+            reopenedRate: document.getElementById('reopenedRateValue'),
+            numSenior: document.getElementById('numSeniorValue'),
+            focusFactorSenior: document.getElementById('focusFactorSeniorValue'),
+            defectsPerSeniorMin: document.getElementById('defectsPerSeniorMinValue'),
+            defectsPerSeniorMax: document.getElementById('defectsPerSeniorMaxValue'),
+            numJunior: document.getElementById('numJuniorValue'),
+            focusFactorJunior: document.getElementById('focusFactorJuniorValue'),
+            defectsPerJuniorMin: document.getElementById('defectsPerJuniorMinValue'),
+            defectsPerJuniorMax: document.getElementById('defectsPerJuniorMaxValue'),
+            newPerWeekMin: document.getElementById('newPerWeekMinValue'),
+            newPerWeekMax: document.getElementById('newPerWeekMaxValue'),
+        };
+        const runButton = document.getElementById('runButton');
+        const downloadXlsxButton = document.getElementById('downloadXlsxButton');
+        const resultsPanel = document.getElementById('resultsPanel');
+        const loaderPanel = document.getElementById('loaderPanel');
+        const warningDiv = document.getElementById('warning');
+        const p_dates = {
+            p50: document.getElementById('p50_date'),
+            p85: document.getElementById('p85_date'),
+            p95: document.getElementById('p95_date'),
+            p99: document.getElementById('p99_date'),
+        };
+        const p_weeks = {
+            p50: document.getElementById('p50_weeks'),
+            p85: document.getElementById('p85_weeks'),
+            p95: document.getElementById('p95_weeks'),
+            p99: document.getElementById('p99_weeks'),
+        };
+        const chartCanvas = document.getElementById('backlogChart');
+        let backlogChart = null;
+        let lastSimulationData = null;
+
+        // --- FUNZIONI HELPER ---
+        const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const addWeeksToDate = (startDate, weeks) => {
+            const resultDate = new Date(startDate);
+            resultDate.setDate(resultDate.getDate() + weeks * 7);
+            return resultDate;
+        };
+        const formatDate = (date) => {
+            return new Intl.DateTimeFormat('it-IT').format(date);
+        };
+        
+        // --- LOGICA DI AGGIORNAMENTO E SALVATAGGIO UI ---
+        function saveParameters() {
+            const paramsToSave = {};
+            for (const key in inputs) {
+                paramsToSave[key] = inputs[key].value;
+            }
+            localStorage.setItem(PARAMS_STORAGE_KEY, JSON.stringify(paramsToSave));
+        }
+
+        function loadParameters() {
+            const savedParams = localStorage.getItem(PARAMS_STORAGE_KEY);
+            if (savedParams) {
+                const loadedParams = JSON.parse(savedParams);
+                for (const key in loadedParams) {
+                    if (inputs[key]) {
+                        inputs[key].value = loadedParams[key];
+                    }
+                }
+            }
+        }
+
+        function updateDisplayValues() {
+            for(const key in values) {
+                const input = inputs[key];
+                const valueSpan = values[key];
+                if (key.includes('focusFactor') || key === 'reopenedRate') {
+                    valueSpan.textContent = `${input.value}%`;
+                } else {
+                    valueSpan.textContent = input.value;
+                }
+            }
+
+            if (+inputs.defectsPerSeniorMin.value > +inputs.defectsPerSeniorMax.value) {
+                inputs.defectsPerSeniorMax.value = inputs.defectsPerSeniorMin.value;
+                values.defectsPerSeniorMax.textContent = inputs.defectsPerSeniorMax.value;
+            }
+            if (+inputs.defectsPerJuniorMin.value > +inputs.defectsPerJuniorMax.value) {
+                inputs.defectsPerJuniorMax.value = inputs.defectsPerJuniorMin.value;
+                values.defectsPerJuniorMax.textContent = inputs.defectsPerJuniorMax.value;
+            }
+            if (+inputs.newPerWeekMin.value > +inputs.newPerWeekMax.value) {
+                inputs.newPerWeekMax.value = inputs.newPerWeekMin.value;
+                values.newPerWeekMax.textContent = inputs.newPerWeekMax.value;
+            }
+            saveParameters();
+        }
+
+        function handleAdjusterButtonClick(event) {
+            const button = event.currentTarget;
+            const targetId = button.dataset.target;
+            const step = parseInt(button.dataset.step, 10);
+            const targetSlider = document.getElementById(targetId);
+            
+            if (targetSlider) {
+                const currentValue = parseInt(targetSlider.value, 10);
+                const min = parseInt(targetSlider.min, 10);
+                const max = parseInt(targetSlider.max, 10);
+                
+                let newValue = currentValue + step;
+                if (newValue < min) newValue = min;
+                if (newValue > max) newValue = max;
+                
+                targetSlider.value = newValue;
+                targetSlider.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        }
+
+        // --- LOGICA MONTE CARLO ---
+        function runSingleSimulation(params) {
+            let currentDefects = params.initialDefects;
+            let weeks = 0;
+            const burnDown = [currentDefects];
+
+            while (currentDefects > 0 && weeks < MAX_WEEKS) {
+                weeks++;
+                
+                let resolvedBySeniors = 0;
+                for (let i = 0; i < params.numSenior; i++) {
+                    resolvedBySeniors += getRandomInt(params.defectsPerSeniorMin, params.defectsPerSeniorMax);
+                }
+                const effectiveResolvedBySeniors = resolvedBySeniors * (params.focusFactorSenior / 100);
+
+                let resolvedByJuniors = 0;
+                for (let i = 0; i < params.numJunior; i++) {
+                    resolvedByJuniors += getRandomInt(params.defectsPerJuniorMin, params.defectsPerJuniorMax);
+                }
+                const effectiveResolvedByJuniors = resolvedByJuniors * (params.focusFactorJunior / 100);
+                
+                const totalFocusedResolved = effectiveResolvedBySeniors + effectiveResolvedByJuniors;
+                const reopenedCount = totalFocusedResolved * (params.reopenedRate / 100);
+                const netResolved = totalFocusedResolved - reopenedCount;
+                const newDefects = getRandomInt(params.newPerWeekMin, params.newPerWeekMax);
+                
+                currentDefects += newDefects - netResolved;
+                if (currentDefects < 0) currentDefects = 0;
+                
+                burnDown.push(Math.round(currentDefects));
+            }
+            return { weeks: weeks >= MAX_WEEKS ? Infinity : weeks, burnDown };
+        }
+
+        async function runMonteCarloSimulation() {
+            loaderPanel.style.display = 'flex';
+            resultsPanel.style.display = 'none';
+            runButton.disabled = true;
+            runButton.classList.add('opacity-50', 'cursor-not-allowed');
+            downloadXlsxButton.disabled = true;
+            lastSimulationData = null;
+
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            const params = {
+                initialDefects: +inputs.initialDefects.value,
+                reopenedRate: +inputs.reopenedRate.value,
+                numSenior: +inputs.numSenior.value,
+                focusFactorSenior: +inputs.focusFactorSenior.value,
+                defectsPerSeniorMin: +inputs.defectsPerSeniorMin.value,
+                defectsPerSeniorMax: +inputs.defectsPerSeniorMax.value,
+                numJunior: +inputs.numJunior.value,
+                focusFactorJunior: +inputs.focusFactorJunior.value,
+                defectsPerJuniorMin: +inputs.defectsPerJuniorMin.value,
+                defectsPerJuniorMax: +inputs.defectsPerJuniorMax.value,
+                newPerWeekMin: +inputs.newPerWeekMin.value,
+                newPerWeekMax: +inputs.newPerWeekMax.value,
+            };
+
+            const allBurnDowns = [];
+            for (let i = 0; i < NUM_SIMULATIONS; i++) {
+                allBurnDowns.push(runSingleSimulation(params));
+            }
+            lastSimulationData = allBurnDowns.map(r => r.burnDown); 
+            
+            const completionWeeks = allBurnDowns.map(r => r.weeks).sort((a, b) => a - b);
+            const getPercentile = (p) => completionWeeks[Math.floor(NUM_SIMULATIONS * p / 100)];
+            
+            const startDate = new Date(inputs.startDate.value);
+
+            const percentiles = { p50: getPercentile(50), p85: getPercentile(85), p95: getPercentile(95), p99: getPercentile(99) };
+
+            for(const key in percentiles) {
+                const weeks = percentiles[key];
+                const isInfinite = (weeks === Infinity || weeks >= MAX_WEEKS);
+
+                p_weeks[key].textContent = isInfinite ? ">10 anni" : `${weeks} sett.`;
+                p_dates[key].textContent = isInfinite ? "(Mai)" : `(${formatDate(addWeeksToDate(startDate, weeks))})`;
+            }
+            
+            const avgSeniorFocusedResolved = (params.defectsPerSeniorMin + params.defectsPerSeniorMax) / 2 * params.numSenior * (params.focusFactorSenior / 100);
+            const avgJuniorFocusedResolved = (params.defectsPerJuniorMin + params.defectsPerJuniorMax) / 2 * params.numJunior * (params.focusFactorJunior / 100);
+            const avgTotalFocusedResolved = avgSeniorFocusedResolved + avgJuniorFocusedResolved;
+            const avgNetResolved = avgTotalFocusedResolved * (1 - params.reopenedRate / 100);
+            const avgNew = (params.newPerWeekMin + params.newPerWeekMax) / 2;
+
+            warningDiv.classList.toggle('hidden', avgNetResolved > avgNew);
+            if(avgNetResolved <= avgNew) {
+                warningDiv.textContent = "Attenzione: la capacità media di risoluzione netta è inferiore o uguale alla creazione media di nuovi difetti. Il backlog potrebbe non chiudersi mai.";
+            }
+
+            updateChart(lastSimulationData);
+
+            loaderPanel.style.display = 'none';
+            resultsPanel.style.display = 'grid';
+            runButton.disabled = false;
+            runButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            downloadXlsxButton.disabled = false;
+        }
+
+        // --- FUNZIONI GRAFICO E XLSX ---
+        function calculateWeeklyPercentiles(allBurnDowns) {
+            const maxWeeks = allBurnDowns.reduce((max, bd) => Math.max(max, bd.length), 0);
+            const weeklyPercentiles = { p10: [], p50: [], p90: [] };
+
+            for (let week = 0; week < maxWeeks; week++) {
+                const defectsAtWeek = allBurnDowns.map(burnDown => burnDown[week] !== undefined ? burnDown[week] : 0).sort((a, b) => a - b);
+                weeklyPercentiles.p10.push(defectsAtWeek[Math.floor(NUM_SIMULATIONS * 0.1)]);
+                weeklyPercentiles.p50.push(defectsAtWeek[Math.floor(NUM_SIMULATIONS * 0.5)]);
+                weeklyPercentiles.p90.push(defectsAtWeek[Math.floor(NUM_SIMULATIONS * 0.9)]);
+            }
+            return weeklyPercentiles;
+        }
+
+        function updateChart(allBurnDowns) {
+            const weeklyData = calculateWeeklyPercentiles(allBurnDowns);
+            const labels = Array.from({ length: weeklyData.p50.length }, (_, i) => `S ${i+1}`);
+
+            if (backlogChart) backlogChart.destroy();
+
+            backlogChart = new Chart(chartCanvas, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: '90° Percentile', data: weeklyData.p90, borderColor: 'rgba(255, 99, 132, 0.2)', borderWidth: 1, pointRadius: 0, fill: '+1' },
+                        { label: '50° Percentile', data: weeklyData.p50, borderColor: 'rgba(54, 162, 235, 1)', backgroundColor: 'rgba(54, 162, 235, 0.2)', borderWidth: 2, pointRadius: 0, fill: false },
+                        { label: '10° Percentile', data: weeklyData.p10, borderColor: 'rgba(75, 192, 192, 0.2)', backgroundColor: 'rgba(54, 162, 235, 0.2)', borderWidth: 1, pointRadius: 0, fill: '-1' }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Difetti Restanti' } }, x: { title: { display: true, text: 'Tempo (Settimane)' } } },
+                    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+                    elements: { line: { tension: 0.2 } }
+                }
+            });
+        }
+        
+        function handleXlsxDownload() {
+            if (!lastSimulationData) return;
+
+            const weeklyData = calculateWeeklyPercentiles(lastSimulationData);
+            const startDate = new Date(inputs.startDate.value);
+            
+            const headers = ["Settimana", "Data_Inizio_Settimana", "Difetti_P10_Ottimistico", "Difetti_P50_Mediano", "Difetti_P90_Pessimistico"];
+            const dataForSheet = [headers];
+
+            const lastNonZeroWeek = weeklyData.p90.findLastIndex(d => d > 0);
+            const numWeeksToExport = (lastNonZeroWeek === -1) ? 1 : lastNonZeroWeek + 2;
+
+            for (let i = 0; i < numWeeksToExport && i < weeklyData.p50.length; i++) {
+                const weekStartDate = addWeeksToDate(startDate, i);
+                const row = [
+                    i + 1, // Settimana a partire da 1
+                    formatDate(weekStartDate),
+                    weeklyData.p10[i], 
+                    weeklyData.p50[i], 
+                    weeklyData.p90[i]
+                ];
+                dataForSheet.push(row);
+            }
+
+            const worksheet = XLSX.utils.aoa_to_sheet(dataForSheet);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Previsione Backlog");
+
+            // Imposta la larghezza delle colonne
+            worksheet["!cols"] = [
+                { wch: 10 }, // Settimana
+                { wch: 20 }, // Data_Inizio_Settimana
+                { wch: 25 }, // Difetti_P10_Ottimistico
+                { wch: 25 }, // Difetti_P50_Mediano
+                { wch: 25 }  // Difetti_P90_Pessimistico
+            ];
+
+            XLSX.writeFile(workbook, "previsione_backlog.xlsx");
+        }
+
+        // --- EVENT LISTENER ---
+        Object.values(inputs).forEach(input => {
+            input.addEventListener('input', updateDisplayValues);
+        });
+        runButton.addEventListener('click', runMonteCarloSimulation);
+        downloadXlsxButton.addEventListener('click', handleXlsxDownload);
+        document.querySelectorAll('.adjust-btn').forEach(button => {
+            button.addEventListener('click', handleAdjusterButtonClick);
+        });
+
+        // --- INIZIALIZZAZIONE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadParameters();
+            // Imposta la data di oggi come default solo se non è già salvata
+            if (!inputs.startDate.value) {
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-11
+                const dd = String(today.getDate()).padStart(2, '0');
+                inputs.startDate.value = `${yyyy}-${mm}-${dd}`;
+            }
+            updateDisplayValues();
+        });
+
+        window.addEventListener('load', () => {
+            runMonteCarloSimulation();
+        });
+    </script>
+</body>
+</html>
