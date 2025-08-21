@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Chessboard Vocal Trainer</title>
+  <style>
+    :root {
+      --accent: #d73535;
+      --light: #eee;
+      --dark: #666;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
+      color: #222;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    .page {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      padding: 16px;
+    }
+    h1 {
+      margin: 4px 0 0 0;
+      font-size: clamp(18px, 2.5vw, 28px);
+      font-weight: 700;
+      text-align: center;
+    }
+    .status {
+      min-height: 1.8em;
+      font-size: clamp(16px, 2vw, 22px);
+      font-weight: 700;
+      text-align: center;
+    }
+    .hint {
+      font-size: clamp(12px, 1.6vw, 16px);
+      color: #555;
+      text-align: center;
+    }
+    .board-wrap {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Scacchiera responsive: lato = min(92vw, 80vh) */
+    .board {
+      --side: min(92vw, 80vh);
+      width: var(--side);
+      height: var(--side);
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      border: 3px solid #333;
+      background: #333;
+      box-shadow: 0 0 14px rgba(0,0,0,0.25);
+      touch-action: manipulation; /* riduce delay su mobile */
+      -webkit-tap-highlight-color: transparent;
+      border-radius: 6px;
+    }
+    .square {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      font-weight: 700;
+      font-size: clamp(10px, 2.2vw, 16px);
+      position: relative;
+    }
+    .white { background: var(--light); color: rgba(0,0,0,0.55); }
+    .black { background: var(--dark); color: rgba(255,255,255,0.8); }
+    .highlight {
+      outline: max(2px, 0.35vmin) solid var(--accent);
+      outline-offset: -3px;
+      z-index: 1;
+    }
+    @media (min-width: 900px) {
+      .page { padding-top: 24px; }
+      .board { --side: min(70vh, 70vw); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Chessboard Vocal Trainer</h1>
+    <div class="status" id="status">Tocca la scacchiera per iniziare (mobile/tablet) oppure premi SPAZIO (desktop)</div>
+    <div class="board-wrap">
+      <div class="board" id="board" aria-label="Scacchiera, tocca o premi spazio per avanzare" role="button" tabindex="0"></div>
+    </div>
+    <div class="hint" id="hint">Tocca la scacchiera (mobile) o premi Spazio (desktop): coord → colore → nuova casella casuale.</div>
+  </div>
+
+  <script>
+    // Dati scacchiera
+    const files = ['a','b','c','d','e','f','g','h'];
+    const ranks = [1,2,3,4,5,6,7,8];
+
+    const boardEl = document.getElementById('board');
+    const statusEl = document.getElementById('status');
+    const hintEl = document.getElementById('hint');
+
+    // Colore corretto: a1 nera
+    function colorFor(fileIndex, rankNumber) {
+      const isDark = (fileIndex + rankNumber) % 2 === 1;
+      return isDark ? 'nero' : 'bianco';
+    }
+
+    // Costruzione grafica: riga 8 in alto -> 1 in basso
+    let squares = [];
+    (function buildBoard() {
+      for (let r = 7; r >= 0; r--) {
+        for (let f = 0; f < 8; f++) {
+          const coord = files[f] + ranks[r];
+          const colorName = colorFor(f, ranks[r]);
+          const el = document.createElement('div');
+          el.className = 'square ' + (colorName === 'nero' ? 'black' : 'white');
+          el.textContent = coord;
+          el.setAttribute('data-coord', coord);
+          boardEl.appendChild(el);
+          squares.push({ coord, color: colorName, element: el });
+        }
+      }
+    })();
+
+    // Fisher–Yates shuffle
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+    shuffle(squares);
+
+    let index = 0;        // indice casella corrente
+    let state = 0;        // 0 = coordinata, 1 = colore
+    let lastTapTime = 0;  // per filtrare doppio tap
+    let handling = false; // lock anti-rientro (touch+click)
+
+    function speak(text) {
+      try {
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'it-IT';
+        speechSynthesis.cancel(); // evita code
+        speechSynthesis.speak(utter);
+      } catch (e) {
+        // se non supportato, ignora
+      }
+    }
+
+    function clearHighlights() {
+      squares.forEach(s => s.element.classList.remove('highlight'));
+    }
+
+    function step() {
+      // lock anti doppio evento simultaneo
+      if (handling) return;
+      handling = true;
+
+      try {
+        const current = squares[index];
+
+        if (state === 0) {
+          // 1) Coordinata (senza evidenziazione)
+          clearHighlights();
+          statusEl.textContent = 'Casella: ' + current.coord;
+          speak('Casella ' + current.coord);
+          state = 1; // passa alla fase colore
+        } else {
+          // 2) Colore (con evidenziazione)
+          clearHighlights();
+          current.element.classList.add('highlight');
+          statusEl.textContent = 'Colore: ' + current.color;
+          speak('Colore ' + current.color);
+
+          // Prepara prossima casella
+          state = 0;
+          index++;
+          if (index >= squares.length) {
+            shuffle(squares);
+            index = 0;
+          }
+        }
+      } finally {
+        // breve delay per assorbire click dopo touch
+        setTimeout(() => { handling = false; }, 50);
+      }
+    }
+
+    // Desktop: spazio
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        step();
+      }
+    });
+
+    // Mobile/tablet: tap sulla scacchiera
+    function handleTap() {
+      const now = Date.now();
+      if (now - lastTapTime < 250) return; // ignora doppio tap ravvicinato
+      lastTapTime = now;
+      step();
+    }
+
+    // Evita doppio trigger touch+click
+    let touchFired = false;
+
+    boardEl.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      touchFired = true;
+      handleTap();
+    }, { passive: false });
+
+    boardEl.addEventListener('click', () => {
+      if (touchFired) {
+        touchFired = false; // ignora click immediatamente successivo al touch
+        return;
+      }
+      handleTap();
+    });
+
+    // Accessibilità: Enter/Space quando la board ha focus
+    boardEl.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.code === 'Enter') {
+        e.preventDefault();
+        step();
+      }
+    });
+
+    // Testo iniziale adattato al dispositivo
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (isTouch) {
+      statusEl.textContent = 'Tocca la scacchiera per iniziare';
+    } else {
+      statusEl.textContent = 'Premi SPAZIO o clic sulla scacchiera per iniziare';
+    }
+
+    // Evita zoom su doppio tap iOS
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, { passive: false });
+  </script>
+</body>
+</html>
