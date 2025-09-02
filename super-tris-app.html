@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Tris</title>
+    <title>Super Tris 3D</title>
     <style>
         * {
             margin: 0;
@@ -343,14 +343,19 @@
 
         @media (max-width: 480px) {
             body {
-                padding: 5px;
+                padding: 0;
+                align-items: stretch;
+                justify-content: stretch;
             }
             
             .container {
                 padding: 15px;
                 margin: 0;
-                border-radius: 15px;
-                max-height: calc(100vh - 10px);
+                border-radius: 0;
+                max-height: 100vh;
+                height: 100vh;
+                width: 100vw;
+                max-width: none;
             }
             
             h1 {
@@ -396,7 +401,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎮 Super Tris</h1>
+        <h1>🎮 Super Tris 3D</h1>
         
         <div id="menu" class="menu">
             <div class="game-modes">
