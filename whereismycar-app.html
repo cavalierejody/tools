@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#f0f2f5" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+    <meta name="format-detection" content="telephone=no">
+    <title>WhereIsMyCar</title>
+
+    <style>
+        :root {
+            /* Variabili Light Mode */
+            --bg-color: #f2f2f7;
+            --card-bg: #ffffff;
+            --text-primary: #1c1c1e;
+            --text-secondary: #8e8e93;
+            --accent: #007AFF; /* Apple Blue */
+            --success: #34C759; /* Apple Green */
+            --danger: #FF3B30; /* Apple Red */
+            --shadow: 0 8px 30px rgba(0,0,0,0.08);
+            --radius: 24px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                /* Variabili Dark Mode */
+                --bg-color: #000000;
+                --card-bg: #1c1c1e;
+                --text-primary: #ffffff;
+                --text-secondary: #98989f;
+                --shadow: 0 8px 30px rgba(0,0,0,0.3);
+            }
+        }
+
+        /* Reset e Base */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Evita scroll elastico */
+            transition: background-color 0.3s ease;
+        }
+
+        /* Layout Principale */
+        .app-shell {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: max(20px, env(safe-area-inset-top)) 24px max(30px, env(safe-area-inset-bottom)) 24px;
+        }
+
+        /* Header */
+        header {
+            margin-top: 20px;
+        }
+        
+        h1 {
+            font-size: 34px;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            font-size: 17px;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        /* Card Centrale (Stato) */
+        .status-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            flex-grow: 1;
+            max-height: 45vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Icona Animata */
+        .big-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: inline-block;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.1));
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .status-text {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .time-text {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            background: rgba(142, 142, 147, 0.15);
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        /* Pulsanti */
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        button {
+            width: 100%;
+            height: 56px;
+            border: none;
+            border-radius: 16px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.1s, opacity 0.2s, background-color 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:active {
+            transform: scale(0.96);
+        }
+
+        /* Stili bottoni specifici */
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+            box-shadow: 0 4px 15px rgba(52, 199, 89, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: rgba(142, 142, 147, 0.15); /* Grigio traslucido */
+            color: var(--text-primary);
+        }
+        
+        .btn-danger-ghost {
+            background: transparent;
+            color: var(--danger);
+            font-size: 15px;
+            height: 40px;
+        }
+
+        /* Pulsazioni per loading */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(0, 122, 255, 0); }
+            100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0, 122, 255, 0); }
+        }
+        
+        .pulsing .big-icon {
+            animation: pulse-ring 2s infinite;
+        }
+
+        /* Utility per nascondere/mostrare */
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-shell">
+        <header>
+            <h1>WhereIsMyCar</h1>
+            <p class="subtitle">Trova la tua auto con un tocco</p>
+        </header>
+
+        <div id="view-empty" class="status-card">
+            <div class="big-icon">🅿️</div>
+            <div class="status-text">Nessuna auto salvata</div>
+            <div style="color: var(--text-secondary); font-size: 14px; margin-top:5px;">
+                Premi il tasto in basso quando parcheggi
+            </div>
+        </div>
+
+        <div id="view-saved" class="status-card hidden">
+            <div class="big-icon">🚘</div>
+            <div class="status-text">Auto Parcheggiata</div>
+            <div class="time-text" id="time-display">--:--</div>
+        </div>
+
+        <div class="actions">
+            
+            <button id="btn-save" class="btn-primary" onclick="handleSave()">
+                <span id="btn-save-text">Memorizza Posizione</span>
+            </button>
+
+            <button id="btn-nav" class="btn-success hidden" onclick="handleNavigate()">
+                📍 Portami all'auto
+            </button>
+
+            <button id="btn-delete" class="btn-secondary hidden" onclick="handleDelete()">
+                Archivia / Cancella
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- LOGICA ---
+        
+        const views = {
+            empty: document.getElementById('view-empty'),
+            saved: document.getElementById('view-saved')
+        };
+        
+        const btns = {
+            save: document.getElementById('btn-save'),
+            saveText: document.getElementById('btn-save-text'),
+            nav: document.getElementById('btn-nav'),
+            del: document.getElementById('btn-delete')
+        };
+
+        const timeDisplay = document.getElementById('time-display');
+
+        // Avvio
+        window.onload = () => {
+            if (localStorage.getItem('car_lat')) {
+                showSavedState();
+            } else {
+                showEmptyState();
+            }
+        };
+
+        // Funzione Feedback Aptico (Vibrazione)
+        function haptic() {
+            if (navigator.vibrate) navigator.vibrate(15);
+        }
+
+        // Funzione Salva
+        function handleSave() {
+            haptic();
+            if (!navigator.geolocation) {
+                alert("GPS non supportato");
+                return;
+            }
+
+            // UI Loading
+            btns.saveText.textContent = "Ricerca satelliti...";
+            btns.save.style.opacity = "0.8";
+            views.empty.classList.add('pulsing'); // Effetto pulsante
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    const now = new Date();
+                    
+                    // Format orario bello
+                    const timeStr = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+                    const dateStr = now.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
+
+                    localStorage.setItem('car_lat', lat);
+                    localStorage.setItem('car_lng', lng);
+                    localStorage.setItem('car_time', `${dateStr}, ${timeStr}`);
+
+                    // Vibrazione doppia per successo
+                    if (navigator.vibrate) navigator.vibrate([20, 50, 20]);
+                    
+                    showSavedState();
+                },
+                (err) => {
+                    alert("Errore GPS: " + err.message);
+                    btns.saveText.textContent = "Memorizza Posizione";
+                    views.empty.classList.remove('pulsing');
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+
+        // Funzione Naviga
+        function handleNavigate() {
+            haptic();
+            const lat = localStorage.getItem('car_lat');
+            const lng = localStorage.getItem('car_lng');
+            
+            if(lat && lng) {
+                // Universal Link per Google Maps
+                window.location.href = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`;
+            }
+        }
+
+        // Funzione Cancella
+        function handleDelete() {
+            haptic();
+            // Piccola conferma non intrusiva
+            if(confirm("Vuoi cancellare la posizione salvata?")) {
+                localStorage.removeItem('car_lat');
+                localStorage.removeItem('car_lng');
+                localStorage.removeItem('car_time');
+                showEmptyState();
+            }
+        }
+
+        // --- GESTIONE STATI UI ---
+
+        function showSavedState() {
+            views.empty.classList.add('hidden');
+            views.empty.classList.remove('pulsing');
+            views.saved.classList.remove('hidden');
+
+            // Popola orario
+            timeDisplay.textContent = localStorage.getItem('car_time');
+
+            // Gestione bottoni
+            btns.save.classList.add('hidden'); // Nasconde il tasto salva principale
+            btns.nav.classList.remove('hidden');
+            btns.del.classList.remove('hidden');
+            
+            // Ripristina testo bottone salva (per il futuro)
+            btns.saveText.textContent = "Memorizza Posizione";
+            btns.save.style.opacity = "1";
+        }
+
+        function showEmptyState() {
+            views.saved.classList.add('hidden');
+            views.empty.classList.remove('hidden');
+
+            btns.nav.classList.add('hidden');
+            btns.del.classList.add('hidden');
+            btns.save.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
