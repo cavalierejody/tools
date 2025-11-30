@@ -3,208 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>WhereIsMyCar</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 
-    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiMyBNeUNhciIsImxvbmdfbmFtZSI6IkRvdmUgaG8gcGFyY2hlZ2dpYXRvPyIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjZmZmZmZmIiwidGhlbWVfY29sb3IiOiIjMDA3YWZmIn0=">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBzdHlsZT0iYmFja2dyb3VuZC1jb2xvcjogIzAwN0FGRjsgYm9yZGVyLXJhZGl1czogMjIlOyI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMTUuNSAxNDkuN2g1NC4yYzkuNyAwIDE4LjkgNS42 
+    	MjMuNSAxNC4xbDMzLjcgNjRoLTc0LjhsLTM2LjYtNjMuNWMtMi41LTQuNC0yLjMtOS44IDAtMTQuNnptMjMxLjYgMGgzNC44YzcuOSAwIDE1LjEgNC44IDE4LjIgMTIuMWwzMS42IDY2aC03Ny4ybDMzLjUtNjIuMmMzLjItNi4xIDMuNC0xMy4zLTMuNC0xNS45ei0yMjAuNyA5MmgyNTkuMWwxOC41IDQyaC0yOTYuMWwxOC41LTQyem0xMjkuNiA2OGMxNi44IDAgMzAuNSA
+    	xMy43IDMwLjUgMzAuNXMtMTMuNyAzMC41LTMwLjUgMzAuNS0zMC41LTEzLjctMzAuNS0zMC41IDEzLjctMzAuNSAzMC41LTMwLjV6bS0xMzkgMGMxNi44IDAgMzAuNSAxMy43IDMwLjUgMzAuNXMtMTMuNyAzMC41LTMwLjUgMzAuNS0zMC41LTEzLjctMzAuNS0zMC41IDEzLjctMzAuNSAzMC41LTMwLjV6IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSg1MCwgNzApIHNjYWxlKDAuOCkiLz48L3N2Zz4=">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBzdHlsZT0iYmFja2dyb3VuZC1jb2xvcjogIzAwN0FGRjsgYm9yZGVyLXJhZGl1czogMjIlOyI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMTUuNSAxNDkuN2g1NC4yYzkuNyAwIDE4LjkgNS42 
+    	MjMuNSAxNC4xbDMzLjcgNjRoLTc0LjhsLTM2LjYtNjMuNWMtMi41LTQuNC0yLjMtOS44IDAtMTQuNnptMjMxLjYgMGgzNC44YzcuOSAwIDE1LjEgNC44IDE4LjIgMTIuMWwzMS42IDY2aC03Ny4ybDMzLjUtNjIuMmMzLjItNi4xIDMuNC0xMy4zLTMuNC0xNS45ei0yMjAuNyA5MmgyNTkuMWwxOC41IDQyaC0yOTYuMWwxOC41LTQyem0xMjkuNiA2OGMxNi44IDAgMzAuNSA
+    	xMy43IDMwLjUgMzAuNXMtMTMuNyAzMC41LTMwLjUgMzAuNS0zMC41LTEzLjctMzAuNS0zMC41IDEzLjctMzAuNSAzMC41LTMwLjV6bS0xMzkgMGMxNi44IDAgMzAuNSAxMy43IDMwLjUgMzAuNXMtMTMuNyAzMC41LTMwLjUgMzAuNS0zMC41LTEzLjctMzAuNS0zMC41IDEzLjctMzAuNSAzMC41LTMwLjV6IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSg1MCwgNzApIHNjYWxlKDAuOCkiLz48L3N2Zz4=">
 
-    <title>MyCar</title>
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJkZXNjcmlwdGlvbiI6IlRyYWNjZSBsYSB0dWEgYXV0byIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMmF5QjRiV3h1YzwwaYUhSMGNEb3ZMM2QzZHk1M015NXZjbWN2TWpBd01DOXpkbWNpSUhacFpYZENiM2c5SWpBd0lEQWcTlRReElOVHhNaUlZSzNCaGIydG5jbTkxYm1RdFkyOXNiM0k2SUNNd01EZEJSVVk3SUdKdmNtUmxjaTF5WVdScGRYb3VNakl4T3lJOUVobGJKM0IxYkhRd2lHbGtQU0p3YUdWMFpTSWdaRDEwY0MweU1qQS5TQTNNbkJvTlM0eWZXTXlPUzRpSUhScGJ5QjFZMjl1WTJVaUlHWnpkR0YwWldVNklISjVjeTVtYjI0aUlGUnlhVzV6Wm05eWJUMGluVHJ5Wlc1emJHNWhkR1VvTlR3c0lEY3dLU0J6WTJGc1pTZ3dMakcpIiwiHR5cCI6ImltYWdlL3N2Zyt4bWwiLCJzaXplc2IjoyIjUxMng1MTIifV0sIm5hbWUiOiJXaGVyZUlzTXlDYXIiLCJzaG9ydF9uYW1lIjoiV2hlcmVJc015Q2FyIiwic3RhcnRfdXJsIjoiLiIsInRoZW1lX2NvbG9yIjoiIzAwN0FGRiIsImJhY2tncm91bmRfY29sb3IiOiIjZmZmZmZmIn0=">
 
     <style>
         :root {
-            /* Variabili Light Mode */
-            --bg-color: #f2f2f7;
-            --card-bg: #ffffff;
-            --text-primary: #1c1c1e;
-            --text-secondary: #8e8e93;
+            /* Palette iOS */
+            --bg-light: #f2f2f7;
+            --bg-dark: #000000;
+            --card-light: #ffffff;
+            --card-dark: #1c1c1e;
+            --text-light: #000000;
+            --text-dark: #ffffff;
             --accent: #007AFF;
             --success: #34C759;
             --danger: #FF3B30;
-            --shadow: 0 4px 20px rgba(0,0,0,0.06);
-            --radius: 20px;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --radius: 22px;
         }
 
+        /* Gestione Dark Mode */
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-color: #000000;
-                --card-bg: #1c1c1e;
-                --text-primary: #ffffff;
-                --text-secondary: #98989f;
-                --shadow: 0 4px 20px rgba(0,0,0,0.4);
+                --bg-current: var(--bg-dark);
+                --card-current: var(--card-dark);
+                --text-current: var(--text-dark);
+                --subtext: #98989f;
+            }
+        }
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-current: var(--bg-light);
+                --card-current: var(--card-light);
+                --text-current: var(--text-light);
+                --subtext: #86868b;
             }
         }
 
-        /* Reset */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-current);
+            color: var(--text-current);
             margin: 0;
-            padding: 0;
-            /* FIX CRUCIALE PER ANDROID: */
-            min-height: 100vh;
-            min-height: 100dvh; /* Altezza dinamica reale */
+            height: 100dvh; /* Altezza reale viewport */
             display: flex;
             flex-direction: column;
-            /* Permetti lo scroll se lo schermo è piccolo */
-            overflow-y: auto; 
+            overflow: hidden; /* Blocca scroll elastico generale */
         }
 
+        /* GRID LAYOUT PERFETTO 
+           Header (Auto) | Contenuto (1fr) | Footer Pulsanti (Fisso)
+        */
         .app-shell {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 24px;
-            /* Padding extra in basso per evitare che la barra home copra i tasti */
-            padding-bottom: max(30px, env(safe-area-inset-bottom));
-            max-width: 600px;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            height: 100%;
+            padding: env(safe-area-inset-top) 24px env(safe-area-inset-bottom) 24px;
+            max-width: 500px;
             margin: 0 auto;
             width: 100%;
         }
 
-        /* Header */
+        /* 1. HEADER */
         header {
-            margin-top: 10px;
-            margin-bottom: 20px;
+            padding-top: 20px;
+            text-align: center;
         }
         
         h1 {
-            font-size: 28px;
-            font-weight: 800;
+            font-size: 24px;
+            font-weight: 700;
             margin: 0;
+            letter-spacing: -0.5px;
         }
 
-        p.subtitle {
-            color: var(--text-secondary);
-            font-size: 15px;
-            margin-top: 4px;
-        }
-
-        /* Area centrale flessibile */
-        .content-area {
-            flex: 1; /* Prende tutto lo spazio disponibile */
+        /* 2. CARD AREA (CENTER) */
+        .card-container {
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px 0;
         }
 
-        /* Card Stato */
         .status-card {
-            background: var(--card-bg);
+            background: var(--card-current);
             border-radius: var(--radius);
-            padding: 30px 20px;
+            width: 100%;
+            padding: 40px 20px;
             text-align: center;
             box-shadow: var(--shadow);
-            width: 100%;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            /* Altezza minima fissa per evitare che la card stessa cambi troppo dimensione */
+            min-height: 250px; 
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .big-icon {
-            font-size: 60px;
-            margin-bottom: 15px;
-            display: block;
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background: rgba(0, 122, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 20px;
         }
 
-        .status-text {
-            font-size: 18px;
+        .status-title {
+            font-size: 20px;
             font-weight: 700;
             margin-bottom: 8px;
         }
 
-        .time-badge {
-            display: inline-block;
-            background: rgba(128, 128, 128, 0.15);
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-secondary);
+        .status-desc {
+            font-size: 15px;
+            color: var(--subtext);
         }
 
-        /* Pulsanti fissati in basso */
-        .actions {
-            margin-top: auto; /* Spinge i bottoni in fondo */
+        .time-badge {
+            margin-top: 10px;
+            background: rgba(128, 128, 128, 0.15);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* 3. FOOTER AZIONI (Layout stabile) */
+        .action-area {
+            /* TRUCCO STABILITÀ:
+               Diamo un'altezza minima fissa che possa contenere sia 
+               1 bottone che 2 bottoni.
+               1 bottone = ~54px
+               2 bottoni + gap = ~120px
+               Mettendo min-height 150px, lo spazio è prenotato.
+               I bottoni si allineano in basso (flex-end).
+            */
+            min-height: 160px; 
             display: flex;
             flex-direction: column;
+            justify-content: flex-end; 
             gap: 12px;
-            padding-top: 20px;
+            padding-bottom: 10px;
         }
 
         button {
             width: 100%;
             height: 54px;
             border: none;
-            border-radius: 14px;
-            font-size: 16px;
+            border-radius: 16px;
+            font-size: 17px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            transition: transform 0.1s;
+            gap: 10px;
+            transition: all 0.2s ease;
         }
 
-        button:active { transform: scale(0.97); }
+        button:active { transform: scale(0.96); }
 
-        .btn-primary { background-color: var(--accent); color: white; }
-        .btn-success { background-color: var(--success); color: white; }
-        .btn-ghost { background-color: transparent; color: var(--danger); border: 1px solid rgba(255, 59, 48, 0.2); }
+        .btn-primary { background: var(--accent); color: white; box-shadow: 0 4px 12px rgba(0,122,255,0.3); }
+        .btn-success { background: var(--success); color: white; box-shadow: 0 4px 12px rgba(52,199,89,0.3); }
+        .btn-ghost { background: transparent; color: var(--danger); font-size: 15px; }
 
         .hidden { display: none !important; }
         
-        /* Animazione pulsante */
-        .pulsing { animation: pulse 2s infinite; }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        /* Animazioni di entrata */
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
         }
+        .animate-pop { animation: popIn 0.3s ease-out; }
+
     </style>
 </head>
 <body>
 
     <div class="app-shell">
+        
         <header>
-            <h1>MyCar</h1>
-            <p class="subtitle">Utility di parcheggio</p>
+            <h1>WhereIsMyCar</h1>
         </header>
 
-        <div class="content-area">
-            <div id="view-empty" class="status-card">
-                <div class="big-icon">📍</div>
-                <div class="status-text">Dove hai parcheggiato?</div>
-                <div style="font-size: 13px; color: var(--text-secondary); margin-top:5px;">
-                    Attiva il GPS e premi il tasto blu
-                </div>
+        <div class="card-container">
+            
+            <div id="view-empty" class="status-card animate-pop">
+                <div class="icon-circle" style="background: rgba(0,122,255,0.1)">📍</div>
+                <div class="status-title">Dove hai parcheggiato?</div>
+                <div class="status-desc">Premi il tasto blu per salvare la posizione GPS attuale.</div>
             </div>
 
-            <div id="view-saved" class="status-card hidden">
-                <div class="big-icon">🚗</div>
-                <div class="status-text">Posizione Salvata</div>
+            <div id="view-saved" class="status-card animate-pop hidden">
+                <div class="icon-circle" style="background: rgba(52,199,89,0.1)">🚗</div>
+                <div class="status-title">Auto Parcheggiata</div>
                 <div class="time-badge" id="time-display">--:--</div>
             </div>
+
         </div>
 
-        <div class="actions">
+        <div class="action-area">
+            
             <button id="btn-save" class="btn-primary" onclick="handleSave()">
                 Memorizza Posizione
             </button>
 
-            <button id="btn-nav" class="btn-success hidden" onclick="handleNavigate()">
-                🗺️ Portami all'auto
-            </button>
+            <div id="group-saved" class="hidden" style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                <button class="btn-success" onclick="handleNavigate()">
+                    🧭 Portami all'auto
+                </button>
+                <button class="btn-ghost" onclick="handleDelete()">
+                    Cancella posizione
+                </button>
+            </div>
 
-            <button id="btn-delete" class="btn-ghost hidden" onclick="handleDelete()">
-                Cancella
-            </button>
         </div>
+
     </div>
 
     <script>
@@ -212,29 +247,23 @@
             viewEmpty: document.getElementById('view-empty'),
             viewSaved: document.getElementById('view-saved'),
             btnSave: document.getElementById('btn-save'),
-            btnNav: document.getElementById('btn-nav'),
-            btnDelete: document.getElementById('btn-delete'),
+            groupSaved: document.getElementById('group-saved'),
             timeDisplay: document.getElementById('time-display')
         };
 
-        // Avvio
         window.onload = () => {
-            if (localStorage.getItem('car_lat')) showSaved();
-            else showEmpty();
+            if (localStorage.getItem('car_lat')) showSavedUI();
         };
 
-        function vibrate() {
-            if (navigator.vibrate) navigator.vibrate(20);
-        }
+        function haptic() { if (navigator.vibrate) navigator.vibrate(15); }
 
         function handleSave() {
-            vibrate();
-            if (!navigator.geolocation) return alert("GPS non disponibile");
+            haptic();
+            if (!navigator.geolocation) return alert("GPS richiesto");
 
-            const originalText = els.btnSave.textContent;
-            els.btnSave.textContent = "Ricerca GPS...";
-            els.btnSave.style.opacity = "0.7";
-            els.viewEmpty.classList.add('pulsing');
+            const originalText = els.btnSave.innerText;
+            els.btnSave.innerText = "Ricerca GPS in corso...";
+            els.btnSave.style.opacity = 0.7;
 
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
@@ -246,60 +275,57 @@
                     localStorage.setItem('car_lng', pos.coords.longitude);
                     localStorage.setItem('car_time', timeStr);
                     
-                    showSaved();
-                    if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+                    showSavedUI();
+                    if(navigator.vibrate) navigator.vibrate([20, 50]);
                 },
                 (err) => {
-                    alert("Errore: Attiva il GPS!");
-                    els.btnSave.textContent = originalText;
-                    els.viewEmpty.classList.remove('pulsing');
-                    els.btnSave.style.opacity = "1";
+                    alert("Errore GPS. Assicurati di essere all'aperto.");
+                    els.btnSave.innerText = originalText;
+                    els.btnSave.style.opacity = 1;
                 },
-                { enableHighAccuracy: true, timeout: 15000 }
+                { enableHighAccuracy: true }
             );
         }
 
         function handleNavigate() {
-            vibrate();
+            haptic();
             const lat = localStorage.getItem('car_lat');
             const lng = localStorage.getItem('car_lng');
-            if(lat && lng) {
-                window.location.href = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`;
-            }
+            if(lat) window.location.href = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`;
         }
 
         function handleDelete() {
-            vibrate();
-            if(confirm("Cancellare la posizione?")) {
+            haptic();
+            if(confirm("Vuoi cancellare la posizione?")) {
                 localStorage.removeItem('car_lat');
                 localStorage.removeItem('car_lng');
                 localStorage.removeItem('car_time');
-                showEmpty();
+                showEmptyUI();
             }
         }
 
-        function showSaved() {
+        function showSavedUI() {
+            // Nascondi stato vuoto
             els.viewEmpty.classList.add('hidden');
-            els.viewEmpty.classList.remove('pulsing');
+            els.btnSave.classList.add('hidden'); // Nasconde il tasto singolo
+            
+            // Mostra stato pieno
             els.viewSaved.classList.remove('hidden');
+            els.groupSaved.classList.remove('hidden'); // Mostra il gruppo di 2 tasti
+            els.groupSaved.style.display = 'flex'; // Forza display flex
             
-            els.timeDisplay.textContent = localStorage.getItem('car_time');
-            
-            els.btnSave.classList.add('hidden');
-            els.btnNav.classList.remove('hidden');
-            els.btnDelete.classList.remove('hidden');
-            
-            // Reset bottone salva
-            els.btnSave.textContent = "Memorizza Posizione";
-            els.btnSave.style.opacity = "1";
+            els.timeDisplay.innerText = localStorage.getItem('car_time');
+
+            // Reset tasto salva per il futuro
+            els.btnSave.innerText = "Memorizza Posizione";
+            els.btnSave.style.opacity = 1;
         }
 
-        function showEmpty() {
+        function showEmptyUI() {
             els.viewSaved.classList.add('hidden');
-            els.viewEmpty.classList.remove('hidden');
+            els.groupSaved.classList.add('hidden');
             
-            els.btnNav.classList.add('hidden');
-            els.btnDelete.classList.add('hidden');
+            els.viewEmpty.classList.remove('hidden');
             els.btnSave.classList.remove('hidden');
         }
     </script>
