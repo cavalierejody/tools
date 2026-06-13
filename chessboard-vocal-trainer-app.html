@@ -6,23 +6,21 @@
   <title>Chessboard Vocal Trainer</title>
   <style>
     :root {
-      /* Highlight casella corrente */
       --accent: #d73535;
       --accent-glow: rgba(215, 53, 53, 0.50);
-
-      /* Scacchiera (neutra, per far risaltare rosso e blu) */
       --sq-light: #ece9e1;
       --sq-light-text: #3a3a3a;
       --sq-dark: #8b877e;
       --sq-dark-text: #f7f7f5;
       --board-frame: #2b2b2b;
-
-      /* Selezione area */
       --sel-border: #1f7aec;
       --sel-fill: rgba(31, 122, 236, 0.20);
       --sel-glow: rgba(31, 122, 236, 0.45);
-
-      /* Pagina */
+      --ok: #2e9e4f;
+      --ok-bg: rgba(46, 158, 79, 0.12);
+      --no: #d73535;
+      --no-bg: rgba(215, 53, 53, 0.12);
+      --mic: #e0457a;
       --bg: #f4f5f7;
       --fg: #1c1f24;
       --muted: #5b6068;
@@ -34,247 +32,173 @@
       --btn-active-bg: #1c1f24;
       --btn-active-fg: #ffffff;
     }
-
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #14161a;
-        --fg: #eceef2;
-        --muted: #9aa0aa;
-        --card-bg: #1d2026;
-        --card-border: #2c3038;
-        --btn-bg: #22262d;
-        --btn-border: #363b44;
-        --btn-fg: #e6e8ec;
-        --btn-active-bg: #eceef2;
-        --btn-active-fg: #14161a;
+        --bg: #14161a; --fg: #eceef2; --muted: #9aa0aa;
+        --card-bg: #1d2026; --card-border: #2c3038;
+        --btn-bg: #22262d; --btn-border: #363b44; --btn-fg: #e6e8ec;
+        --btn-active-bg: #eceef2; --btn-active-fg: #14161a;
         --board-frame: #0c0d10;
+        --ok-bg: rgba(46,158,79,0.18); --no-bg: rgba(215,53,53,0.18);
       }
     }
-
     * { box-sizing: border-box; }
     html, body {
-      height: 100%;
-      margin: 0;
-      background: var(--bg);
-      color: var(--fg);
+      height: 100%; margin: 0;
+      background: var(--bg); color: var(--fg);
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
       -webkit-text-size-adjust: 100%;
     }
     .page {
-      min-height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 14px;
+      min-height: 100%; display: flex; flex-direction: column;
+      align-items: center; gap: 12px;
       padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
     }
     h1 {
-      margin: 4px 0 0;
-      font-size: clamp(17px, 2.4vw, 26px);
-      font-weight: 750;
-      letter-spacing: -0.01em;
-      text-align: center;
+      margin: 4px 0 0; font-size: clamp(17px, 2.4vw, 26px);
+      font-weight: 750; letter-spacing: -0.01em; text-align: center;
     }
-
-    /* Card di stato */
     .status {
-      width: min(92vw, 80vh);
-      max-width: 520px;
-      min-height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 12px 16px;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-      text-align: center;
-      font-size: clamp(16px, 2.1vw, 22px);
-      font-weight: 600;
-      line-height: 1.35;
+      width: min(92vw, 80vh); max-width: 540px; min-height: 64px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; padding: 12px 16px;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      text-align: center; font-size: clamp(16px, 2.1vw, 22px);
+      font-weight: 600; line-height: 1.35;
+      transition: border-color .2s ease, background .2s ease;
     }
+    .status.ok { border-color: var(--ok); background: var(--ok-bg); }
+    .status.no { border-color: var(--no); background: var(--no-bg); }
+    .status .row { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
     .status b { font-weight: 800; }
-    .status .coord {
-      font-variant-numeric: tabular-nums;
-      font-weight: 850;
-      letter-spacing: 0.02em;
-    }
+    .status .coord { font-variant-numeric: tabular-nums; font-weight: 850; letter-spacing: 0.02em; }
     .chip {
-      flex: 0 0 auto;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
+      flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%;
       border: 2px solid rgba(128,128,128,0.5);
     }
     .chip.bianco { background: #f2f2ee; }
     .chip.nero   { background: #2a2a2a; }
 
-    /* Controlli */
-    .controls {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
+    .rec-line {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.78em; font-weight: 650; color: var(--mic);
     }
+    .rec-dot {
+      width: 11px; height: 11px; border-radius: 50%; background: var(--mic);
+      box-shadow: 0 0 0 0 rgba(224,69,122,0.6);
+      animation: recPulse 1.1s ease-out infinite;
+    }
+    @keyframes recPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(224,69,122,0.55); }
+      70%  { box-shadow: 0 0 0 10px rgba(224,69,122,0); }
+      100% { box-shadow: 0 0 0 0 rgba(224,69,122,0); }
+    }
+    .rec-interim { font-size: 0.74em; font-weight: 600; color: var(--muted); font-style: italic; min-height: 1em; }
+
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; }
     .btn {
-      appearance: none;
-      border: 1px solid var(--btn-border);
-      background: var(--btn-bg);
-      color: var(--btn-fg);
-      padding: 9px 14px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 650;
-      cursor: pointer;
-      transition: background .12s ease, transform .06s ease, border-color .12s ease;
+      appearance: none; border: 1px solid var(--btn-border);
+      background: var(--btn-bg); color: var(--btn-fg);
+      padding: 9px 14px; border-radius: 10px; font-size: 14px; font-weight: 650;
+      cursor: pointer; transition: background .12s, transform .06s, border-color .12s;
       -webkit-tap-highlight-color: transparent;
     }
     .btn:hover { border-color: var(--muted); }
     .btn:active { transform: translateY(1px); }
-    .btn.on {
-      background: var(--btn-active-bg);
-      color: var(--btn-active-fg);
-      border-color: var(--btn-active-bg);
-    }
+    .btn.on { background: var(--btn-active-bg); color: var(--btn-active-fg); border-color: var(--btn-active-bg); }
+    #micBtn.on { background: var(--mic); border-color: var(--mic); color: #fff; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
     .btn:focus-visible { outline: 3px solid var(--sel-border); outline-offset: 2px; }
     #clearSel { display: none; }
     #clearSel.visible { display: inline-block; }
 
-    .board-wrap {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .score {
+      font-size: clamp(13px, 1.7vw, 16px); color: var(--fg);
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 999px; padding: 6px 14px;
     }
+    .score[hidden] { display: none; }
+    .score b { font-weight: 800; }
+
+    .board-wrap { width: 100%; display: flex; align-items: center; justify-content: center; }
     .board {
-      --side: min(92vw, 70vh);
-      width: var(--side);
-      height: var(--side);
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      grid-template-rows: repeat(8, 1fr);
-      border: 4px solid var(--board-frame);
-      background: var(--board-frame);
-      box-shadow: 0 6px 22px rgba(0,0,0,0.18);
-      border-radius: 8px;
-      position: relative;
-      overflow: hidden;
-      user-select: none;
-      -webkit-user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: none; /* il drag non scrolla/zooma; il tap resta valido */
+      --side: min(92vw, 66vh);
+      width: var(--side); height: var(--side);
+      display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
+      border: 4px solid var(--board-frame); background: var(--board-frame);
+      box-shadow: 0 6px 22px rgba(0,0,0,0.18); border-radius: 8px;
+      position: relative; overflow: hidden;
+      user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+      touch-action: none;
     }
     .board:focus-visible { outline: 3px solid var(--sel-border); outline-offset: 3px; }
-
     .square {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      user-select: none;
-      font-weight: 700;
-      font-size: clamp(9px, 2vw, 15px);
-      position: relative;
-      z-index: 0;
-      transition: color .15s ease;
+      display: flex; align-items: center; justify-content: center;
+      user-select: none; font-weight: 700; font-size: clamp(9px, 2vw, 15px);
+      position: relative; z-index: 0; transition: color .15s ease;
     }
     .white { background: var(--sq-light); color: var(--sq-light-text); }
     .black { background: var(--sq-dark);  color: var(--sq-dark-text); }
     .board.hide-labels .square { color: transparent; }
 
-    /* Overlay blu: area selezionata (cumulativa) */
-    .in-area::after,
-    .candidate::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--sel-fill);
-      box-shadow: inset 0 0 0 3px var(--sel-border);
-      pointer-events: none;
-      z-index: 1;
+    .in-area::after, .candidate::after {
+      content: ''; position: absolute; inset: 0;
+      background: var(--sel-fill); box-shadow: inset 0 0 0 3px var(--sel-border);
+      pointer-events: none; z-index: 1;
     }
-
-    /* Highlight casella corrente: sempre sopra tutto */
     .highlight { z-index: 999; }
     .highlight::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      box-shadow: inset 0 0 0 4px var(--accent);
-      pointer-events: none;
-      z-index: 1000;
+      content: ''; position: absolute; inset: 0;
+      box-shadow: inset 0 0 0 4px var(--accent); pointer-events: none; z-index: 1000;
       animation: hlPulse 1.1s ease-in-out infinite;
     }
     .highlight::after {
-      content: '';
-      position: absolute;
-      inset: -2px;
-      box-shadow: 0 0 12px 4px var(--accent-glow);
-      border-radius: 4px;
-      pointer-events: none;
-      z-index: 1001;
+      content: ''; position: absolute; inset: -2px;
+      box-shadow: 0 0 12px 4px var(--accent-glow); border-radius: 4px; pointer-events: none; z-index: 1001;
     }
     @keyframes hlPulse {
       0%, 100% { box-shadow: inset 0 0 0 4px var(--accent); }
       50%      { box-shadow: inset 0 0 0 6px var(--accent); }
     }
     @media (prefers-reduced-motion: reduce) {
-      .highlight::before { animation: none; }
+      .highlight::before, .rec-dot, .sel-box { animation: none !important; }
     }
-
-    /* Rettangolo di selezione (solo durante il drag) */
     .sel-box {
-      position: absolute;
-      pointer-events: none;
-      display: none;
-      z-index: 1500;
-      border: 3px dashed var(--sel-border);
-      background: rgba(31, 122, 236, 0.10);
+      position: absolute; pointer-events: none; display: none; z-index: 1500;
+      border: 3px dashed var(--sel-border); background: rgba(31,122,236,0.10);
       box-shadow: 0 0 0 2px var(--sel-glow), 0 0 16px var(--sel-glow);
-      border-radius: 4px;
-      animation: selPulse .9s ease-in-out infinite;
+      border-radius: 4px; animation: selPulse .9s ease-in-out infinite;
     }
     .sel-box.active { display: block; }
     @keyframes selPulse {
       0%, 100% { box-shadow: 0 0 0 2px var(--sel-glow), 0 0 10px var(--sel-glow); }
       50%      { box-shadow: 0 0 0 4px var(--sel-glow), 0 0 22px var(--sel-glow); }
     }
-
     .hint {
-      font-size: clamp(12px, 1.6vw, 15px);
-      color: var(--muted);
-      text-align: center;
-      max-width: min(92vw, 520px);
-      line-height: 1.4;
+      font-size: clamp(12px, 1.6vw, 15px); color: var(--muted);
+      text-align: center; max-width: min(92vw, 540px); line-height: 1.4;
     }
     .pool { font-weight: 650; color: var(--fg); }
-
-    @media (min-width: 900px) {
-      .page { padding-top: 24px; }
-      .board { --side: min(66vh, 66vw); }
-    }
+    @media (min-width: 900px) { .page { padding-top: 24px; } .board { --side: min(62vh, 62vw); } }
   </style>
 </head>
 <body>
   <div class="page">
     <h1>Chessboard Vocal Trainer</h1>
-
     <div class="status" id="status" role="status" aria-live="polite"></div>
-
+    <div class="score" id="score" hidden></div>
     <div class="controls">
+      <button class="btn" id="micBtn" aria-pressed="false">🎤 Microfono: off</button>
       <button class="btn on" id="muteBtn" aria-pressed="true">🔈 Voce: on</button>
       <button class="btn" id="labelsBtn" aria-pressed="false">Nascondi etichette</button>
       <button class="btn" id="clearSel">Azzera selezione</button>
     </div>
-
     <div class="board-wrap">
       <div class="board" id="board" aria-label="Scacchiera: tocca per avanzare, trascina per selezionare un'area" role="button" tabindex="0">
         <div class="sel-box" id="selBox"></div>
       </div>
     </div>
-
     <div class="hint" id="hint"></div>
   </div>
 
@@ -288,17 +212,16 @@
     const statusEl   = document.getElementById('status');
     const selBoxEl   = document.getElementById('selBox');
     const hintEl     = document.getElementById('hint');
+    const scoreEl    = document.getElementById('score');
     const clearSelBtn= document.getElementById('clearSel');
+    const micBtn     = document.getElementById('micBtn');
     const muteBtn    = document.getElementById('muteBtn');
     const labelsBtn  = document.getElementById('labelsBtn');
 
-    // a1 è una casella scura -> (file + rank) dispari = nero
-    function colorFor(fileIndex, rankNumber) {
-      return ((fileIndex + rankNumber) % 2 === 1) ? 'nero' : 'bianco';
-    }
+    function colorFor(f, rankNumber) { return ((f + rankNumber) % 2 === 1) ? 'nero' : 'bianco'; }
     function femColor(c) { return c === 'nero' ? 'nera' : 'bianca'; }
 
-    // Costruzione scacchiera (rank 8 in alto)
+    // Scacchiera
     const allSquares = [];
     for (let r = 7; r >= 0; r--) {
       for (let f = 0; f < 8; f++) {
@@ -311,7 +234,6 @@
         allSquares.push({ coord, color: colorName, element: el, f, r });
       }
     }
-
     function shuffle(arr) {
       for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -320,218 +242,317 @@
       return arr;
     }
 
-    /* ---------- Sintesi vocale ---------- */
-    let muted = false;
-    let itVoice = null;
+    /* ---------- Voce (TTS) ---------- */
+    let muted = false, itVoice = null;
     const synth = window.speechSynthesis;
-
     function loadVoice() {
       if (!synth) return;
-      const voices = synth.getVoices();
-      itVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('it')) || null;
+      const v = synth.getVoices();
+      itVoice = v.find(x => x.lang && x.lang.toLowerCase().startsWith('it')) || null;
     }
-    if (synth) {
-      loadVoice();
-      synth.onvoiceschanged = loadVoice;
-    }
-    function speak(text) {
-      if (muted || !synth) return;
+    if (synth) { loadVoice(); synth.onvoiceschanged = loadVoice; }
+    function speak(text, onEnd) {
+      let fired = false;
+      const done = () => { if (fired) return; fired = true; if (onEnd) onEnd(); };
+      if (muted || !synth) { setTimeout(done, 150); return; }
       try {
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'it-IT';
-        if (itVoice) u.voice = itVoice;
         synth.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'it-IT'; if (itVoice) u.voice = itVoice;
+        u.onend = done; u.onerror = done;
         synth.speak(u);
-      } catch (e) { /* no-op */ }
+        setTimeout(done, Math.min(6000, 1000 + text.length * 120)); // safety net
+      } catch (e) { setTimeout(done, 150); }
+    }
+
+    /* ---------- Riconoscimento vocale (STT) ---------- */
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const micSupported = !!SR;
+    let recognition = null;
+    if (SR) {
+      recognition = new SR();
+      recognition.lang = 'it-IT';
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 3;
+    }
+    let micMode = false, listening = false, wantListen = false, answered = false;
+    let busy = false, revealing = false, pendingTimer = null;
+    let currentPromptHtml = '';
+
+    function parseColor(t) {
+      const s = (t || '').toLowerCase();
+      if (/bianc/.test(s) || /\bwhite\b/.test(s)) return 'bianco';
+      if (/ner/.test(s)   || /\bblack\b/.test(s)) return 'nero';
+      return null;
     }
 
     /* ---------- Selezione cumulativa ---------- */
     const selectedKeys = new Set();
-
     function applySelectedVisuals() {
-      for (const s of allSquares) {
-        s.element.classList.toggle('in-area', selectedKeys.has(s.coord));
-      }
+      for (const s of allSquares) s.element.classList.toggle('in-area', selectedKeys.has(s.coord));
       clearSelBtn.classList.toggle('visible', selectedKeys.size > 0);
     }
 
-    /* ---------- Stato quiz ---------- */
+    /* ---------- Stato quiz / punteggio ---------- */
     let activeSquares = shuffle(allSquares.slice());
-    let index = 0;
-    let state = 0; // 0 = mostra coordinata, 1 = rivela colore
+    let index = 0, state = 0; // 0 = prossimo passo è la coordinata, 1 = prossimo è il colore
+    let okCount = 0, total = 0, streak = 0, bestStreak = 0;
 
-    function clearHighlights() {
-      for (const s of allSquares) s.element.classList.remove('highlight');
-    }
-
+    function clearHighlights() { for (const s of allSquares) s.element.classList.remove('highlight'); }
     function setStatus(html) { statusEl.innerHTML = html; }
+    function nextIndex() { index++; if (index >= activeSquares.length) { shuffle(activeSquares); index = 0; } }
 
     function updatePool() {
-      const n = activeSquares.length;
       const sel = selectedKeys.size;
       const pool = sel === 0
         ? `Pool: <span class="pool">tutte le 64 caselle</span>`
         : `Pool: <span class="pool">${sel} caselle selezionate</span>`;
-      hintEl.innerHTML = `${pool} · Tocca/clic o premi <b>Spazio</b> per avanzare · trascina per selezionare un'area`;
+      const help = micMode
+        ? `Di’ <b>“bianco”</b> o <b>“nero”</b> · trascina per selezionare un’area`
+        : `Tocca/clic o <b>Spazio</b> per avanzare · trascina per selezionare un’area`;
+      hintEl.innerHTML = `${pool} · ${help}`;
+    }
+    function updateScore() {
+      const acc = total ? Math.round(okCount / total * 100) : 0;
+      scoreEl.innerHTML = `Sessione <b>${okCount}/${total}</b> · Precisione <b>${acc}%</b> · Streak <b>${streak}</b> (max ${bestStreak})`;
     }
 
     function rebuildActiveFromSelection() {
-      activeSquares = (selectedKeys.size === 0)
-        ? allSquares.slice()
-        : allSquares.filter(s => selectedKeys.has(s.coord));
+      activeSquares = (selectedKeys.size === 0) ? allSquares.slice() : allSquares.filter(s => selectedKeys.has(s.coord));
       shuffle(activeSquares);
-      index = 0;
-      state = 0;
-      clearHighlights();
-      applySelectedVisuals();
-      updatePool();
+      index = 0; state = 0;
+      clearHighlights(); applySelectedVisuals(); updatePool();
     }
 
-    function step() {
-      if (activeSquares.length === 0) {
-        setStatus(`Seleziona almeno una casella valida.`);
-        return;
-      }
-      const current = activeSquares[index];
-
+    /* ---------- Modalità manuale ---------- */
+    function manualStep() {
+      const cur = activeSquares[index];
+      if (!cur) { setStatus(`Seleziona almeno una casella valida.`); return; }
+      statusEl.classList.remove('ok','no');
       if (state === 0) {
         clearHighlights();
-        setStatus(`📍 Casella <span class="coord">${current.coord}</span> — di che colore è?`);
-        speak('Casella ' + current.coord);
+        setStatus(`📍 Casella <span class="coord">${cur.coord}</span> — di che colore è?`);
+        speak('Casella ' + cur.coord);
         state = 1;
       } else {
         clearHighlights();
-        current.element.classList.add('highlight');
-        setStatus(
-          `<span class="chip ${current.color}"></span>` +
-          `<span class="coord">${current.coord}</span> è una casella <b>${femColor(current.color)}</b>`
-        );
-        speak('Colore ' + current.color);
-        state = 0;
-        index++;
-        if (index >= activeSquares.length) {
-          shuffle(activeSquares);
-          index = 0;
-        }
+        cur.element.classList.add('highlight');
+        setStatus(`<div class="row"><span class="chip ${cur.color}"></span> <span class="coord">${cur.coord}</span> è una casella <b>${femColor(cur.color)}</b></div>`);
+        speak('Colore ' + cur.color);
+        state = 0; nextIndex();
       }
     }
 
-    /* ---------- Gestione gesti (Pointer Events: mouse + touch unificati) ---------- */
-    const DRAG_THRESHOLD = 10; // px: sotto soglia = tap, sopra = selezione
-    let pointerId = null;
-    let startXY = null;
-    let startFR = null;
-    let curFR = null;
-    let didDrag = false;
-
-    function hitSquareFromPoint(clientX, clientY) {
-      const rect = boardEl.getBoundingClientRect();
-      const x = clientX - rect.left;
-      const y = clientY - rect.top;
-      const f = Math.floor((x / rect.width) * 8);
-      const rFromTop = Math.floor((y / rect.height) * 8);
-      const r = 7 - rFromTop;
-      return { f: Math.max(0, Math.min(7, f)), r: Math.max(0, Math.min(7, r)) };
+    /* ---------- Modalità microfono ---------- */
+    function promptCurrent() {
+      const cur = activeSquares[index];
+      if (!cur) { setStatus(`Seleziona almeno una casella.`); return; }
+      clearHighlights();
+      statusEl.classList.remove('ok','no');
+      currentPromptHtml = `📍 Casella <span class="coord">${cur.coord}</span> — di che colore?`;
+      setStatus(currentPromptHtml);
+      state = 1; busy = true;
+      speak('Casella ' + cur.coord, () => {
+        busy = false;
+        if (micMode) { wantListen = true; answered = false; startListening(); }
+      });
+    }
+    function showListening(text) {
+      const extra = text
+        ? `<div class="rec-interim">“${text}”</div>`
+        : `<div class="rec-interim">di’ “bianco” o “nero”…</div>`;
+      setStatus(`${currentPromptHtml}<div class="rec-line"><span class="rec-dot"></span> in ascolto…</div>${extra}`);
+    }
+    function startListening() {
+      if (!micMode || !recognition) return;
+      answered = false;
+      try { recognition.start(); listening = true; showListening(''); }
+      catch (e) { listening = true; showListening(''); } // start() lanciato mentre già attivo
+    }
+    function gradeAnswer(spoken) {
+      answered = true; wantListen = false; revealing = true;
+      try { recognition.stop(); } catch (e) {}
+      const cur = activeSquares[index];
+      const correct = (spoken === cur.color);
+      total++;
+      if (correct) { okCount++; streak++; bestStreak = Math.max(bestStreak, streak); }
+      else { streak = 0; }
+      updateScore();
+      clearHighlights();
+      cur.element.classList.add('highlight');
+      statusEl.classList.remove('ok','no');
+      statusEl.classList.add(correct ? 'ok' : 'no');
+      setStatus(
+        `<div class="row"><span class="chip ${cur.color}"></span> <span class="coord">${cur.coord}</span> è <b>${femColor(cur.color)}</b></div>` +
+        `<div>${correct ? '✅ Giusto!' : '❌ Avevi detto ' + femColor(spoken)}</div>`
+      );
+      speak('Colore ' + cur.color);
+      if (pendingTimer) clearTimeout(pendingTimer);
+      pendingTimer = setTimeout(() => {
+        revealing = false;
+        statusEl.classList.remove('ok','no');
+        nextIndex();
+        if (micMode) promptCurrent();
+        else setStatus('Tocca per continuare.');
+      }, 1600);
     }
 
+    if (recognition) {
+      recognition.onresult = (e) => {
+        let interim = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const res = e.results[i];
+          if (res.isFinal) {
+            let color = null;
+            for (let a = 0; a < res.length; a++) { const c = parseColor(res[a].transcript); if (c) { color = c; break; } }
+            if (color) { gradeAnswer(color); return; }
+            else { showListening('non ho capito: ' + res[0].transcript.trim()); }
+          } else { interim += res[0].transcript; }
+        }
+        if (interim.trim()) showListening(interim.trim());
+      };
+      recognition.onend = () => {
+        listening = false;
+        if (micMode && wantListen && !answered) {
+          setTimeout(() => {
+            if (micMode && wantListen && !answered) {
+              try { recognition.start(); listening = true; } catch (e) {}
+            }
+          }, 250);
+        }
+      };
+      recognition.onerror = (e) => {
+        const err = e.error;
+        if (err === 'not-allowed' || err === 'service-not-allowed' || err === 'audio-capture') {
+          setMic(false);
+          setStatus(err === 'audio-capture'
+            ? '🎤 Nessun microfono rilevato.'
+            : '🎤 Permesso microfono negato. Consenti l’accesso e usa HTTPS o localhost (da file:// non funziona).');
+        } else if (err === 'network') {
+          setStatus('🎤 Errore di rete: il riconoscimento richiede connessione. Da file:// non funziona — usa un server locale (localhost) o HTTPS.');
+        }
+        // 'no-speech' / 'aborted' sono benigni: ci pensa onend a riavviare
+      };
+    }
+
+    /* ---------- Avanzamento utente (tap / Spazio) ---------- */
+    function onUserAdvance() {
+      if (micMode) {
+        if (busy || listening || revealing) return;
+        if (state === 1) return;
+        promptCurrent();
+      } else {
+        manualStep();
+      }
+    }
+    function abortRound() {
+      if (pendingTimer) clearTimeout(pendingTimer);
+      wantListen = false; answered = true; revealing = false; busy = false; listening = false; state = 0;
+      try { recognition && recognition.stop(); } catch (e) {}
+      statusEl.classList.remove('ok','no');
+    }
+
+    /* ---------- Toggle microfono ---------- */
+    function setMic(on) {
+      if (on && !micSupported) return;
+      micMode = on;
+      micBtn.classList.toggle('on', on);
+      micBtn.setAttribute('aria-pressed', String(on));
+      micBtn.textContent = on ? '🎤 Microfono: on' : '🎤 Microfono: off';
+      scoreEl.hidden = !on;
+      abortRound();
+      if (on) {
+        okCount = 0; total = 0; streak = 0; bestStreak = 0; updateScore();
+        setStatus('🎤 Modalità voce attiva. Tocca o premi Spazio per ascoltare la prima casella.');
+      } else {
+        setStatus('Modalità manuale. Tocca per la coordinata, di nuovo per il colore.');
+      }
+      updatePool();
+    }
+
+    /* ---------- Gesti (Pointer Events) ---------- */
+    const DRAG_THRESHOLD = 10;
+    let pointerId = null, startXY = null, startFR = null, curFR = null, didDrag = false;
+
+    function hitSquareFromPoint(cx, cy) {
+      const rect = boardEl.getBoundingClientRect();
+      const f = Math.floor(((cx - rect.left) / rect.width) * 8);
+      const r = 7 - Math.floor(((cy - rect.top) / rect.height) * 8);
+      return { f: Math.max(0, Math.min(7, f)), r: Math.max(0, Math.min(7, r)) };
+    }
     function updateSelBox(a, b) {
       const rect = boardEl.getBoundingClientRect();
-      const tileW = rect.width / 8;
-      const tileH = rect.height / 8;
-      const fMin = Math.min(a.f, b.f), fMax = Math.max(a.f, b.f);
-      const rMin = Math.min(a.r, b.r), rMax = Math.max(a.r, b.r);
-      selBoxEl.style.left   = (fMin * tileW) + 'px';
-      selBoxEl.style.top    = ((7 - rMax) * tileH) + 'px';
-      selBoxEl.style.width  = ((fMax - fMin + 1) * tileW) + 'px';
-      selBoxEl.style.height = ((rMax - rMin + 1) * tileH) + 'px';
+      const tw = rect.width / 8, th = rect.height / 8;
+      const fMin = Math.min(a.f,b.f), fMax = Math.max(a.f,b.f), rMin = Math.min(a.r,b.r), rMax = Math.max(a.r,b.r);
+      selBoxEl.style.left   = (fMin * tw) + 'px';
+      selBoxEl.style.top    = ((7 - rMax) * th) + 'px';
+      selBoxEl.style.width  = ((fMax - fMin + 1) * tw) + 'px';
+      selBoxEl.style.height = ((rMax - rMin + 1) * th) + 'px';
       selBoxEl.classList.add('active');
     }
     function hideSelBox() { selBoxEl.classList.remove('active'); }
-
     function markCandidates(a, b) {
-      const fMin = Math.min(a.f, b.f), fMax = Math.max(a.f, b.f);
-      const rMin = Math.min(a.r, b.r), rMax = Math.max(a.r, b.r);
-      for (const s of allSquares) {
-        const inside = s.f >= fMin && s.f <= fMax && s.r >= rMin && s.r <= rMax;
-        s.element.classList.toggle('candidate', inside);
-      }
+      const fMin = Math.min(a.f,b.f), fMax = Math.max(a.f,b.f), rMin = Math.min(a.r,b.r), rMax = Math.max(a.r,b.r);
+      for (const s of allSquares) s.element.classList.toggle('candidate', s.f>=fMin && s.f<=fMax && s.r>=rMin && s.r<=rMax);
     }
-    function clearCandidates() {
-      for (const s of allSquares) s.element.classList.remove('candidate');
-    }
+    function clearCandidates() { for (const s of allSquares) s.element.classList.remove('candidate'); }
 
     boardEl.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
-      if (pointerId !== null) return; // un solo puntatore alla volta
+      if (pointerId !== null) return;
       pointerId = e.pointerId;
       startXY = { x: e.clientX, y: e.clientY };
       startFR = hitSquareFromPoint(e.clientX, e.clientY);
-      curFR = startFR;
-      didDrag = false;
+      curFR = startFR; didDrag = false;
       try { boardEl.setPointerCapture(e.pointerId); } catch (err) {}
     });
-
     boardEl.addEventListener('pointermove', (e) => {
       if (e.pointerId !== pointerId) return;
       if (!didDrag) {
-        const dx = e.clientX - startXY.x;
-        const dy = e.clientY - startXY.y;
-        if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
-        didDrag = true; // inizia la selezione
+        if (Math.hypot(e.clientX - startXY.x, e.clientY - startXY.y) < DRAG_THRESHOLD) return;
+        didDrag = true;
       }
       curFR = hitSquareFromPoint(e.clientX, e.clientY);
       updateSelBox(startFR, curFR);
       markCandidates(startFR, curFR);
     });
-
     function finishPointer(e, cancelled) {
       if (e.pointerId !== pointerId) return;
       try { boardEl.releasePointerCapture(e.pointerId); } catch (err) {}
       pointerId = null;
-
       if (cancelled) { hideSelBox(); clearCandidates(); return; }
-
       if (didDrag) {
-        // Finalizza selezione: unione con il set esistente
-        const fMin = Math.min(startFR.f, curFR.f), fMax = Math.max(startFR.f, curFR.f);
-        const rMin = Math.min(startFR.r, curFR.r), rMax = Math.max(startFR.r, curFR.r);
-        for (const s of allSquares) {
-          if (s.f >= fMin && s.f <= fMax && s.r >= rMin && s.r <= rMax) {
-            selectedKeys.add(s.coord);
-          }
-        }
-        hideSelBox();
-        clearCandidates();
+        const fMin = Math.min(startFR.f,curFR.f), fMax = Math.max(startFR.f,curFR.f), rMin = Math.min(startFR.r,curFR.r), rMax = Math.max(startFR.r,curFR.r);
+        for (const s of allSquares) if (s.f>=fMin && s.f<=fMax && s.r>=rMin && s.r<=rMax) selectedKeys.add(s.coord);
+        hideSelBox(); clearCandidates();
+        abortRound();
         rebuildActiveFromSelection();
-        setStatus(`Area aggiornata: <b>${activeSquares.length}</b> caselle nel pool. Tocca per iniziare.`);
+        setStatus(`Area aggiornata: <b>${activeSquares.length}</b> caselle nel pool. ${micMode ? 'Tocca per ascoltare.' : 'Tocca per iniziare.'}`);
       } else {
-        // Tap puro -> avanza il quiz
-        step();
+        onUserAdvance();
       }
     }
-
     boardEl.addEventListener('pointerup', (e) => finishPointer(e, false));
     boardEl.addEventListener('pointercancel', (e) => finishPointer(e, true));
 
-    /* ---------- Tastiera (desktop) ---------- */
+    /* ---------- Tastiera ---------- */
     document.addEventListener('keydown', (e) => {
+      if (e.repeat) return;
       if (e.code === 'Space' || e.code === 'Enter') {
-        // evita doppio avanzamento se il focus è su un bottone
         if (document.activeElement && document.activeElement.classList.contains('btn')) return;
         e.preventDefault();
-        step();
+        onUserAdvance();
       }
     });
 
     /* ---------- Controlli ---------- */
     clearSelBtn.addEventListener('click', () => {
-      selectedKeys.clear();
-      hideSelBox();
-      clearCandidates();
-      rebuildActiveFromSelection();
-      setStatus(`Selezione azzerata. Tocca per iniziare.`);
+      selectedKeys.clear(); hideSelBox(); clearCandidates();
+      abortRound(); rebuildActiveFromSelection();
+      setStatus(`Selezione azzerata. ${micMode ? 'Tocca per ascoltare.' : 'Tocca per iniziare.'}`);
     });
-
+    micBtn.addEventListener('click', () => setMic(!micMode));
     muteBtn.addEventListener('click', () => {
       muted = !muted;
       if (muted && synth) synth.cancel();
@@ -539,7 +560,6 @@
       muteBtn.setAttribute('aria-pressed', String(!muted));
       muteBtn.textContent = muted ? '🔇 Voce: off' : '🔈 Voce: on';
     });
-
     labelsBtn.addEventListener('click', () => {
       const hidden = boardEl.classList.toggle('hide-labels');
       labelsBtn.classList.toggle('on', hidden);
@@ -548,10 +568,13 @@
     });
 
     /* ---------- Avvio ---------- */
+    if (!micSupported) {
+      micBtn.disabled = true;
+      micBtn.textContent = '🎤 Microfono non supportato';
+      micBtn.title = 'Riconoscimento vocale non disponibile in questo browser';
+    }
     const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-    setStatus(isTouch
-      ? `Tocca la scacchiera per iniziare 👆`
-      : `Premi <b>Spazio</b> o clicca per iniziare ⌨️`);
+    setStatus(isTouch ? `Tocca la scacchiera per iniziare 👆` : `Premi <b>Spazio</b> o clicca per iniziare ⌨️`);
     updatePool();
   </script>
 </body>
