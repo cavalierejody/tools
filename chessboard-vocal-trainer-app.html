@@ -4,6 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Chessboard Vocal Trainer</title>
+  <!-- PWA / standalone (iOS: "Aggiungi a Home" = schermo intero) -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Chess Trainer" />
+  <meta name="theme-color" content="#14161a" />
+  <link rel="manifest" href='data:application/manifest+json,{"name":"Chessboard%20Vocal%20Trainer","short_name":"Chess%20Trainer","display":"standalone","orientation":"any","background_color":"%2314161a","theme_color":"%2314161a","start_url":"."}' />
   <style>
     :root {
       --accent: #d73535;
@@ -48,20 +55,26 @@
       background: var(--bg); color: var(--fg);
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
       -webkit-text-size-adjust: 100%;
+      overscroll-behavior: none;
     }
+    /* Riempie lo schermo come un'app: niente scroll di pagina */
     .page {
-      min-height: 100%; display: flex; flex-direction: column;
-      align-items: center; gap: 12px;
-      padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+      height: 100vh; height: 100dvh;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 10px;
+      padding: calc(10px + env(safe-area-inset-top)) 12px calc(10px + env(safe-area-inset-bottom));
     }
     h1 {
-      margin: 4px 0 0; font-size: clamp(17px, 2.4vw, 26px);
+      margin: 0; font-size: clamp(15px, 2.2vw, 24px);
       font-weight: 750; letter-spacing: -0.01em; text-align: center;
+      flex: 0 0 auto;
     }
     /* Altezza FISSA: il contenuto cambia ma il box non si muove mai */
     .status {
-      width: min(92vw, 80vh); max-width: 540px;
-      height: 112px;
+      flex: 0 0 auto;
+      width: min(94vw, 80vh); max-width: 540px;
+      height: 108px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 4px; padding: 10px 16px;
       background: var(--card-bg); border: 1px solid var(--card-border);
@@ -76,18 +89,14 @@
     .status .row { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
     .status b { font-weight: 800; }
     .status .coord { font-variant-numeric: tabular-nums; font-weight: 850; letter-spacing: 0.02em; }
-    .chip {
-      flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%;
-      border: 2px solid rgba(128,128,128,0.5);
-    }
+    .chip { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(128,128,128,0.5); }
     .chip.bianco { background: #f2f2ee; }
     .chip.nero   { background: #2a2a2a; }
 
     .rec-line { display: flex; align-items: center; gap: 8px; font-size: 0.76em; font-weight: 650; color: var(--mic); }
     .rec-dot {
       width: 11px; height: 11px; border-radius: 50%; background: var(--mic);
-      box-shadow: 0 0 0 0 rgba(224,69,122,0.6);
-      animation: recPulse 1.1s ease-out infinite;
+      box-shadow: 0 0 0 0 rgba(224,69,122,0.6); animation: recPulse 1.1s ease-out infinite;
     }
     @keyframes recPulse {
       0%   { box-shadow: 0 0 0 0 rgba(224,69,122,0.55); }
@@ -100,11 +109,11 @@
     }
     .feedback { font-size: 0.9em; font-weight: 750; }
 
-    .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; }
+    .controls { flex: 0 0 auto; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; }
     .btn {
       appearance: none; border: 1px solid var(--btn-border);
       background: var(--btn-bg); color: var(--btn-fg);
-      padding: 9px 14px; border-radius: 10px; font-size: 14px; font-weight: 650;
+      padding: 8px 13px; border-radius: 10px; font-size: 13.5px; font-weight: 650;
       cursor: pointer; transition: background .12s, transform .06s, border-color .12s;
       -webkit-tap-highlight-color: transparent;
     }
@@ -113,23 +122,28 @@
     .btn.on { background: var(--btn-active-bg); color: var(--btn-active-fg); border-color: var(--btn-active-bg); }
     #micBtn.on { background: var(--mic); border-color: var(--mic); color: #fff; }
     .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .btn[hidden] { display: none; }
     .btn:focus-visible { outline: 3px solid var(--sel-border); outline-offset: 2px; }
     #clearSel { display: none; }
     #clearSel.visible { display: inline-block; }
 
-    /* Spazio SEMPRE riservato: appare/scompare senza spostare la scacchiera */
     .score {
-      font-size: clamp(13px, 1.7vw, 16px); color: var(--fg);
+      flex: 0 0 auto;
+      font-size: clamp(12px, 1.7vw, 16px); color: var(--fg);
       background: var(--card-bg); border: 1px solid var(--card-border);
-      border-radius: 999px; padding: 6px 14px;
+      border-radius: 999px; padding: 5px 14px;
       visibility: hidden;
     }
     .score.visible { visibility: visible; }
     .score b { font-weight: 800; }
 
-    .board-wrap { width: 100%; display: flex; align-items: center; justify-content: center; }
+    /* La scacchiera prende lo spazio libero; lato impostato via JS */
+    .board-wrap {
+      flex: 1 1 auto; min-height: 0; width: 100%;
+      display: flex; align-items: center; justify-content: center;
+    }
     .board {
-      --side: min(92vw, 64vh);
+      --side: 320px;
       width: var(--side); height: var(--side);
       display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
       border: 4px solid var(--board-frame); background: var(--board-frame);
@@ -141,7 +155,7 @@
     .board:focus-visible { outline: 3px solid var(--sel-border); outline-offset: 3px; }
     .square {
       display: flex; align-items: center; justify-content: center;
-      user-select: none; font-weight: 700; font-size: clamp(9px, 2vw, 15px);
+      user-select: none; font-weight: 700; font-size: clamp(9px, 2vw, 16px);
       position: relative; z-index: 0; transition: color .15s ease;
     }
     .white { background: var(--sq-light); color: var(--sq-light-text); }
@@ -181,18 +195,17 @@
       0%, 100% { box-shadow: 0 0 0 2px var(--sel-glow), 0 0 10px var(--sel-glow); }
       50%      { box-shadow: 0 0 0 4px var(--sel-glow), 0 0 22px var(--sel-glow); }
     }
-    /* Hint ad altezza riservata per non far ballare il fondo pagina */
     .hint {
-      font-size: clamp(12px, 1.6vw, 15px); color: var(--muted);
-      text-align: center; max-width: min(92vw, 540px); line-height: 1.4;
-      min-height: 2.8em; display: flex; align-items: center; justify-content: center;
+      flex: 0 0 auto;
+      font-size: clamp(11px, 1.6vw, 15px); color: var(--muted);
+      text-align: center; max-width: min(94vw, 540px); line-height: 1.4;
+      min-height: 2.6em; display: flex; align-items: center; justify-content: center;
     }
     .pool { font-weight: 650; color: var(--fg); }
-    @media (min-width: 900px) { .page { padding-top: 24px; } .board { --side: min(60vh, 60vw); } }
   </style>
 </head>
 <body>
-  <div class="page">
+  <div class="page" id="page">
     <h1>Chessboard Vocal Trainer</h1>
     <div class="status" id="status" role="status" aria-live="polite"></div>
     <div class="score" id="score"></div>
@@ -200,9 +213,10 @@
       <button class="btn" id="micBtn" aria-pressed="false">🎤 Microfono: off</button>
       <button class="btn on" id="muteBtn" aria-pressed="true">🔈 Voce: on</button>
       <button class="btn" id="labelsBtn" aria-pressed="false">Nascondi etichette</button>
+      <button class="btn" id="fsBtn" aria-pressed="false">⛶ Schermo intero</button>
       <button class="btn" id="clearSel">Azzera selezione</button>
     </div>
-    <div class="board-wrap">
+    <div class="board-wrap" id="boardWrap">
       <div class="board" id="board" aria-label="Scacchiera: tocca per avanzare, trascina per selezionare un'area" role="button" tabindex="0">
         <div class="sel-box" id="selBox"></div>
       </div>
@@ -216,7 +230,9 @@
     const files = ['a','b','c','d','e','f','g','h'];
     const ranks = [1,2,3,4,5,6,7,8];
 
+    const pageEl     = document.getElementById('page');
     const boardEl    = document.getElementById('board');
+    const boardWrapEl= document.getElementById('boardWrap');
     const statusEl   = document.getElementById('status');
     const selBoxEl   = document.getElementById('selBox');
     const hintEl     = document.getElementById('hint');
@@ -225,6 +241,7 @@
     const micBtn     = document.getElementById('micBtn');
     const muteBtn    = document.getElementById('muteBtn');
     const labelsBtn  = document.getElementById('labelsBtn');
+    const fsBtn      = document.getElementById('fsBtn');
 
     function colorFor(f, rankNumber) { return ((f + rankNumber) % 2 === 1) ? 'nero' : 'bianco'; }
     function femColor(c) { return c === 'nero' ? 'nera' : 'bianca'; }
@@ -249,6 +266,24 @@
       return arr;
     }
 
+    /* ---------- Adatta la scacchiera allo spazio libero (look da app) ---------- */
+    let fitQueued = false;
+    function fitBoard() {
+      fitQueued = false;
+      const w = boardWrapEl.clientWidth;
+      const h = boardWrapEl.clientHeight;
+      if (w <= 0 || h <= 0) return;
+      const side = Math.max(120, Math.min(w, h, 820) - 6);
+      boardEl.style.setProperty('--side', side + 'px');
+    }
+    function queueFit() {
+      if (fitQueued) return;
+      fitQueued = true;
+      requestAnimationFrame(fitBoard);
+    }
+    window.addEventListener('resize', queueFit);
+    window.addEventListener('orientationchange', () => setTimeout(queueFit, 120));
+
     /* ---------- Voce (TTS) ---------- */
     let muted = false, itVoice = null;
     const synth = window.speechSynthesis;
@@ -272,7 +307,7 @@
       } catch (e) { setTimeout(done, 150); }
     }
 
-    /* ---------- Earcon (Web Audio): esito corretto vs errato ---------- */
+    /* ---------- Earcon (Web Audio) ---------- */
     let audioCtx = null;
     function ensureAudio() {
       try {
@@ -292,13 +327,17 @@
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
       o.start(t0); o.stop(t0 + dur + 0.03);
     }
-    // Corretto: due note acute ascendenti (allegro)
-    function playCorrect() { ensureAudio(); beep(784, 0, 0.12, 'sine', 0.22); beep(1175, 0.10, 0.18, 'sine', 0.22); }
-    // Errato: ronzio grave e leggermente dissonante
+    const FB_DELAY = 0.18;
+    function playCorrect() {
+      ensureAudio();
+      beep(659,  FB_DELAY + 0.00, 0.12, 'sine', 0.26);
+      beep(988,  FB_DELAY + 0.11, 0.12, 'sine', 0.26);
+      beep(1319, FB_DELAY + 0.22, 0.22, 'sine', 0.26);
+    }
     function playWrong() {
       ensureAudio();
-      beep(196, 0, 0.30, 'sawtooth', 0.16);
-      beep(155, 0.05, 0.32, 'square', 0.12);
+      beep(330, FB_DELAY + 0.00, 0.20, 'sawtooth', 0.22);
+      beep(165, FB_DELAY + 0.18, 0.42, 'sawtooth', 0.22);
     }
 
     /* ---------- Riconoscimento vocale (STT) ---------- */
@@ -328,6 +367,7 @@
     function applySelectedVisuals() {
       for (const s of allSquares) s.element.classList.toggle('in-area', selectedKeys.has(s.coord));
       clearSelBtn.classList.toggle('visible', selectedKeys.size > 0);
+      queueFit();
     }
 
     /* ---------- Stato quiz / punteggio ---------- */
@@ -423,7 +463,6 @@
         `<div class="row"><span class="chip ${cur.color}"></span> <span class="coord">${cur.coord}</span> è <b>${femColor(cur.color)}</b></div>` +
         `<div class="feedback">${correct ? '✅ Giusto!' : '❌ Avevi detto ' + femColor(spoken)}</div>`
       );
-      // Segnale sonoro distinto PRIMA della voce
       if (correct) playCorrect(); else playWrong();
       speak('Colore ' + cur.color);
       if (pendingTimer) clearTimeout(pendingTimer);
@@ -509,6 +548,31 @@
       updatePool();
     }
 
+    /* ---------- Schermo intero ---------- */
+    const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+    const fsSupported = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+    const isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+
+    function toggleFullscreen() {
+      try {
+        if (!fsEl()) {
+          const el = document.documentElement;
+          (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+        } else {
+          (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+        }
+      } catch (e) {}
+    }
+    function onFsChange() {
+      const on = !!fsEl();
+      fsBtn.classList.toggle('on', on);
+      fsBtn.setAttribute('aria-pressed', String(on));
+      fsBtn.textContent = on ? '⛶ Esci da schermo intero' : '⛶ Schermo intero';
+      setTimeout(queueFit, 60);
+    }
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+
     /* ---------- Gesti (Pointer Events) ---------- */
     const DRAG_THRESHOLD = 10;
     let pointerId = null, startXY = null, startFR = null, curFR = null, didDrag = false;
@@ -577,6 +641,11 @@
     /* ---------- Tastiera ---------- */
     document.addEventListener('keydown', (e) => {
       if (e.repeat) return;
+      if (e.key === 'f' || e.key === 'F') {
+        if (document.activeElement && document.activeElement.classList.contains('btn')) return;
+        if (fsSupported) { e.preventDefault(); toggleFullscreen(); }
+        return;
+      }
       if (e.code === 'Space' || e.code === 'Enter') {
         if (document.activeElement && document.activeElement.classList.contains('btn')) return;
         e.preventDefault();
@@ -591,6 +660,7 @@
       setStatus(`Selezione azzerata. ${micMode ? 'Tocca per ascoltare.' : 'Tocca per iniziare.'}`);
     });
     micBtn.addEventListener('click', () => setMic(!micMode));
+    fsBtn.addEventListener('click', toggleFullscreen);
     muteBtn.addEventListener('click', () => {
       muted = !muted;
       if (muted && synth) synth.cancel();
@@ -611,9 +681,18 @@
       micBtn.textContent = '🎤 Microfono non supportato';
       micBtn.title = 'Riconoscimento vocale non disponibile in questo browser';
     }
+    let iosHint = '';
+    if (!fsSupported || isStandalone) {
+      fsBtn.hidden = true;
+      const iOS = /iP(hone|ad|od)/.test(navigator.userAgent);
+      if (iOS && !isStandalone) iosHint = ' · Per lo schermo intero: Condividi → “Aggiungi a Home”';
+    }
     const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
     setStatus(isTouch ? `Tocca la scacchiera per iniziare 👆` : `Premi <b>Spazio</b> o clicca per iniziare ⌨️`);
     updatePool();
+    if (iosHint) hintEl.innerHTML += iosHint;
+    queueFit();
+    window.addEventListener('load', queueFit);
   </script>
 </body>
 </html>
