@@ -58,14 +58,17 @@
       margin: 4px 0 0; font-size: clamp(17px, 2.4vw, 26px);
       font-weight: 750; letter-spacing: -0.01em; text-align: center;
     }
+    /* Altezza FISSA: il contenuto cambia ma il box non si muove mai */
     .status {
-      width: min(92vw, 80vh); max-width: 540px; min-height: 64px;
+      width: min(92vw, 80vh); max-width: 540px;
+      height: 112px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 4px; padding: 12px 16px;
+      gap: 4px; padding: 10px 16px;
       background: var(--card-bg); border: 1px solid var(--card-border);
       border-radius: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-      text-align: center; font-size: clamp(16px, 2.1vw, 22px);
-      font-weight: 600; line-height: 1.35;
+      text-align: center; font-size: clamp(15px, 2.1vw, 22px);
+      font-weight: 600; line-height: 1.3;
+      overflow: hidden;
       transition: border-color .2s ease, background .2s ease;
     }
     .status.ok { border-color: var(--ok); background: var(--ok-bg); }
@@ -74,16 +77,13 @@
     .status b { font-weight: 800; }
     .status .coord { font-variant-numeric: tabular-nums; font-weight: 850; letter-spacing: 0.02em; }
     .chip {
-      flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%;
+      flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%;
       border: 2px solid rgba(128,128,128,0.5);
     }
     .chip.bianco { background: #f2f2ee; }
     .chip.nero   { background: #2a2a2a; }
 
-    .rec-line {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 0.78em; font-weight: 650; color: var(--mic);
-    }
+    .rec-line { display: flex; align-items: center; gap: 8px; font-size: 0.76em; font-weight: 650; color: var(--mic); }
     .rec-dot {
       width: 11px; height: 11px; border-radius: 50%; background: var(--mic);
       box-shadow: 0 0 0 0 rgba(224,69,122,0.6);
@@ -94,7 +94,11 @@
       70%  { box-shadow: 0 0 0 10px rgba(224,69,122,0); }
       100% { box-shadow: 0 0 0 0 rgba(224,69,122,0); }
     }
-    .rec-interim { font-size: 0.74em; font-weight: 600; color: var(--muted); font-style: italic; min-height: 1em; }
+    .rec-interim {
+      font-size: 0.72em; font-weight: 600; color: var(--muted); font-style: italic;
+      max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .feedback { font-size: 0.9em; font-weight: 750; }
 
     .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; }
     .btn {
@@ -113,17 +117,19 @@
     #clearSel { display: none; }
     #clearSel.visible { display: inline-block; }
 
+    /* Spazio SEMPRE riservato: appare/scompare senza spostare la scacchiera */
     .score {
       font-size: clamp(13px, 1.7vw, 16px); color: var(--fg);
       background: var(--card-bg); border: 1px solid var(--card-border);
       border-radius: 999px; padding: 6px 14px;
+      visibility: hidden;
     }
-    .score[hidden] { display: none; }
+    .score.visible { visibility: visible; }
     .score b { font-weight: 800; }
 
     .board-wrap { width: 100%; display: flex; align-items: center; justify-content: center; }
     .board {
-      --side: min(92vw, 66vh);
+      --side: min(92vw, 64vh);
       width: var(--side); height: var(--side);
       display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
       border: 4px solid var(--board-frame); background: var(--board-frame);
@@ -175,19 +181,21 @@
       0%, 100% { box-shadow: 0 0 0 2px var(--sel-glow), 0 0 10px var(--sel-glow); }
       50%      { box-shadow: 0 0 0 4px var(--sel-glow), 0 0 22px var(--sel-glow); }
     }
+    /* Hint ad altezza riservata per non far ballare il fondo pagina */
     .hint {
       font-size: clamp(12px, 1.6vw, 15px); color: var(--muted);
       text-align: center; max-width: min(92vw, 540px); line-height: 1.4;
+      min-height: 2.8em; display: flex; align-items: center; justify-content: center;
     }
     .pool { font-weight: 650; color: var(--fg); }
-    @media (min-width: 900px) { .page { padding-top: 24px; } .board { --side: min(62vh, 62vw); } }
+    @media (min-width: 900px) { .page { padding-top: 24px; } .board { --side: min(60vh, 60vw); } }
   </style>
 </head>
 <body>
   <div class="page">
     <h1>Chessboard Vocal Trainer</h1>
     <div class="status" id="status" role="status" aria-live="polite"></div>
-    <div class="score" id="score" hidden></div>
+    <div class="score" id="score"></div>
     <div class="controls">
       <button class="btn" id="micBtn" aria-pressed="false">🎤 Microfono: off</button>
       <button class="btn on" id="muteBtn" aria-pressed="true">🔈 Voce: on</button>
@@ -221,7 +229,6 @@
     function colorFor(f, rankNumber) { return ((f + rankNumber) % 2 === 1) ? 'nero' : 'bianco'; }
     function femColor(c) { return c === 'nero' ? 'nera' : 'bianca'; }
 
-    // Scacchiera
     const allSquares = [];
     for (let r = 7; r >= 0; r--) {
       for (let f = 0; f < 8; f++) {
@@ -261,8 +268,37 @@
         u.lang = 'it-IT'; if (itVoice) u.voice = itVoice;
         u.onend = done; u.onerror = done;
         synth.speak(u);
-        setTimeout(done, Math.min(6000, 1000 + text.length * 120)); // safety net
+        setTimeout(done, Math.min(6000, 1000 + text.length * 120));
       } catch (e) { setTimeout(done, 150); }
+    }
+
+    /* ---------- Earcon (Web Audio): esito corretto vs errato ---------- */
+    let audioCtx = null;
+    function ensureAudio() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      } catch (e) {}
+    }
+    function beep(freq, start, dur, type, peak) {
+      if (!audioCtx) return;
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = type; o.frequency.value = freq;
+      o.connect(g); g.connect(audioCtx.destination);
+      const t0 = audioCtx.currentTime + start;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(peak, t0 + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.start(t0); o.stop(t0 + dur + 0.03);
+    }
+    // Corretto: due note acute ascendenti (allegro)
+    function playCorrect() { ensureAudio(); beep(784, 0, 0.12, 'sine', 0.22); beep(1175, 0.10, 0.18, 'sine', 0.22); }
+    // Errato: ronzio grave e leggermente dissonante
+    function playWrong() {
+      ensureAudio();
+      beep(196, 0, 0.30, 'sawtooth', 0.16);
+      beep(155, 0.05, 0.32, 'square', 0.12);
     }
 
     /* ---------- Riconoscimento vocale (STT) ---------- */
@@ -287,7 +323,7 @@
       return null;
     }
 
-    /* ---------- Selezione cumulativa ---------- */
+    /* ---------- Selezione ---------- */
     const selectedKeys = new Set();
     function applySelectedVisuals() {
       for (const s of allSquares) s.element.classList.toggle('in-area', selectedKeys.has(s.coord));
@@ -296,7 +332,7 @@
 
     /* ---------- Stato quiz / punteggio ---------- */
     let activeSquares = shuffle(allSquares.slice());
-    let index = 0, state = 0; // 0 = prossimo passo è la coordinata, 1 = prossimo è il colore
+    let index = 0, state = 0;
     let okCount = 0, total = 0, streak = 0, bestStreak = 0;
 
     function clearHighlights() { for (const s of allSquares) s.element.classList.remove('highlight'); }
@@ -309,8 +345,8 @@
         ? `Pool: <span class="pool">tutte le 64 caselle</span>`
         : `Pool: <span class="pool">${sel} caselle selezionate</span>`;
       const help = micMode
-        ? `Di’ <b>“bianco”</b> o <b>“nero”</b> · trascina per selezionare un’area`
-        : `Tocca/clic o <b>Spazio</b> per avanzare · trascina per selezionare un’area`;
+        ? `Di’ <b>“bianco”</b> o <b>“nero”</b> · trascina per selezionare`
+        : `Tocca/clic o <b>Spazio</b> per avanzare · trascina per selezionare`;
       hintEl.innerHTML = `${pool} · ${help}`;
     }
     function updateScore() {
@@ -325,14 +361,14 @@
       clearHighlights(); applySelectedVisuals(); updatePool();
     }
 
-    /* ---------- Modalità manuale ---------- */
+    /* ---------- Manuale ---------- */
     function manualStep() {
       const cur = activeSquares[index];
       if (!cur) { setStatus(`Seleziona almeno una casella valida.`); return; }
       statusEl.classList.remove('ok','no');
       if (state === 0) {
         clearHighlights();
-        setStatus(`📍 Casella <span class="coord">${cur.coord}</span> — di che colore è?`);
+        setStatus(`📍 Casella <span class="coord">${cur.coord}</span> — di che colore?`);
         speak('Casella ' + cur.coord);
         state = 1;
       } else {
@@ -344,7 +380,7 @@
       }
     }
 
-    /* ---------- Modalità microfono ---------- */
+    /* ---------- Microfono ---------- */
     function promptCurrent() {
       const cur = activeSquares[index];
       if (!cur) { setStatus(`Seleziona almeno una casella.`); return; }
@@ -368,7 +404,7 @@
       if (!micMode || !recognition) return;
       answered = false;
       try { recognition.start(); listening = true; showListening(''); }
-      catch (e) { listening = true; showListening(''); } // start() lanciato mentre già attivo
+      catch (e) { listening = true; showListening(''); }
     }
     function gradeAnswer(spoken) {
       answered = true; wantListen = false; revealing = true;
@@ -385,8 +421,10 @@
       statusEl.classList.add(correct ? 'ok' : 'no');
       setStatus(
         `<div class="row"><span class="chip ${cur.color}"></span> <span class="coord">${cur.coord}</span> è <b>${femColor(cur.color)}</b></div>` +
-        `<div>${correct ? '✅ Giusto!' : '❌ Avevi detto ' + femColor(spoken)}</div>`
+        `<div class="feedback">${correct ? '✅ Giusto!' : '❌ Avevi detto ' + femColor(spoken)}</div>`
       );
+      // Segnale sonoro distinto PRIMA della voce
+      if (correct) playCorrect(); else playWrong();
       speak('Colore ' + cur.color);
       if (pendingTimer) clearTimeout(pendingTimer);
       pendingTimer = setTimeout(() => {
@@ -428,16 +466,16 @@
           setMic(false);
           setStatus(err === 'audio-capture'
             ? '🎤 Nessun microfono rilevato.'
-            : '🎤 Permesso microfono negato. Consenti l’accesso e usa HTTPS o localhost (da file:// non funziona).');
+            : '🎤 Permesso negato. Consenti il microfono e usa HTTPS o localhost.');
         } else if (err === 'network') {
-          setStatus('🎤 Errore di rete: il riconoscimento richiede connessione. Da file:// non funziona — usa un server locale (localhost) o HTTPS.');
+          setStatus('🎤 Errore di rete: serve connessione. Da file:// non funziona — usa localhost o HTTPS.');
         }
-        // 'no-speech' / 'aborted' sono benigni: ci pensa onend a riavviare
       };
     }
 
-    /* ---------- Avanzamento utente (tap / Spazio) ---------- */
+    /* ---------- Avanzamento utente ---------- */
     function onUserAdvance() {
+      ensureAudio();
       if (micMode) {
         if (busy || listening || revealing) return;
         if (state === 1) return;
@@ -453,18 +491,18 @@
       statusEl.classList.remove('ok','no');
     }
 
-    /* ---------- Toggle microfono ---------- */
     function setMic(on) {
       if (on && !micSupported) return;
       micMode = on;
       micBtn.classList.toggle('on', on);
       micBtn.setAttribute('aria-pressed', String(on));
       micBtn.textContent = on ? '🎤 Microfono: on' : '🎤 Microfono: off';
-      scoreEl.hidden = !on;
+      scoreEl.classList.toggle('visible', on);
       abortRound();
       if (on) {
+        ensureAudio();
         okCount = 0; total = 0; streak = 0; bestStreak = 0; updateScore();
-        setStatus('🎤 Modalità voce attiva. Tocca o premi Spazio per ascoltare la prima casella.');
+        setStatus('🎤 Modalità voce attiva. Tocca o premi Spazio per la prima casella.');
       } else {
         setStatus('Modalità manuale. Tocca per la coordinata, di nuovo per il colore.');
       }
@@ -528,7 +566,7 @@
         hideSelBox(); clearCandidates();
         abortRound();
         rebuildActiveFromSelection();
-        setStatus(`Area aggiornata: <b>${activeSquares.length}</b> caselle nel pool. ${micMode ? 'Tocca per ascoltare.' : 'Tocca per iniziare.'}`);
+        setStatus(`Area aggiornata: <b>${activeSquares.length}</b> caselle. ${micMode ? 'Tocca per ascoltare.' : 'Tocca per iniziare.'}`);
       } else {
         onUserAdvance();
       }
