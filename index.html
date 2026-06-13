@@ -4,14 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toolbox</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Applica il font Inter a tutto il corpo del documento */
         body {
             font-family: 'Inter', sans-serif;
         }
@@ -19,7 +16,6 @@
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
 
-    <!-- Contenitore Principale -->
     <div class="min-h-screen flex flex-col items-center justify-center p-4">
         
         <header class="text-center mb-12">
@@ -31,124 +27,74 @@
             </p>
         </header>
 
-        <!-- Griglia degli Strumenti -->
         <main class="w-full max-w-4xl">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                <!-- Card 1: Backlog Estimator -->
-                <a href="backlog-estimator-app.html" class="group block p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out border border-slate-200 dark:border-slate-700">
-                    <h2 class="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
-                        Backlog Estimator
-                    </h2>
-                    <p class="text-slate-600 dark:text-slate-400 mb-4">
-                        Uno strumento per stimare rapidamente le tempistiche di un backlog di sviluppo.
-                    </p>
-                    <span class="font-medium text-indigo-600 dark:text-indigo-400 group-hover:underline">
-                        Apri lo strumento &rarr;
-                    </span>
-                </a>
-
-                <!-- Card 2: Cipher Breaker -->
-                <a href="cipher-breaker-app.html" class="group block p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out border border-slate-200 dark:border-slate-700">
-                    <h2 class="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
-                        Cipher Breaker
-                    </h2>
-                    <p class="text-slate-600 dark:text-slate-400 mb-4">
-                        Un'utility per analizzare e decifrare semplici codici a sostituzione.
-                    </p>
-                    <span class="font-medium text-indigo-600 dark:text-indigo-400 group-hover:underline">
-                        Apri lo strumento &rarr;
-                    </span>
-                </a>
-
-                <!-- Card 3: Chessboard Vocal Trainer -->
-                <a href="chessboard-vocal-trainer-app.html" class="group block p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out border border-slate-200 dark:border-slate-700">
-                    <h2 class="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
-                        Chessboard Vocal Trainer
-                    </h2>
-                    <p class="text-slate-600 dark:text-slate-400 mb-4">
-                        Un'utility per imparare a visualizzare mentalmente il colore delle caselle della scacchiera a occhi chiusi.
-                    </p>
-                    <span class="font-medium text-indigo-600 dark:text-indigo-400 group-hover:underline">
-                        Apri lo strumento &rarr;
-                    </span>
-                </a>
-
-                <!-- Card 4: Super Tris -->
-                <a href="super-tris-app.html" class="group block p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out border border-slate-200 dark:border-slate-700">
-                    <h2 class="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
-                        Super Tris
-                    </h2>
-                    <p class="text-slate-600 dark:text-slate-400 mb-4">
-                        Il gioco del Super Tris.
-                    </p>
-                    <span class="font-medium text-indigo-600 dark:text-indigo-400 group-hover:underline">
-                        Apri lo strumento &rarr;
-                    </span>
-                </a>
-
-                <a href="whereismycar-app.html" class="group block p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out border border-slate-200 dark:border-slate-700">
-                    <h2 class="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
-                        WhereIsMyCar
-                    </h2>
-                    <p class="text-slate-600 dark:text-slate-400 mb-4">
-                        Ritrova la tua auto parcheggiata.
-                    </p>
-                    <span class="font-medium text-indigo-600 dark:text-indigo-400 group-hover:underline">
-                        Apri lo strumento &rarr;
-                    </span>
-                </a>
-
-                <a href="calm-breath-app.html" class="group block p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out border border-slate-200 dark:border-slate-700">
-                    <h2 class="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
-                        CalmBreath
-                    </h2>
-                    <p class="text-slate-600 dark:text-slate-400 mb-4">
-                        Respirazione 4-7-8
-                    </p>
-                    <span class="font-medium text-indigo-600 dark:text-indigo-400 group-hover:underline">
-                        Apri lo strumento &rarr;
-                    </span>
-                </a>
-
-                <a href="6min.html" class="group block p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out border border-slate-200 dark:border-slate-700">
-                    <h2 class="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
-                        6min
-                    </h2>
-                    <p class="text-slate-600 dark:text-slate-400 mb-4">
-                        Test dei 6 minuti e calcolo delle fasce cardiache e di ritmo per la corsa
-                    </p>
-                    <span class="font-medium text-indigo-600 dark:text-indigo-400 group-hover:underline">
-                        Apri lo strumento &rarr;
-                    </span>
-                </a>
-
-                <!-- 
-                  TEMPLATE PER NUOVI STRUMENTI
-                  Per aggiungere un nuovo strumento, copia e incolla questo blocco qui sotto.
-                  Modifica:
-                  - href="IL_TUO_NUOVO_FILE.html"
-                  - Il titolo <h2>
-                  - La descrizione <p>
-                -->
-                <!--
-                <a href="#" class="group block p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out border border-slate-200 dark:border-slate-700">
-                    <h2 class="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
-                        Nome Nuovo Strumento
-                    </h2>
-                    <p class="text-slate-600 dark:text-slate-400 mb-4">
-                        Descrizione di cosa fa questo nuovo e fantastico strumento.
-                    </p>
-                    <span class="font-medium text-indigo-600 dark:text-indigo-400 group-hover:underline">
-                        Apri lo strumento &rarr;
-                    </span>
-                </a>
-                -->
-
-            </div>
+            <div id="tools-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                </div>
         </main>
 
     </div>
+
+    <script>
+        // 1. Definisci qui i tuoi strumenti. Per aggiungerne uno nuovo, basta aggiungere una riga qui sotto.
+        const toolsData = [
+            {
+                file: "backlog-estimator-app.html",
+                name: "Backlog Estimator",
+                desc: "Uno strumento per stimare rapidamente le tempistiche di un backlog di sviluppo."
+            },
+            {
+                file: "cipher-breaker-app.html",
+                name: "Cipher Breaker",
+                desc: "Un'utility per analizzare e decifrare semplici codici a sostituzione."
+            },
+            {
+                file: "chessboard-vocal-trainer-app.html",
+                name: "Chessboard Vocal Trainer",
+                desc: "Un'utility per imparare a visualizzare mentalmente il colore delle caselle della scacchiera a occhi chiusi."
+            },
+            {
+                file: "super-tris-app.html",
+                name: "Super Tris",
+                desc: "Il gioco del Super Tris."
+            },
+            {
+                file: "whereismycar-app.html",
+                name: "WhereIsMyCar",
+                desc: "Ritrova la tua auto parcheggiata."
+            },
+            {
+                file: "calm-breath-app.html",
+                name: "CalmBreath",
+                desc: "Respirazione 4-7-8"
+            },
+            {
+                file: "6min.html",
+                name: "6min",
+                desc: "Test dei 6 minuti e calcolo delle fasce cardiache e di ritmo per la corsa"
+            }
+        ];
+
+        // 2. Funzione per generare il markup HTML di una singola card
+        function createCardHTML(tool) {
+            return `
+                <a href="${tool.file}" class="group block p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out border border-slate-200 dark:border-slate-700">
+                    <h2 class="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
+                        ${tool.name}
+                    </h2>
+                    <p class="text-slate-600 dark:text-slate-400 mb-4">
+                        ${tool.desc}
+                    </p>
+                    <span class="font-medium text-indigo-600 dark:text-indigo-400 group-hover:underline">
+                        Apri lo strumento &rarr;
+                    </span>
+                </a>
+            `;
+        }
+
+        // 3. Iniezione del codice nel DOM
+        const container = document.getElementById('tools-container');
+        container.innerHTML = toolsData.map(createCardHTML).join('');
+    </script>
 
 </body>
 </html>
