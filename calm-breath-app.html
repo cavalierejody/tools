@@ -2,15 +2,40 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
     <title>Respirazione 4-7-8 | Calma Profonda</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* Custom Fonts & Base Styles */
+        /* ---------- Sizing variables (drive ALL responsive scaling) ---------- */
+        :root {
+            /* Visualizer scales with the SMALLEST of width/height so it always fits.
+               Capped at 18rem on large screens. */
+            --viz: min(74vw, 52vh, 18rem);
+            --core: calc(var(--viz) * 0.56);
+            --ring2: calc(var(--viz) * 0.78);
+        }
+
+        /* ---------- Base / lock the viewport (no scroll, no bounce) ---------- */
+        * { -webkit-tap-highlight-color: transparent; }
+
+        html, body { height: 100%; }
+
         body {
             font-family: 'Quicksand', sans-serif;
-            overflow: hidden; /* Prevent scrolling during animations */
+            position: fixed;        /* kills iOS rubber-band scroll */
+            inset: 0;
+            height: 100vh;          /* fallback */
+            height: 100svh;         /* small viewport height: ignores mobile browser chrome */
+            overflow: hidden;
+            overscroll-behavior: none;
+            touch-action: manipulation;
+            /* respect notches / home indicator */
+            padding:
+                env(safe-area-inset-top)
+                env(safe-area-inset-right)
+                env(safe-area-inset-bottom)
+                env(safe-area-inset-left);
         }
 
         /* Background Animation */
@@ -26,14 +51,11 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Breathing Circle Animation Classes */
-        /* Note: We use JS to trigger transitions, but CSS defines the easing */
         .breath-circle {
             transition: transform 0s, box-shadow 0.5s ease;
             will-change: transform;
         }
 
-        /* Glassmorphism Utilities */
         .glass {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
@@ -41,12 +63,8 @@
             border: 1px solid rgba(255, 255, 255, 0.18);
         }
 
-        /* Text Fade Animation */
-        .fade-text {
-            transition: opacity 0.5s ease-in-out;
-        }
-        
-        /* Particle Animation (Stars/Dust) */
+        .fade-text { transition: opacity 0.5s ease-in-out; }
+
         .particle {
             position: absolute;
             background: rgba(255, 255, 255, 0.5);
@@ -62,68 +80,105 @@
             100% { transform: translateY(-10vh) scale(1); opacity: 0; }
         }
 
-        /* Progress Ring SVG styles */
         .progress-ring__circle {
             transition: stroke-dashoffset 0.1s linear;
             transform: rotate(-90deg);
             transform-origin: 50% 50%;
         }
+
+        /* ---------- Responsive layout helpers ---------- */
+        .stage {
+            width: var(--viz);
+            height: var(--viz);
+        }
+        .core {
+            width: var(--core);
+            height: var(--core);
+        }
+        .ring-2 {
+            width: var(--ring2);
+            height: var(--ring2);
+        }
+
+        /* Fluid spacing so nothing overflows on short screens */
+        .header-gap { margin-bottom: clamp(0.75rem, 4vh, 2rem); }
+        .stage-gap  { margin-bottom: clamp(1.25rem, 5vh, 3rem); }
+        .controls-gap { gap: clamp(0.5rem, 2vh, 1rem); }
+
+        /* Fluid typography */
+        .h-title    { font-size: clamp(1.5rem, 7vw, 1.875rem); }
+        .h-sub      { font-size: clamp(0.65rem, 3vw, 0.75rem); }
+        .t-instruction { font-size: clamp(1.05rem, 5.5vw, 1.5rem); }
+        .t-timer    { font-size: clamp(1.75rem, 9vw, 2.25rem); }
+
+        /* In landscape on phones, shrink the visualizer further and tighten gaps */
+        @media (orientation: landscape) and (max-height: 520px) {
+            :root { --viz: min(40vw, 70vh, 14rem); }
+            .header-gap { margin-bottom: clamp(0.4rem, 2vh, 1rem); }
+            .stage-gap  { margin-bottom: clamp(0.75rem, 3vh, 1.5rem); }
+            footer { display: none; }
+        }
+
+        /* Reduce motion preference */
+        @media (prefers-reduced-motion: reduce) {
+            .ambient-bg { animation: none; }
+            .particle { display: none; }
+        }
     </style>
 </head>
-<body class="ambient-bg text-white h-screen w-screen flex flex-col items-center justify-center relative">
+<body class="ambient-bg text-white flex flex-col items-center justify-center relative">
 
     <!-- Ambient Particles Container -->
     <div id="particles" class="absolute inset-0 overflow-hidden z-0"></div>
 
     <!-- Main Content -->
     <main class="z-10 flex flex-col items-center justify-center w-full max-w-md px-6 text-center">
-        
+
         <!-- Header -->
-        <div class="mb-8 opacity-80">
-            <h1 class="text-3xl font-bold tracking-wide mb-1">4-7-8</h1>
-            <p class="text-sm font-light text-blue-100 uppercase tracking-widest">Respirazione Rilassante</p>
+        <div class="header-gap opacity-80">
+            <h1 class="h-title font-bold tracking-wide mb-1">4-7-8</h1>
+            <p class="h-sub font-light text-blue-100 uppercase tracking-widest">Respirazione Rilassante</p>
         </div>
 
         <!-- Breathing Visualizer -->
-        <div class="relative w-72 h-72 flex items-center justify-center mb-12">
-            
+        <div class="stage stage-gap relative flex items-center justify-center">
+
             <!-- Outer Glow Rings (Decorative) -->
             <div id="outer-ring" class="absolute w-full h-full rounded-full border border-white/10 scale-100 transition-transform duration-[4000ms] ease-in-out"></div>
-            <div id="outer-ring-2" class="absolute w-56 h-56 rounded-full border border-white/20 scale-100 transition-transform duration-[4000ms] ease-in-out"></div>
+            <div id="outer-ring-2" class="ring-2 absolute rounded-full border border-white/20 scale-100 transition-transform duration-[4000ms] ease-in-out"></div>
 
             <!-- SVG Progress Ring -->
-            <svg class="absolute w-full h-full" width="288" height="288" viewBox="0 0 120 120">
+            <svg class="absolute w-full h-full" viewBox="0 0 120 120" preserveAspectRatio="xMidYMid meet">
                 <circle class="text-white/10" stroke-width="4" stroke="currentColor" fill="transparent" r="52" cx="60" cy="60" />
-                <circle 
+                <circle
                     id="progress-ring"
-                    class="progress-ring__circle text-cyan-300 drop-shadow-[0_0_10px_rgba(103,232,249,0.8)]" 
-                    stroke-width="4" 
-                    stroke-linecap="round" 
-                    stroke="currentColor" 
-                    fill="transparent" 
-                    r="52" 
-                    cx="60" 
-                    cy="60" 
+                    class="progress-ring__circle text-cyan-300 drop-shadow-[0_0_10px_rgba(103,232,249,0.8)]"
+                    stroke-width="4"
+                    stroke-linecap="round"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="52"
+                    cx="60"
+                    cy="60"
                 />
             </svg>
 
             <!-- Main Breathing Core (The filled circle) -->
-            <div id="breath-core" class="breath-circle absolute w-40 h-40 bg-gradient-to-tr from-cyan-400 to-blue-500 rounded-full shadow-[0_0_50px_rgba(59,130,246,0.5)] flex items-center justify-center">
-                <!-- Inner Text Container -->
+            <div id="breath-core" class="core breath-circle absolute bg-gradient-to-tr from-cyan-400 to-blue-500 rounded-full shadow-[0_0_50px_rgba(59,130,246,0.5)] flex items-center justify-center">
                 <div class="flex flex-col items-center">
-                    <span id="instruction" class="text-2xl font-bold fade-text">Pronto?</span>
-                    <span id="timer" class="text-4xl font-light mt-1 fade-text opacity-0"></span>
+                    <span id="instruction" class="t-instruction font-bold fade-text">Pronto?</span>
+                    <span id="timer" class="t-timer font-light mt-1 fade-text opacity-0"></span>
                 </div>
             </div>
         </div>
 
         <!-- Controls -->
-        <div class="flex flex-col gap-4 w-full max-w-xs z-20">
+        <div class="flex flex-col controls-gap w-full max-w-xs z-20">
             <button id="toggle-btn" class="glass w-full py-4 rounded-full text-lg font-semibold hover:bg-white/20 transition-all duration-300 active:scale-95 tracking-wide shadow-lg group">
                 <span id="btn-text">Inizia Sessione</span>
                 <div class="h-1 w-1 bg-white rounded-full mx-auto mt-1 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>
-            
+
             <p id="status-message" class="text-sm text-blue-100/70 min-h-[20px] transition-opacity duration-500">
                 Tocca per iniziare il ciclo di rilassamento
             </p>
@@ -132,17 +187,17 @@
     </main>
 
     <!-- Info Footer -->
-    <footer class="absolute bottom-6 text-xs text-white/40">
+    <footer class="absolute bottom-[max(1.5rem,env(safe-area-inset-bottom))] text-xs text-white/40 px-4 text-center">
         Inspirazione (4s) • Ritenzione (7s) • Espirazione (8s)
     </footer>
 
     <script>
         // Configuration
         const PHASES = {
-            IDLE: { text: "Pronto?", time: 0, scale: 1.0, color: "from-cyan-400 to-blue-500" },
-            INHALE: { text: "Inspira", time: 4, scale: 1.6, color: "from-teal-300 to-emerald-400", guideText: "Espandi i polmoni" },
-            HOLD: { text: "Trattieni", time: 7, scale: 1.6, color: "from-indigo-400 to-purple-400", guideText: "Mantieni la calma" },
-            EXHALE: { text: "Espira", time: 8, scale: 1.0, color: "from-blue-400 to-cyan-500", guideText: "Rilascia tutto lentamente" }
+            IDLE:   { text: "Pronto?",   time: 0, scale: 1.0, color: "from-cyan-400 to-blue-500" },
+            INHALE: { text: "Inspira",   time: 4, scale: 1.45, color: "from-teal-300 to-emerald-400", guideText: "Espandi i polmoni" },
+            HOLD:   { text: "Trattieni", time: 7, scale: 1.45, color: "from-indigo-400 to-purple-400", guideText: "Mantieni la calma" },
+            EXHALE: { text: "Espira",    time: 8, scale: 1.0, color: "from-blue-400 to-cyan-500", guideText: "Rilascia tutto lentamente" }
         };
 
         // DOM Elements
@@ -155,7 +210,7 @@
         const outerRing = document.getElementById('outer-ring');
         const outerRing2 = document.getElementById('outer-ring-2');
         const progressCircle = document.getElementById('progress-ring');
-        
+
         // Progress Ring Setup
         const radius = progressCircle.r.baseVal.value;
         const circumference = radius * 2 * Math.PI;
@@ -165,14 +220,11 @@
         // State
         let isRunning = false;
         let currentPhase = 'IDLE';
-        let countdownInterval;
         let animationFrameId;
-        
-        // Helper: Create floating particles
+
         function initParticles() {
             const container = document.getElementById('particles');
             const particleCount = 15;
-            
             for (let i = 0; i < particleCount; i++) {
                 const p = document.createElement('div');
                 p.classList.add('particle');
@@ -185,91 +237,66 @@
             }
         }
 
-        // Logic: Set Progress Ring
         function setProgress(percent) {
             const offset = circumference - (percent / 100) * circumference;
             progressCircle.style.strokeDashoffset = offset;
         }
 
-        // Logic: Apply Visual Styles for Phase
         function applyPhaseStyles(phaseKey) {
             const phase = PHASES[phaseKey];
-            
-            // Text updates
+
             instructionEl.textContent = phase.text;
             statusEl.textContent = phaseKey === 'IDLE' ? 'Tocca per iniziare' : phase.guideText;
-            
-            // Circle Scale Animation
-            // CSS transition duration needs to match the phase time for smooth scaling
-            // EXCEPTION: Hold phase shouldn't scale, but keep previous scale
+
             let transitionTime = 0;
             if (phaseKey === 'INHALE') transitionTime = 4;
             else if (phaseKey === 'EXHALE') transitionTime = 8;
             else if (phaseKey === 'IDLE') transitionTime = 0.5;
-            
-            // Apply transitions dynamically
+
             const ease = phaseKey === 'EXHALE' ? 'ease-out' : 'ease-in-out';
             breathCore.style.transition = `transform ${transitionTime}s ${ease}, background 1s ease`;
             outerRing.style.transition = `transform ${transitionTime}s ${ease}`;
             outerRing2.style.transition = `transform ${transitionTime}s ${ease}`;
-            
-            // Apply Transforms
-            breathCore.style.transform = `scale(${phase.scale})`;
-            outerRing.style.transform = `scale(${phase.scale * 1.2})`;
-            outerRing2.style.transform = `scale(${phase.scale * 1.4})`;
 
-            // Color shift (handled by removing/adding gradient classes would be complex with Tailwind strings, 
-            // so we'll just keep the blue/cyan theme to ensure visual consistency, or use hue-rotate)
+            breathCore.style.transform = `scale(${phase.scale})`;
+            outerRing.style.transform = `scale(${phase.scale * 1.15})`;
+            outerRing2.style.transform = `scale(${phase.scale * 1.3})`;
+
             if (phaseKey === 'HOLD') {
-                 breathCore.style.filter = "hue-rotate(20deg)";
+                breathCore.style.filter = "hue-rotate(20deg)";
             } else if (phaseKey === 'EXHALE') {
-                 breathCore.style.filter = "hue-rotate(0deg) saturate(0.8)";
+                breathCore.style.filter = "hue-rotate(0deg) saturate(0.8)";
             } else {
-                 breathCore.style.filter = "none";
+                breathCore.style.filter = "none";
             }
         }
 
-        // Logic: Run a single phase
         function runPhase(phaseName) {
             if (!isRunning) return Promise.resolve();
 
             return new Promise((resolve) => {
                 const phase = PHASES[phaseName];
                 currentPhase = phaseName;
-                
+
                 applyPhaseStyles(phaseName);
-                
-                // Show timer
                 timerEl.classList.remove('opacity-0');
-                
+
                 let startTime = Date.now();
                 let durationMs = phase.time * 1000;
 
                 function tick() {
-                    if (!isRunning) {
-                        resolve();
-                        return;
-                    }
+                    if (!isRunning) { resolve(); return; }
 
                     let elapsed = Date.now() - startTime;
                     let remaining = Math.max(0, durationMs - elapsed);
                     let progressPct = (elapsed / durationMs) * 100;
-                    
-                    // Update numeric timer (ceil to show 4, 3, 2, 1)
+
                     timerEl.textContent = Math.ceil(remaining / 1000);
 
-                    // Update ring based on phase logic
-                    // Inhale: fill up 0->100
-                    // Hold: keep full 100
-                    // Exhale: empty 100->0
                     if (phaseName === 'INHALE') {
                         setProgress(progressPct);
                     } else if (phaseName === 'HOLD') {
                         setProgress(100);
-                        // Subtle pulse during hold
-                        const pulse = (Math.sin(elapsed / 200) * 0.05) + 1.6; 
-                        // Note: Setting transform directly here conflicts with transition, 
-                        // so we rely on the CSS scale set in applyPhaseStyles mostly.
                     } else if (phaseName === 'EXHALE') {
                         setProgress(100 - progressPct);
                     }
@@ -282,8 +309,7 @@
                 }
 
                 tick();
-                
-                // Trigger Haptic Feedback if available on mobile
+
                 if (navigator.vibrate) {
                     if (phaseName === 'INHALE') navigator.vibrate(50);
                     if (phaseName === 'HOLD') navigator.vibrate([30, 30]);
@@ -292,7 +318,6 @@
             });
         }
 
-        // Main Cycle Loop
         async function startBreathingCycle() {
             while (isRunning) {
                 await runPhase('INHALE');
@@ -304,7 +329,6 @@
             resetUI();
         }
 
-        // Reset
         function resetUI() {
             currentPhase = 'IDLE';
             cancelAnimationFrame(animationFrameId);
@@ -315,14 +339,11 @@
             toggleBtn.classList.remove('bg-white/20');
         }
 
-        // Event Listener
         toggleBtn.addEventListener('click', () => {
             if (isRunning) {
-                // Stop
                 isRunning = false;
                 resetUI();
             } else {
-                // Start
                 isRunning = true;
                 btnText.textContent = "Ferma Sessione";
                 toggleBtn.classList.add('bg-white/20');
@@ -330,10 +351,8 @@
             }
         });
 
-        // Init
         initParticles();
         resetUI();
-
     </script>
 </body>
 </html>
