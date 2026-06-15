@@ -260,6 +260,26 @@
     margin-top: 26px; padding: 18px; border: 1.5px dashed var(--line); border-radius: 10px;
     color: var(--ink-soft); font-size: 14px; text-align: center;
   }
+  .export-bar {
+    margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;
+  }
+  .btn-export {
+    appearance: none; border: 1.5px solid var(--line); background: var(--surface);
+    border-radius: 8px; padding: 9px 16px;
+    font-family: var(--mono); font-size: 12.5px; font-weight: 600;
+    color: var(--ink-soft); cursor: pointer;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: border-color .15s, color .15s, background .15s;
+  }
+  .btn-export:hover { border-color: var(--ink); color: var(--ink); }
+  .btn-export:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .btn-export:disabled { opacity: .5; cursor: wait; }
+  .btn-export svg { flex: none; }
+  .btn-share-primary {
+    background: var(--ink); color: #fff; border-color: var(--ink);
+  }
+  .btn-share-primary:hover { background: #2a3640; border-color: #2a3640; color: #fff; }
+  .btn-share-primary.unsupported { display: none; }
   .cross-link {
     margin-top: 20px; font-size: 13.5px; color: var(--ink-soft);
   }
@@ -404,6 +424,12 @@
       </div>
 
       <div class="empty-note" id="empty-note">Inserisci la FC massima per vedere le tue zone.</div>
+
+      <div class="export-bar hidden" id="export-bar">
+        <button type="button" id="btn-share" class="btn-export btn-share-primary"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="3" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="4" cy="8" r="2"/><path d="M5.8 9.1l4.4 2.8M10.2 4.1l-4.4 2.8"/></svg>Condividi</button>
+        <button type="button" id="btn-jpg" class="btn-export"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h8M8 10V2M5 5l3-3 3 3"/></svg>JPEG</button>
+        <button type="button" id="btn-pdf" class="btn-export"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h8M8 10V2M5 5l3-3 3 3"/></svg>PDF</button>
+      </div>
     </div>
 
     <p class="cross-link">Non hai ancora fatto il test? <a href="#test" data-goto="tab-test">Leggi come eseguirlo correttamente</a> · Vuoi sapere quanto correre in ogni zona? <a href="#zone" data-goto="tab-dist">Vedi la distribuzione consigliata</a></p>
@@ -457,6 +483,7 @@
       <ul>
         <li>Riduci il riscaldamento: 10 minuti alternando camminata e corsa lenta bastano, più 2–3 allunghi blandi. Se 15–20 minuti di corsa continua sono già impegnativi per te, è il segnale che non sei ancora pronto per un test massimale.</li>
         <li>Rimanda il test finché non riesci a correre 30 minuti di fila senza fermarti. Nel frattempo usa una stima prudente della FCmax (208 − 0,7 × età) e allenati quasi solo in Z1–Z2.</li>
+        <li>L'equivalente per i ritmi: se hai un tempo recente sui 5 km (va bene una parkrun), stima VAM ≈ velocità media × 1,08. Esempio: 5 km in 30' → 10 km/h × 1,08 ≈ 10,8 km/h, cioè 1080 da inserire come metri nel calcolatore. È una stima grezza ma prudente; se non hai mai corso una distanza cronometrata, ignora i ritmi e affidati alla regola del parlare.</li>
         <li>Il test richiede esperienza di pacing: le prime volte è normale gestirlo male e ottenere valori sottostimati. Ripetilo dopo 4–6 settimane, sarà più affidabile.</li>
         <li>Una regola pratica vale più di ogni numero: ai ritmi facili devi riuscire a parlare a frasi intere. Se non ci riesci, rallenta — anche se ti sembra di andare troppo piano.</li>
       </ul>
@@ -517,6 +544,7 @@
   </footer>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 <script>
 (function () {
   const HR_ZONES = [
@@ -545,6 +573,7 @@
   const bar = $("bar"), ticks = $("ticks"), zonesEl = $("zones");
   const fcmaxOut = $("fcmax-out"), scaleLabel = $("scale-label");
   const thrAe = $("thr-ae"), thrAn = $("thr-an");
+  const exportBar = $("export-bar");
 
   let mode = "fc";     // "fc" | "vam"
   let method = "pct";  // "pct" | "karv"
@@ -646,6 +675,7 @@
     results.hidden = true;
     emptyNote.style.display = "";
     emptyNote.textContent = msg;
+    exportBar.classList.add("hidden");
   }
 
   function shareRow(z) {
@@ -733,6 +763,7 @@
         shareRow(z);
       zonesEl.appendChild(row);
     });
+    exportBar.classList.remove("hidden");
   }
 
   function renderVam() {
@@ -763,12 +794,392 @@
         shareRow(z);
       zonesEl.appendChild(row);
     });
+    exportBar.classList.remove("hidden");
   }
 
   function render() {
     if (document.getElementById("panel-calc").hidden) return;
     if (mode === "fc") renderFc(); else renderVam();
   }
+
+  /* ---------- export: canvas card renderer ---------- */
+  const COLORS = { z1: "#7FB5D6", z2: "#6FBF8E", z3: "#E4C24A", z4: "#E58A3C", z5: "#CE4444" };
+  const ZONE_COLORS = [COLORS.z1, COLORS.z2, COLORS.z3, COLORS.z4, COLORS.z5];
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.closePath();
+  }
+
+  function getZoneData() {
+    const zones = mode === "fc" ? HR_ZONES : VAM_ZONES;
+    const fcmax = parseInt(fcmaxEl.value, 10);
+    const fcrest = parseInt(fcrestEl.value, 10);
+    const dist = parseInt(distEl.value, 10);
+    const vam = dist / 100;
+    return zones.map(z => {
+      let lo, hi, unit;
+      if (mode === "fc") {
+        lo = bpm(z.lo, fcmax, fcrest);
+        hi = bpm(z.hi, fcmax, fcrest);
+        unit = "bpm";
+      } else {
+        lo = paceStr(vam * z.lo);
+        hi = paceStr(vam * z.hi);
+        unit = "/km";
+      }
+      return { ...z, loVal: lo, hiVal: hi, unit };
+    });
+  }
+
+  function getSubtitle() {
+    if (mode === "fc") {
+      const fcmax = fcmaxEl.value;
+      const mLabel = method === "pct" ? "% FCmax" : "Karvonen (rip. " + fcrestEl.value + ")";
+      return "FCmax " + fcmax + " bpm  ·  " + mLabel;
+    }
+    const dist = parseInt(distEl.value, 10);
+    const vam = (dist / 100);
+    return "VAM " + vam.toFixed(1).replace(".", ",") + " km/h  ·  " + paceStr(vam) + " /km";
+  }
+
+  function renderExportCard() {
+    const zones = getZoneData();
+    const W = 1080;
+    const DPR = 2;
+    const M = 48;          // margine esterno
+    const P = 52;          // padding interno card
+    const CW = W - 2 * M;  // larghezza card interna
+
+    // misure blocchi
+    const accentH = 5;
+    const headerH = 130;
+    const barY0 = M + accentH + headerH;
+    const barH = 44;
+    const tickH = 28;
+    const gapAfterBar = 36;
+    const rowH = 80;
+    const footerH = 56;
+    const totalH = M + accentH + headerH + barH + tickH + gapAfterBar + zones.length * rowH + footerH + M;
+
+    const c = document.createElement("canvas");
+    c.width = W * DPR;
+    c.height = totalH * DPR;
+    const ctx = c.getContext("2d");
+    ctx.scale(DPR, DPR);
+
+    // sfondo esterno
+    ctx.fillStyle = "#EEECEA";
+    ctx.fillRect(0, 0, W, totalH);
+
+    // card bianca
+    roundRect(ctx, M, M, CW, totalH - 2 * M, 20);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fill();
+
+    // striscia accento in alto
+    const stripY = M;
+    roundRect(ctx, M, stripY, CW, accentH, { tl: 20, tr: 20, bl: 0, br: 0 });
+    // custom rounded top only
+    ctx.beginPath();
+    ctx.moveTo(M + 20, stripY);
+    ctx.lineTo(M + CW - 20, stripY);
+    ctx.arcTo(M + CW, stripY, M + CW, stripY + accentH, 20);
+    ctx.lineTo(M + CW, stripY + accentH);
+    ctx.lineTo(M, stripY + accentH);
+    ctx.arcTo(M, stripY, M + 20, stripY, 20);
+    ctx.closePath();
+    ctx.fillStyle = "#C9243A";
+    ctx.fill();
+
+    // ── header ──
+    const hx = M + P;
+    let hy = stripY + accentH + 36;
+
+    // ECG icon (mini polyline)
+    ctx.strokeStyle = "#C9243A";
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    const ecgX = hx;
+    ctx.moveTo(ecgX, hy);
+    ctx.lineTo(ecgX + 10, hy);
+    ctx.lineTo(ecgX + 16, hy - 8);
+    ctx.lineTo(ecgX + 22, hy + 8);
+    ctx.lineTo(ecgX + 26, hy - 3);
+    ctx.lineTo(ecgX + 30, hy);
+    ctx.lineTo(ecgX + 42, hy);
+    ctx.stroke();
+
+    // eyebrow
+    ctx.font = '600 12px "JetBrains Mono", monospace';
+    ctx.fillStyle = "#C9243A";
+    ctx.letterSpacing = "2px";
+    ctx.fillText("TEST DEI 6 MINUTI · CORSA", hx + 52, hy + 4);
+    ctx.letterSpacing = "0px";
+
+    // titolo
+    hy += 38;
+    ctx.font = '750 34px "Archivo", sans-serif';
+    ctx.fillStyle = "#18222B";
+    ctx.fillText(mode === "fc" ? "Le mie zone cardiache" : "Le mie zone di ritmo", hx, hy);
+
+    // sottotitolo
+    hy += 32;
+    ctx.font = '600 17px "JetBrains Mono", monospace';
+    ctx.fillStyle = "#5B6A77";
+    ctx.fillText(getSubtitle(), hx, hy);
+
+    // ── barra zone ──
+    const bx = M + P;
+    const bw = CW - 2 * P;
+    const by = barY0;
+
+    // calcola posizioni percentuali
+    const allZones = mode === "fc" ? HR_ZONES : VAM_ZONES;
+    const lo0 = allZones[0].lo, hi0 = allZones[allZones.length - 1].hi;
+    const span = hi0 - lo0;
+    const zonePos = frac => (frac - lo0) / span;
+
+    zones.forEach((z, i) => {
+      const x0 = bx + zonePos(allZones[i].lo) * bw;
+      const x1 = bx + zonePos(allZones[i].hi) * bw;
+      const isFirst = i === 0, isLast = i === zones.length - 1;
+      const r = 8;
+      if (isFirst || isLast) {
+        ctx.beginPath();
+        if (isFirst) {
+          ctx.moveTo(x0 + r, by); ctx.lineTo(x1, by); ctx.lineTo(x1, by + barH);
+          ctx.lineTo(x0 + r, by + barH); ctx.arcTo(x0, by + barH, x0, by + barH - r, r);
+          ctx.lineTo(x0, by + r); ctx.arcTo(x0, by, x0 + r, by, r);
+        } else {
+          ctx.moveTo(x0, by); ctx.lineTo(x1 - r, by); ctx.arcTo(x1, by, x1, by + r, r);
+          ctx.lineTo(x1, by + barH - r); ctx.arcTo(x1, by + barH, x1 - r, by + barH, r);
+          ctx.lineTo(x0, by + barH);
+        }
+        ctx.closePath();
+      } else {
+        ctx.beginPath();
+        ctx.rect(x0, by, x1 - x0, barH);
+      }
+      ctx.fillStyle = ZONE_COLORS[i];
+      ctx.fill();
+
+      // label nella barra
+      ctx.font = '700 13px "JetBrains Mono", monospace';
+      ctx.fillStyle = "rgba(255,255,255,0.95)";
+      ctx.textAlign = "center";
+      ctx.fillText(z.id, (x0 + x1) / 2, by + barH / 2 + 5);
+    });
+    ctx.textAlign = "left";
+
+    // tick sotto la barra
+    const tickY = by + barH + 20;
+    ctx.font = '500 12px "JetBrains Mono", monospace';
+    ctx.fillStyle = "#5B6A77";
+    const tickFracs = [allZones[0].lo, ...allZones.map(z => z.hi)];
+    tickFracs.forEach((frac, i) => {
+      const tx = bx + zonePos(frac) * bw;
+      // tick line
+      ctx.strokeStyle = "#9AA6B0";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(tx, by + barH + 3);
+      ctx.lineTo(tx, by + barH + 10);
+      ctx.stroke();
+      // label
+      let label;
+      if (mode === "fc") {
+        const fcmax = parseInt(fcmaxEl.value, 10);
+        const fcrest = parseInt(fcrestEl.value, 10);
+        label = "" + bpm(frac, fcmax, fcrest);
+      } else {
+        const dist = parseInt(distEl.value, 10);
+        label = paceStr((dist / 100) * frac);
+      }
+      ctx.fillStyle = "#5B6A77";
+      ctx.textAlign = i === 0 ? "left" : i === tickFracs.length - 1 ? "right" : "center";
+      ctx.fillText(label, tx, tickY);
+    });
+    ctx.textAlign = "left";
+
+    // ── righe zone ──
+    const ry0 = tickY + gapAfterBar;
+    zones.forEach((z, i) => {
+      const ry = ry0 + i * rowH;
+
+      // separatore
+      if (i > 0) {
+        ctx.strokeStyle = "#E3E9ED";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(M + P, ry);
+        ctx.lineTo(M + CW - P, ry);
+        ctx.stroke();
+      }
+
+      const cx = M + P;
+      const cy = ry + rowH / 2;
+
+      // dot
+      ctx.beginPath();
+      ctx.arc(cx + 6, cy - 8, 7, 0, Math.PI * 2);
+      ctx.fillStyle = ZONE_COLORS[i];
+      ctx.fill();
+
+      // zone id
+      ctx.font = '700 17px "JetBrains Mono", monospace';
+      ctx.fillStyle = "#18222B";
+      ctx.fillText(z.id, cx + 24, cy - 3);
+
+      // name
+      ctx.font = '600 16px "Inter", sans-serif';
+      ctx.fillStyle = "#18222B";
+      ctx.fillText(z.name, cx + 68, cy - 3);
+
+      // range (right aligned)
+      const range = z.loVal + "–" + z.hiVal + " " + z.unit;
+      ctx.font = '700 18px "JetBrains Mono", monospace';
+      ctx.fillStyle = "#18222B";
+      ctx.textAlign = "right";
+      ctx.fillText(range, M + CW - P, cy - 3);
+
+      // volume bar + percentage
+      const vbarX = cx + 68;
+      const vbarY = cy + 14;
+      const vbarW = 80;
+      // track
+      roundRect(ctx, vbarX, vbarY, vbarW, 5, 2.5);
+      ctx.fillStyle = "#E3E9ED";
+      ctx.fill();
+      // fill
+      roundRect(ctx, vbarX, vbarY, vbarW * z.share / 100, 5, 2.5);
+      ctx.fillStyle = ZONE_COLORS[i];
+      ctx.fill();
+
+      ctx.font = '500 11px "JetBrains Mono", monospace';
+      ctx.fillStyle = "#5B6A77";
+      ctx.textAlign = "left";
+      ctx.fillText("≈" + z.share + "% del volume", vbarX + vbarW + 10, vbarY + 5);
+
+      ctx.textAlign = "left";
+    });
+
+    // ── footer ──
+    const fy = totalH - M - 30;
+    ctx.strokeStyle = "#E3E9ED";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(M + P, fy);
+    ctx.lineTo(M + CW - P, fy);
+    ctx.stroke();
+
+    const today = new Date();
+    const dateStr = today.getDate() + "/" + (today.getMonth() + 1) + "/" + today.getFullYear();
+    ctx.font = '500 11px "JetBrains Mono", monospace';
+    ctx.fillStyle = "#9AA6B0";
+    ctx.fillText(dateStr, M + P, fy + 20);
+    ctx.textAlign = "right";
+    ctx.fillText("fasce-cardiache · test dei 6 minuti", M + CW - P, fy + 20);
+    ctx.textAlign = "left";
+
+    return c;
+  }
+
+  function fileName() {
+    return "fasce-" + (mode === "fc" ? "zone-cardio" : "zone-ritmo");
+  }
+
+  async function getExportCanvas() {
+    await document.fonts.ready;
+    return renderExportCard();
+  }
+
+  function downloadCanvas(canvas, name, type, quality) {
+    const link = document.createElement("a");
+    link.download = name;
+    link.href = canvas.toDataURL(type, quality);
+    link.click();
+  }
+
+  const btnIcons = {
+    share: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="3" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="4" cy="8" r="2"/><path d="M5.8 9.1l4.4 2.8M10.2 4.1l-4.4 2.8"/></svg>',
+    dl: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h8M8 10V2M5 5l3-3 3 3"/></svg>'
+  };
+
+  $("btn-jpg").addEventListener("click", async function () {
+    this.disabled = true; this.textContent = "Generazione…";
+    try {
+      downloadCanvas(await getExportCanvas(), fileName() + ".jpg", "image/jpeg", 0.94);
+    } catch (e) { console.error(e); alert("Errore nell'esportazione."); }
+    this.disabled = false;
+    this.innerHTML = btnIcons.dl + "JPEG";
+  });
+
+  $("btn-pdf").addEventListener("click", async function () {
+    this.disabled = true; this.textContent = "Generazione…";
+    try {
+      const canvas = await getExportCanvas();
+      const imgW = canvas.width, imgH = canvas.height;
+      const pdfW = 210, pageH = 297;
+      const pdfH = imgH * pdfW / imgW;
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4" });
+      const finalW = pdfH > pageH ? pdfW * (pageH / pdfH) : pdfW;
+      const finalH = pdfH > pageH ? pageH : pdfH;
+      pdf.addImage(canvas.toDataURL("image/jpeg", 0.94), "JPEG", (210 - finalW) / 2, 10, finalW, finalH);
+      pdf.save(fileName() + ".pdf");
+    } catch (e) { console.error(e); alert("Errore nell'esportazione."); }
+    this.disabled = false;
+    this.innerHTML = btnIcons.dl + "PDF";
+  });
+
+  /* ---------- share ---------- */
+  const btnShare = $("btn-share");
+  if (!(navigator.canShare && navigator.share)) btnShare.classList.add("unsupported");
+
+  btnShare.addEventListener("click", async function () {
+    this.disabled = true; this.textContent = "Preparazione…";
+    try {
+      const canvas = await getExportCanvas();
+      const blob = await new Promise(r => canvas.toBlob(r, "image/jpeg", 0.94));
+      const file = new File([blob], fileName() + ".jpg", { type: "image/jpeg" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: "Le mie fasce di allenamento",
+          text: mode === "fc"
+            ? "Le mie zone cardiache (FCmax " + fcmaxEl.value + " bpm)"
+            : "Le mie zone di ritmo (VAM " + (parseInt(distEl.value, 10) / 100).toFixed(1) + " km/h)",
+          files: [file]
+        });
+      } else {
+        const link = document.createElement("a");
+        link.download = fileName() + ".jpg";
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
+    } catch (e) {
+      if (e.name !== "AbortError") {
+        console.error(e);
+        try {
+          downloadCanvas(await getExportCanvas(), fileName() + ".jpg", "image/jpeg", 0.94);
+        } catch (_) { alert("Errore nella condivisione."); }
+      }
+    }
+    this.disabled = false;
+    this.innerHTML = btnIcons.share + "Condividi";
+  });
 })();
 </script>
 </body>
