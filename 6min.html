@@ -856,20 +856,25 @@
     const zones = getZoneData();
     const W = 1080;
     const DPR = 2;
-    const M = 48;          // margine esterno
-    const P = 52;          // padding interno card
-    const CW = W - 2 * M;  // larghezza card interna
+    const P = 56;          // padding interno
+    const IW = W - 2 * P;  // larghezza utile
 
-    // misure blocchi
-    const accentH = 5;
-    const headerH = 130;
-    const barY0 = M + accentH + headerH;
+    // altezze blocchi
+    const accentH = 6;
+    const topPad = 40;
+    const eyebrowH = 20;
+    const titleH = 44;
+    const inputH = 56;     // sezione dati di input
+    const gapBeforeBar = 28;
     const barH = 44;
     const tickH = 28;
-    const gapAfterBar = 36;
+    const gapAfterBar = 32;
     const rowH = 80;
-    const footerH = 56;
-    const totalH = M + accentH + headerH + barH + tickH + gapAfterBar + zones.length * rowH + footerH + M;
+    const footerH = 52;
+    const bottomPad = 36;
+
+    const totalH = accentH + topPad + eyebrowH + titleH + inputH + gapBeforeBar
+      + barH + tickH + gapAfterBar + zones.length * rowH + footerH + bottomPad;
 
     const c = document.createElement("canvas");
     c.width = W * DPR;
@@ -877,75 +882,103 @@
     const ctx = c.getContext("2d");
     ctx.scale(DPR, DPR);
 
-    // sfondo esterno
-    ctx.fillStyle = "#EEECEA";
+    // sfondo bianco pieno
+    ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, W, totalH);
 
-    // card bianca
-    roundRect(ctx, M, M, CW, totalH - 2 * M, 20);
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fill();
-
-    // striscia accento in alto
-    const stripY = M;
-    roundRect(ctx, M, stripY, CW, accentH, { tl: 20, tr: 20, bl: 0, br: 0 });
-    // custom rounded top only
-    ctx.beginPath();
-    ctx.moveTo(M + 20, stripY);
-    ctx.lineTo(M + CW - 20, stripY);
-    ctx.arcTo(M + CW, stripY, M + CW, stripY + accentH, 20);
-    ctx.lineTo(M + CW, stripY + accentH);
-    ctx.lineTo(M, stripY + accentH);
-    ctx.arcTo(M, stripY, M + 20, stripY, 20);
-    ctx.closePath();
+    // striscia accento in alto (bordo pieno, no arrotondamento)
     ctx.fillStyle = "#C9243A";
-    ctx.fill();
+    ctx.fillRect(0, 0, W, accentH);
 
     // ── header ──
-    const hx = M + P;
-    let hy = stripY + accentH + 36;
+    let y = accentH + topPad;
 
-    // ECG icon (mini polyline)
+    // ECG + eyebrow
     ctx.strokeStyle = "#C9243A";
     ctx.lineWidth = 2.5;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.beginPath();
-    const ecgX = hx;
-    ctx.moveTo(ecgX, hy);
-    ctx.lineTo(ecgX + 10, hy);
-    ctx.lineTo(ecgX + 16, hy - 8);
-    ctx.lineTo(ecgX + 22, hy + 8);
-    ctx.lineTo(ecgX + 26, hy - 3);
-    ctx.lineTo(ecgX + 30, hy);
-    ctx.lineTo(ecgX + 42, hy);
+    ctx.moveTo(P, y);
+    ctx.lineTo(P + 10, y);
+    ctx.lineTo(P + 16, y - 8);
+    ctx.lineTo(P + 22, y + 8);
+    ctx.lineTo(P + 26, y - 3);
+    ctx.lineTo(P + 30, y);
+    ctx.lineTo(P + 42, y);
     ctx.stroke();
 
-    // eyebrow
     ctx.font = '600 12px "JetBrains Mono", monospace';
     ctx.fillStyle = "#C9243A";
     ctx.letterSpacing = "2px";
-    ctx.fillText("TEST DEI 6 MINUTI · CORSA", hx + 52, hy + 4);
+    ctx.fillText("TEST DEI 6 MINUTI · CORSA", P + 52, y + 4);
     ctx.letterSpacing = "0px";
 
     // titolo
-    hy += 38;
-    ctx.font = '750 34px "Archivo", sans-serif';
+    y += eyebrowH + 22;
+    ctx.font = '750 38px "Archivo", sans-serif';
     ctx.fillStyle = "#18222B";
-    ctx.fillText(mode === "fc" ? "Le mie zone cardiache" : "Le mie zone di ritmo", hx, hy);
+    ctx.fillText(mode === "fc" ? "Le mie zone cardiache" : "Le mie zone di ritmo", P, y);
 
-    // sottotitolo
-    hy += 32;
-    ctx.font = '600 17px "JetBrains Mono", monospace';
-    ctx.fillStyle = "#5B6A77";
-    ctx.fillText(getSubtitle(), hx, hy);
+    // ── sezione dati di input (pill badges) ──
+    y += 36;
+    const pills = [];
+    if (mode === "fc") {
+      pills.push({ label: "FC MASSIMA", value: fcmaxEl.value + " bpm", accent: true });
+      if (method === "karv") {
+        pills.push({ label: "FC RIPOSO", value: fcrestEl.value + " bpm", accent: false });
+        pills.push({ label: "METODO", value: "Karvonen", accent: false });
+      } else {
+        pills.push({ label: "METODO", value: "% FCmax", accent: false });
+      }
+    } else {
+      const dist = parseInt(distEl.value, 10);
+      const vam = dist / 100;
+      pills.push({ label: "DISTANZA 6'", value: dist + " m", accent: true });
+      pills.push({ label: "VAM", value: vam.toFixed(1).replace(".",",") + " km/h", accent: false });
+      pills.push({ label: "RITMO VAM", value: paceStr(vam) + " /km", accent: false });
+    }
+
+    let px = P;
+    pills.forEach(pill => {
+      const labelText = pill.label;
+      const valueText = pill.value;
+      ctx.font = '600 10px "JetBrains Mono", monospace';
+      const lw = ctx.measureText(labelText).width;
+      ctx.font = '700 16px "JetBrains Mono", monospace';
+      const vw = ctx.measureText(valueText).width;
+      const pillW = Math.max(lw, vw) + 28;
+      const pillH = 48;
+
+      // pill bg
+      const bg = pill.accent ? "#C9243A" : "#F2F3F5";
+      const fg = pill.accent ? "#FFFFFF" : "#18222B";
+      const fgSoft = pill.accent ? "rgba(255,255,255,0.7)" : "#5B6A77";
+      roundRect(ctx, px, y, pillW, pillH, 10);
+      ctx.fillStyle = bg;
+      ctx.fill();
+
+      // label
+      ctx.font = '600 10px "JetBrains Mono", monospace';
+      ctx.fillStyle = fgSoft;
+      ctx.letterSpacing = "1px";
+      ctx.fillText(labelText, px + 14, y + 17);
+      ctx.letterSpacing = "0px";
+
+      // value
+      ctx.font = '700 16px "JetBrains Mono", monospace';
+      ctx.fillStyle = fg;
+      ctx.fillText(valueText, px + 14, y + 37);
+
+      px += pillW + 12;
+    });
 
     // ── barra zone ──
-    const bx = M + P;
-    const bw = CW - 2 * P;
-    const by = barY0;
+    y += inputH + gapBeforeBar;
+    const bx = P;
+    const bw = IW;
+    const by = y;
 
-    // calcola posizioni percentuali
     const allZones = mode === "fc" ? HR_ZONES : VAM_ZONES;
     const lo0 = allZones[0].lo, hi0 = allZones[allZones.length - 1].hi;
     const span = hi0 - lo0;
@@ -975,7 +1008,7 @@
       ctx.fillStyle = ZONE_COLORS[i];
       ctx.fill();
 
-      // label nella barra
+      // label
       ctx.font = '700 13px "JetBrains Mono", monospace';
       ctx.fillStyle = "rgba(255,255,255,0.95)";
       ctx.textAlign = "center";
@@ -983,29 +1016,23 @@
     });
     ctx.textAlign = "left";
 
-    // tick sotto la barra
+    // tick
     const tickY = by + barH + 20;
     ctx.font = '500 12px "JetBrains Mono", monospace';
-    ctx.fillStyle = "#5B6A77";
     const tickFracs = [allZones[0].lo, ...allZones.map(z => z.hi)];
     tickFracs.forEach((frac, i) => {
       const tx = bx + zonePos(frac) * bw;
-      // tick line
       ctx.strokeStyle = "#9AA6B0";
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(tx, by + barH + 3);
       ctx.lineTo(tx, by + barH + 10);
       ctx.stroke();
-      // label
       let label;
       if (mode === "fc") {
-        const fcmax = parseInt(fcmaxEl.value, 10);
-        const fcrest = parseInt(fcrestEl.value, 10);
-        label = "" + bpm(frac, fcmax, fcrest);
+        label = "" + bpm(frac, parseInt(fcmaxEl.value, 10), parseInt(fcrestEl.value, 10));
       } else {
-        const dist = parseInt(distEl.value, 10);
-        label = paceStr((dist / 100) * frac);
+        label = paceStr((parseInt(distEl.value, 10) / 100) * frac);
       }
       ctx.fillStyle = "#5B6A77";
       ctx.textAlign = i === 0 ? "left" : i === tickFracs.length - 1 ? "right" : "center";
@@ -1018,17 +1045,16 @@
     zones.forEach((z, i) => {
       const ry = ry0 + i * rowH;
 
-      // separatore
       if (i > 0) {
         ctx.strokeStyle = "#E3E9ED";
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(M + P, ry);
-        ctx.lineTo(M + CW - P, ry);
+        ctx.moveTo(P, ry);
+        ctx.lineTo(W - P, ry);
         ctx.stroke();
       }
 
-      const cx = M + P;
+      const cx = P;
       const cy = ry + rowH / 2;
 
       // dot
@@ -1047,22 +1073,20 @@
       ctx.fillStyle = "#18222B";
       ctx.fillText(z.name, cx + 68, cy - 3);
 
-      // range (right aligned)
+      // range
       const range = z.loVal + "–" + z.hiVal + " " + z.unit;
       ctx.font = '700 18px "JetBrains Mono", monospace';
       ctx.fillStyle = "#18222B";
       ctx.textAlign = "right";
-      ctx.fillText(range, M + CW - P, cy - 3);
+      ctx.fillText(range, W - P, cy - 3);
 
-      // volume bar + percentage
+      // volume bar
       const vbarX = cx + 68;
       const vbarY = cy + 14;
       const vbarW = 80;
-      // track
       roundRect(ctx, vbarX, vbarY, vbarW, 5, 2.5);
       ctx.fillStyle = "#E3E9ED";
       ctx.fill();
-      // fill
       roundRect(ctx, vbarX, vbarY, vbarW * z.share / 100, 5, 2.5);
       ctx.fillStyle = ZONE_COLORS[i];
       ctx.fill();
@@ -1071,26 +1095,25 @@
       ctx.fillStyle = "#5B6A77";
       ctx.textAlign = "left";
       ctx.fillText("≈" + z.share + "% del volume", vbarX + vbarW + 10, vbarY + 5);
-
       ctx.textAlign = "left";
     });
 
     // ── footer ──
-    const fy = totalH - M - 30;
+    const fy = totalH - footerH - bottomPad + 10;
     ctx.strokeStyle = "#E3E9ED";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(M + P, fy);
-    ctx.lineTo(M + CW - P, fy);
+    ctx.moveTo(P, fy);
+    ctx.lineTo(W - P, fy);
     ctx.stroke();
 
     const today = new Date();
     const dateStr = today.getDate() + "/" + (today.getMonth() + 1) + "/" + today.getFullYear();
     ctx.font = '500 11px "JetBrains Mono", monospace';
     ctx.fillStyle = "#9AA6B0";
-    ctx.fillText(dateStr, M + P, fy + 20);
+    ctx.fillText(dateStr, P, fy + 22);
     ctx.textAlign = "right";
-    ctx.fillText("fasce-cardiache · test dei 6 minuti", M + CW - P, fy + 20);
+    ctx.fillText("fasce-cardiache · test dei 6 minuti", W - P, fy + 22);
     ctx.textAlign = "left";
 
     return c;
