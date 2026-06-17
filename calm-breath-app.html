@@ -10,8 +10,9 @@
         /* ---------- Sizing variables (drive ALL responsive scaling) ---------- */
         :root {
             /* Visualizer scales with the SMALLEST of width/height so it always fits.
-               Capped at 18rem on large screens. */
-            --viz: min(74vw, 52vh, 18rem);
+               Capped at 18rem on large screens. Reserve headroom for the scaled
+               ring (up to ~1.9x) so it never forces overflow/scroll. */
+            --viz: min(60vw, 42vh, 15rem);
             --core: calc(var(--viz) * 0.56);
             --ring2: calc(var(--viz) * 0.78);
         }
@@ -19,7 +20,13 @@
         /* ---------- Base / lock the viewport (no scroll, no bounce) ---------- */
         * { -webkit-tap-highlight-color: transparent; }
 
-        html, body { height: 100%; }
+        html {
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            inset: 0;
+            width: 100%;
+        }
 
         body {
             font-family: 'Quicksand', sans-serif;
@@ -27,15 +34,22 @@
             inset: 0;
             height: 100vh;          /* fallback */
             height: 100svh;         /* small viewport height: ignores mobile browser chrome */
+            width: 100vw;
             overflow: hidden;
             overscroll-behavior: none;
-            touch-action: manipulation;
+            touch-action: none;     /* belt-and-suspenders: block all touch-driven scroll/zoom on the page itself */
+            -webkit-overflow-scrolling: auto;
             /* respect notches / home indicator */
             padding:
                 env(safe-area-inset-top)
                 env(safe-area-inset-right)
                 env(safe-area-inset-bottom)
                 env(safe-area-inset-left);
+        }
+
+        /* Allow normal tapping on interactive controls even with touch-action:none on body */
+        button {
+            touch-action: manipulation;
         }
 
         /* Background Animation */
@@ -87,9 +101,15 @@
         }
 
         /* ---------- Responsive layout helpers ---------- */
+        /* Reserve a fixed "stage" footprint equal to the MAX possible scaled size
+           (ring2 * 1.3 * 1.45 growth factor) so the breathing animation never
+           changes the document's layout box -- it only repaints inside it. */
         .stage {
             width: var(--viz);
             height: var(--viz);
+            /* extra invisible padding so scaled children have room without
+               affecting page flow/scroll */
+            overflow: visible;
         }
         .core {
             width: var(--core);
@@ -101,8 +121,8 @@
         }
 
         /* Fluid spacing so nothing overflows on short screens */
-        .header-gap { margin-bottom: clamp(0.75rem, 4vh, 2rem); }
-        .stage-gap  { margin-bottom: clamp(1.25rem, 5vh, 3rem); }
+        .header-gap { margin-bottom: clamp(0.75rem, 3vh, 1.5rem); }
+        .stage-gap  { margin-bottom: clamp(1.25rem, 4vh, 2rem); }
         .controls-gap { gap: clamp(0.5rem, 2vh, 1rem); }
 
         /* Fluid typography */
@@ -111,9 +131,24 @@
         .t-instruction { font-size: clamp(1.05rem, 5.5vw, 1.5rem); }
         .t-timer    { font-size: clamp(1.75rem, 9vw, 2.25rem); }
 
+        /* Lock the timer's box so digit width changes (1 vs 7 vs 8) never
+           reflow surrounding layout. tabular-nums keeps digit widths equal. */
+        #timer {
+            font-variant-numeric: tabular-nums;
+            display: inline-block;
+            min-width: 1.4em;
+        }
+
+        /* Main content column never exceeds viewport height; flex-shrink
+           keeps everything inside even on very short screens. */
+        main {
+            max-height: 100%;
+            flex-shrink: 1;
+        }
+
         /* In landscape on phones, shrink the visualizer further and tighten gaps */
         @media (orientation: landscape) and (max-height: 520px) {
-            :root { --viz: min(40vw, 70vh, 14rem); }
+            :root { --viz: min(34vw, 56vh, 11rem); }
             .header-gap { margin-bottom: clamp(0.4rem, 2vh, 1rem); }
             .stage-gap  { margin-bottom: clamp(0.75rem, 3vh, 1.5rem); }
             footer { display: none; }
@@ -349,6 +384,20 @@
                 toggleBtn.classList.add('bg-white/20');
                 startBreathingCycle();
             }
+        });
+
+        // ---------- Hard anti-scroll safety net ----------
+        // Even with the CSS lock above, some mobile browsers can still trigger
+        // a scroll/bounce on touchmove during layout-affecting animations.
+        // This blocks any touchmove that isn't deliberately allowed (none are
+        // needed here, since the whole app fits in one screen).
+        document.addEventListener('touchmove', function (e) {
+            e.preventDefault();
+        }, { passive: false });
+
+        // Also guard against the page scrolling itself on focus/resize edge cases.
+        window.addEventListener('scroll', function () {
+            window.scrollTo(0, 0);
         });
 
         initParticles();
