@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Honest Hiking — Dal mare alla cima. Per davvero.</title>
+  <meta name="description" content="Honest Hiking è il nuovo modo radicalmente onesto di conquistare una montagna: si parte dal livello del mare, con i piedi nel bagnasciuga, e si arriva in cima. Niente scorciatoie. Niente racconti gonfiati. Solo salita vera." />
+  <style>
+    :root {
+      --bg: #07120f;
+      --bg-soft: #10231d;
+      --text: #f4f1e8;
+      --muted: #c8c0ad;
+      --accent: #ffb703;
+      --accent-2: #43aa8b;
+      --sea: #4cc9f0;
+      --rock: #9d6b53;
+      --card: rgba(255,255,255,.08);
+      --border: rgba(255,255,255,.16);
+      --shadow: 0 24px 80px rgba(0,0,0,.35);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding-top: 38px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 80% 10%, rgba(67,170,139,.28), transparent 30%),
+        radial-gradient(circle at 10% 15%, rgba(76,201,240,.22), transparent 28%),
+        linear-gradient(180deg, #06100d 0%, #0c1b16 45%, #050806 100%);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .nav {
+      position: fixed;
+      top: 54px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(1120px, calc(100% - 32px));
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px 10px 16px;
+      backdrop-filter: blur(20px);
+      background: rgba(7,18,15,.42);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 999px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.24);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .logo-mark {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--sea), var(--accent-2), var(--accent));
+      color: #07120f;
+      font-weight: 1000;
+      box-shadow: 0 10px 30px rgba(76,201,240,.25);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #16110a;
+      font-weight: 900;
+      box-shadow: 0 16px 40px rgba(255,183,3,.24);
+      border: 0;
+      cursor: pointer;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 22px 55px rgba(255,183,3,.32);
+    }
+
+    .button.secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: none;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 92vh;
+      display: grid;
+      align-items: center;
+      padding: clamp(78px, 10vw, 132px) clamp(20px, 5vw, 72px) clamp(64px, 10vw, 120px);
+      isolation: isolate;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background:
+        linear-gradient(140deg, rgba(7,18,15,.88), rgba(7,18,15,.45)),
+        url("data:image/svg+xml,%3Csvg width='1600' height='900' viewBox='0 0 1600 900' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='1600' height='900' fill='%2307110f'/%3E%3Cpath d='M0 715 C240 590 350 650 520 510 C690 370 750 450 890 280 C1035 105 1155 210 1290 115 C1430 20 1510 80 1600 40 L1600 900 L0 900 Z' fill='%23132721'/%3E%3Cpath d='M0 760 C230 660 390 700 560 560 C730 420 770 500 920 345 C1060 200 1170 270 1305 175 C1440 80 1510 140 1600 90 L1600 900 L0 900 Z' fill='%231a3a30'/%3E%3Cpath d='M0 810 C210 745 400 760 590 640 C780 520 835 580 980 455 C1130 325 1235 385 1370 290 C1490 205 1550 250 1600 220 L1600 900 L0 900 Z' fill='%23204438'/%3E%3Cpath d='M0 825 C210 805 370 830 550 790 C755 745 900 800 1070 745 C1270 680 1420 720 1600 660 L1600 900 L0 900 Z' fill='%230b596b' opacity='.65'/%3E%3Cpath d='M0 850 C260 825 445 870 675 835 C900 800 1130 855 1600 790 L1600 900 L0 900 Z' fill='%234cc9f0' opacity='.5'/%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: center bottom;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 220px;
+      z-index: -1;
+      background: linear-gradient(0deg, var(--bg), transparent);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr);
+      gap: clamp(36px, 6vw, 90px);
+      align-items: center;
+      max-width: 1240px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255,255,255,.07);
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .eyebrow span {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 24px var(--accent);
+    }
+
+    h1 {
+      margin: 24px 0 18px;
+      font-size: clamp(48px, 8vw, 112px);
+      line-height: .9;
+      letter-spacing: -0.07em;
+      max-width: 980px;
+    }
+
+    .hero-brand {
+      margin: 22px 0 8px;
+      font-size: clamp(66px, 12vw, 168px);
+      line-height: .78;
+      letter-spacing: -0.095em;
+      font-weight: 1000;
+      text-transform: uppercase;
+      text-wrap: balance;
+      background: linear-gradient(92deg, #f4f1e8 0%, #ffb703 48%, #4cc9f0 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 24px 45px rgba(0,0,0,.28));
+    }
+
+    .hero-punchline {
+      margin: 0 0 22px;
+      font-size: clamp(34px, 6vw, 84px);
+      line-height: .92;
+      letter-spacing: -0.065em;
+      font-weight: 950;
+      max-width: 920px;
+    }
+
+    .highlight {
+      color: var(--accent);
+    }
+
+    .lead {
+      max-width: 760px;
+      font-size: clamp(19px, 2.2vw, 27px);
+      line-height: 1.35;
+      color: var(--text);
+      margin: 0 0 32px;
+      font-weight: 650;
+    }
+
+    .lead strong {
+      color: var(--sea);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .hero-card {
+      padding: 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,.13), rgba(255,255,255,.06));
+      border: 1px solid var(--border);
+      border-radius: 32px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .metric {
+      display: grid;
+      gap: 2px;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .metric:last-child {
+      border-bottom: 0;
+    }
+
+    .metric strong {
+      font-size: 34px;
+      letter-spacing: -0.05em;
+      color: var(--accent);
+    }
+
+    .metric span {
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    section {
+      padding: clamp(64px, 8vw, 112px) clamp(20px, 5vw, 72px);
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      max-width: 850px;
+      margin-bottom: 36px;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: clamp(36px, 5.5vw, 72px);
+      line-height: .98;
+      letter-spacing: -0.055em;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(18px, 2vw, 22px);
+      line-height: 1.55;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      min-height: 280px;
+      padding: 28px;
+      border-radius: 30px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      box-shadow: 0 16px 50px rgba(0,0,0,.18);
+    }
+
+    .card .icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      background: rgba(255,183,3,.16);
+      margin-bottom: 20px;
+    }
+
+    .card h3 {
+      margin: 0 0 12px;
+      font-size: 25px;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 16px;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: .95fr 1.05fr;
+      gap: clamp(28px, 6vw, 84px);
+      align-items: center;
+    }
+
+    .route {
+      position: relative;
+      min-height: 520px;
+      border-radius: 38px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, rgba(76,201,240,.18), transparent 28%),
+        linear-gradient(145deg, rgba(255,183,3,.08), rgba(67,170,139,.12)),
+        #0b1b17;
+      box-shadow: var(--shadow);
+    }
+
+    .route svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .route-label {
+      position: absolute;
+      left: 22px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.38);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      color: var(--text);
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .route-label.sea { bottom: 28px; }
+    .route-label.summit { top: 28px; right: 22px; left: auto; }
+
+    .steps {
+      display: grid;
+      gap: 16px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 46px 1fr;
+      gap: 16px;
+      padding: 18px;
+      border-radius: 24px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid var(--border);
+    }
+
+    .num {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: #16110a;
+      font-weight: 1000;
+    }
+
+    .step h3 {
+      margin: 0 0 6px;
+      font-size: 20px;
+    }
+
+    .step p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .manifesto {
+      background:
+        linear-gradient(135deg, rgba(255,183,3,.12), transparent 35%),
+        linear-gradient(225deg, rgba(76,201,240,.12), transparent 35%),
+        var(--bg-soft);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .manifesto-box {
+      border-radius: 38px;
+      padding: clamp(28px, 5vw, 64px);
+      background: rgba(255,255,255,.08);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .manifesto-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .rule {
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .rule strong {
+      color: var(--text);
+    }
+
+    .cta {
+      text-align: center;
+      padding-bottom: clamp(80px, 11vw, 150px);
+    }
+
+    .cta-box {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: clamp(34px, 6vw, 76px);
+      border-radius: 44px;
+      background:
+        linear-gradient(135deg, rgba(255,183,3,.22), rgba(67,170,139,.12)),
+        rgba(255,255,255,.08);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .cta h2 {
+      font-size: clamp(42px, 7vw, 88px);
+    }
+
+    .tagline {
+      display: inline-block;
+      margin-top: 26px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: rgba(0,0,0,.22);
+      font-weight: 800;
+    }
+
+    footer {
+      padding: 30px clamp(20px, 5vw, 72px);
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      background: rgba(0,0,0,.18);
+    }
+
+    .climb-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 38px;
+      z-index: 999;
+      background:
+        linear-gradient(180deg, rgba(7,18,15,.96), rgba(7,18,15,.82)),
+        linear-gradient(90deg, rgba(76,201,240,.18), rgba(255,183,3,.12));
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      overflow: hidden;
+    }
+
+    .climb-progress-track {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .climb-progress svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .climb-progress .route-base {
+      fill: none;
+      stroke: rgba(255,255,255,.18);
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .climb-progress .route-done {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 8px rgba(255,183,3,.65));
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+    }
+
+    .climb-progress .sea-line {
+      fill: none;
+      stroke: rgba(76,201,240,.6);
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+
+    .climb-progress .mountain-shadow {
+      fill: rgba(255,255,255,.06);
+    }
+
+    .climb-progress-climber {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: rgba(255,183,3,.96);
+      color: #16110a;
+      font-size: 16px;
+      box-shadow: 0 0 0 4px rgba(255,183,3,.16), 0 8px 24px rgba(0,0,0,.35);
+      transition: transform .08s linear;
+      will-change: left, top, transform;
+    }
+
+    .climb-progress-label {
+      position: absolute;
+      right: clamp(10px, 2vw, 28px);
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(244,241,232,.72);
+      pointer-events: none;
+    }
+
+    @media (max-width: 900px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hero-grid,
+      .split {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: auto;
+      }
+
+      .cards,
+      .manifesto-list {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-card {
+        max-width: 520px;
+      }
+
+      .route {
+        min-height: 440px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .hero-actions {
+        align-items: stretch;
+      }
+
+      .button {
+        width: 100%;
+      }
+
+      h1 {
+        font-size: 52px;
+      }
+
+      .lead {
+        font-size: 20px;
+      }
+
+      footer {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="climb-progress" aria-label="Avanzamento della scalata nella pagina">
+    <div class="climb-progress-track">
+      <svg viewBox="0 0 1000 38" preserveAspectRatio="none" aria-hidden="true">
+        <path class="mountain-shadow" d="M0 30 L115 30 L205 21 L310 25 L430 15 L535 20 L650 10 L760 15 L875 5 L1000 10 L1000 38 L0 38 Z"></path>
+        <path class="sea-line" d="M0 31 C35 28 70 34 105 31 C140 28 175 34 210 31"></path>
+        <path id="climbRouteBase" class="route-base" d="M18 30 C105 29 156 26 215 22 C302 16 330 27 410 20 C512 11 548 21 635 15 C738 8 788 15 875 8 C923 4 958 7 982 5"></path>
+        <path id="climbRouteDone" class="route-done" d="M18 30 C105 29 156 26 215 22 C302 16 330 27 410 20 C512 11 548 21 635 15 C738 8 788 15 875 8 C923 4 958 7 982 5"></path>
+      </svg>
+      <div id="climbProgressClimber" class="climb-progress-climber" aria-hidden="true">🥾</div>
+      <div class="climb-progress-label">Sea → Summit</div>
+    </div>
+  </div>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow"><span></span> Il primo sport verticale davvero sincero</div>
+          <div class="hero-brand">Honest<br />Hiking</div>
+          <div class="hero-punchline">Dal mare alla cima. <span class="highlight">Per davvero.</span></div>
+          <p class="lead">
+            Ti è mai capitato di sentire qualcuno dire: “Ho scalato una montagna”?
+            Poi scopri che la salita è iniziata da un parcheggio a 1.800 metri.
+            <strong>Honest Hiking</strong> nasce con una domanda semplice e scomoda: dove comincia davvero una montagna?
+            È il desiderio di vivere il dislivello per intero, con il sale del mare sulla pelle e l’aria sottile della vetta davanti.
+            Perché una vera salita merita un inizio memorabile quanto il suo arrivo.
+          </p>
+          <div class="hero-actions">
+            <a class="button" href="#start">Scopri la sfida</a>
+            <a class="button secondary" href="#rules">Leggi il manifesto</a>
+          </div>
+        </div>
+
+        <aside class="hero-card" aria-label="Metriche Honest Hiking">
+          <div class="metric">
+            <strong>0 m</strong>
+            <span>Quota di partenza: bagnasciuga, onde, sale sulla pelle.</span>
+          </div>
+          <div class="metric">
+            <strong>100%</strong>
+            <span>Dislivello reale. Niente funivie. Niente strade “furbe”.</span>
+          </div>
+          <div class="metric">
+            <strong>1 cima</strong>
+            <span>Una vetta raggiunta con ogni metro conquistato.</span>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="idea">
+      <div class="wrap">
+        <div class="section-title">
+          <h2>Non è trekking. È una dichiarazione.</h2>
+          <p class="sub">
+            Honest Hiking nasce da una domanda semplice: quando diciamo “ho scalato una montagna”, quanto siamo onesti?
+            Da oggi c’è una risposta chiara: parti dal mare, arrivi in cima, racconti la verità.
+          </p>
+        </div>
+
+        <div class="cards">
+          <article class="card">
+            <div class="icon">🌊</div>
+            <h3>Partenza a quota zero</h3>
+            <p>
+              Il rito è sempre lo stesso: piedi sul bagnasciuga, tocco dell’onda, cronometro mentale acceso. La montagna inizia dove finisce il mare.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">⛰️</div>
+            <h3>Ogni metro conta</h3>
+            <p>
+              Non celebri solo la vetta: celebri l’intera salita. Borghi, tornanti, boschi, pietra, fatica, silenzio. Tutto fa parte dell’impresa.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">🔥</div>
+            <h3>Vetta senza finzioni</h3>
+            <p>
+              Quando arrivi, non hai “fatto un pezzo”. Hai cucito il mare alla cima con le tue gambe. È questo che rende il racconto potente.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap split">
+        <div class="route" aria-label="Schema del percorso dal mare alla cima">
+          <svg viewBox="0 0 700 560" role="img" aria-label="Linea di salita dal mare alla vetta">
+            <defs>
+              <linearGradient id="mountain" x1="0" x2="1" y1="1" y2="0">
+                <stop offset="0%" stop-color="#123027"/>
+                <stop offset="55%" stop-color="#2c5a48"/>
+                <stop offset="100%" stop-color="#ffb703"/>
+              </linearGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <path d="M0 460 C110 420 180 470 290 430 C410 385 500 430 700 360 L700 560 L0 560 Z" fill="#4cc9f0" opacity=".72"/>
+            <path d="M55 468 L185 350 L260 390 L375 240 L455 285 L615 85 L700 190 L700 560 L55 560 Z" fill="url(#mountain)" opacity=".92"/>
+            <path d="M80 470 C145 430 173 390 210 360 C268 315 304 345 350 292 C397 238 420 230 464 253 C514 278 553 176 618 92" fill="none" stroke="#ffb703" stroke-width="8" stroke-linecap="round" stroke-dasharray="1 18" filter="url(#glow)"/>
+            <circle cx="80" cy="470" r="12" fill="#4cc9f0"/>
+            <circle cx="618" cy="92" r="14" fill="#ffb703"/>
+          </svg>
+          <div class="route-label sea">Start: piedi nell’acqua</div>
+          <div class="route-label summit">Finish: cima vera</div>
+        </div>
+
+        <div>
+          <div class="section-title">
+            <h2>La salita torna a essere epica.</h2>
+            <p class="sub">
+              Honest Hiking non è per chi cerca una scorciatoia. È per chi vuole trasformare una gita in un racconto che resta.
+            </p>
+          </div>
+
+          <div class="steps">
+            <div class="step">
+              <div class="num">1</div>
+              <div>
+                <h3>Scegli una montagna visibile dal mare</h3>
+                <p>Più il contrasto è netto, più l’esperienza diventa memorabile: acqua, costa, entroterra, cresta, vetta.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="num">2</div>
+              <div>
+                <h3>Traccia la linea più onesta</h3>
+                <p>Puoi camminare, correre, salire. Ma l’energia deve essere tua. Il percorso deve avere senso, continuità e rispetto.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="num">3</div>
+              <div>
+                <h3>Arriva in cima con il mare addosso</h3>
+                <p>Il sale si asciuga, le gambe bruciano, la quota cresce. Alla fine guardi giù e sai esattamente da dove sei partito.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="rules" class="manifesto">
+      <div class="wrap manifesto-box">
+        <div class="section-title">
+          <h2>Il manifesto dell’Honest Hiker</h2>
+          <p class="sub">
+            Poche regole, semplici, radicali. Non per rendere tutto più difficile. Per rendere tutto più vero.
+          </p>
+        </div>
+
+        <div class="manifesto-list">
+          <div class="rule"><strong>1. Si parte da quota zero.</strong><br />Il primo passo valido è sul bagnasciuga, con i piedi toccati dal mare.</div>
+          <div class="rule"><strong>2. La salita è continua.</strong><br />Niente segmenti comodi mascherati da impresa. Il viaggio deve collegare mare e vetta.</div>
+          <div class="rule"><strong>3. La propulsione è umana.</strong><br />Camminata, corsa, scrambling leggero dove consentito. Le gambe sono il motore.</div>
+          <div class="rule"><strong>4. La vetta si rispetta.</strong><br />Si sale senza lasciare traccia, senza forzare divieti, senza trasformare la montagna in palcoscenico.</div>
+          <div class="rule"><strong>5. Il racconto è preciso.</strong><br />Dislivello, distanza, partenza, arrivo: niente mitologia gonfiata. L’onestà è il badge.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="start" class="cta">
+      <div class="cta-box">
+        <h2>Hai mai salito davvero una montagna?</h2>
+        <p class="sub">
+          La prossima volta non partire dal parcheggio alto. Parti dal mare. Porta con te il rumore delle onde, lascia che diventi respiro, poi passo, poi quota.
+          Quando toccherai la cima, non avrai bisogno di esagerare: sarà già abbastanza grande. Lancia la sfida a qualcuno e scegliete insieme la vostra prima linea Sea → Summit.
+        </p>
+        <div style="margin-top: 30px;">
+          <a id="whatsappShareButton" class="button" href="#" target="_blank" rel="noopener">Sfida qualcuno su WhatsApp</a>
+        </div>
+        <span class="tagline">Honest Hiking — No shortcuts. Just summit.</span>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>© Honest Hiking — Concept sport manifesto</span>
+    <span>Dal livello del mare alla vetta. Senza bluff.</span>
+  </footer>
+
+  <script>
+    (function () {
+      const route = document.getElementById("climbRouteDone");
+      const climber = document.getElementById("climbProgressClimber");
+      const baseRoute = document.getElementById("climbRouteBase");
+
+      if (!route || !climber || !baseRoute) return;
+
+      const length = route.getTotalLength();
+      route.style.strokeDasharray = length;
+      route.style.strokeDashoffset = length;
+
+      function updateClimbProgress() {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = maxScroll > 0 ? Math.min(Math.max(scrollTop / maxScroll, 0), 1) : 0;
+        const point = baseRoute.getPointAtLength(length * progress);
+
+        route.style.strokeDashoffset = length * (1 - progress);
+        climber.style.left = point.x / 10 + "%";
+        climber.style.top = point.y + "px";
+        climber.style.transform = "translate(-50%, -50%) scale(" + (0.92 + progress * 0.18).toFixed(3) + ")";
+        climber.setAttribute("title", Math.round(progress * 100) + "% della scalata");
+      }
+
+      updateClimbProgress();
+      window.addEventListener("scroll", updateClimbProgress, { passive: true });
+      window.addEventListener("resize", updateClimbProgress);
+    })();
+  </script>
+
+
+  <script>
+    (function () {
+      const shareButton = document.getElementById("whatsappShareButton");
+      if (!shareButton) return;
+
+      function updateWhatsAppLink() {
+        const pageUrl = window.location.href;
+        const message = "Ho scoperto Honest Hiking: si parte dal mare, con i piedi nell'acqua, e si arriva in cima per davvero. Niente scorciatoie. Proviamo una sfida Sea → Summit?\n\n" + pageUrl;
+        shareButton.href = "https://wa.me/?text=" + encodeURIComponent(message);
+      }
+
+      updateWhatsAppLink();
+    })();
+  </script>
+
+</body>
+</html>
