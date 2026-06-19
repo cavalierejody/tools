@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhereIsMyCar — Diagnostica PWA</title>
+    <style>
+        :root {
+            --pass: #34C759;
+            --fail: #FF3B30;
+            --warn: #FF9500;
+            --info: #007AFF;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            background: #f2f2f7;
+            color: #000;
+            margin: 0;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 { font-size: 20px; font-weight: 700; }
+        .test { background: white; margin: 12px 0; padding: 14px; border-radius: 12px; }
+        .test-name { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+        .test-result { font-size: 13px; color: #666; margin-top: 6px; word-break: break-all; }
+        .icon-pass::before { content: "✓"; color: var(--pass); font-weight: 700; font-size: 18px; }
+        .icon-fail::before { content: "✗"; color: var(--fail); font-weight: 700; font-size: 18px; }
+        .icon-wait::before { content: "⟳"; color: var(--info); font-weight: 700; font-size: 18px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .icon-warn::before { content: "⚠"; color: var(--warn); font-weight: 700; font-size: 16px; }
+        
+        .summary { background: white; padding: 14px; border-radius: 12px; margin: 20px 0; font-size: 14px; line-height: 1.5; }
+        .code { font-family: "Menlo", monospace; font-size: 12px; background: #f5f5f5; padding: 8px; border-radius: 6px; overflow-x: auto; margin-top: 6px; }
+        button { width: 100%; padding: 12px; margin: 12px 0; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .btn-primary { background: #007AFF; color: white; }
+        .btn-danger { background: #FF3B30; color: white; }
+    </style>
+</head>
+<body>
+    <h1>🔍 WhereIsMyCar PWA Diagnostica</h1>
+    
+    <div id="tests"></div>
+
+    <div class="summary">
+        <strong>Istruzioni:</strong><br>
+        ✓ Verde = OK<br>
+        ✗ Rosso = Errore (blocca installazione)<br>
+        ⚠ Giallo = Avviso (potrebbe causare problemi)<br>
+        <br>Se vedi rossi, copia i dettagli e condividi con me.
+    </div>
+
+    <button class="btn-danger" onclick="location.reload()">Ricarica test</button>
+
+    <script>
+        const testContainer = document.getElementById('tests');
+        let testCount = 0;
+
+        async function runTest(name, testFn) {
+            testCount++;
+            const id = `test-${testCount}`;
+            const el = document.createElement('div');
+            el.className = 'test';
+            el.innerHTML = `<div class="test-name icon-wait" id="${id}-name">${name}</div><div class="test-result" id="${id}-result"></div>`;
+            testContainer.appendChild(el);
+
+            try {
+                const result = await testFn();
+                setTestResult(id, result.status, result.message, result.detail);
+            } catch (err) {
+                setTestResult(id, 'fail', 'Eccezione', err.message);
+            }
+        }
+
+        function setTestResult(id, status, message, detail) {
+            const nameEl = document.getElementById(`${id}-name`);
+            const resultEl = document.getElementById(`${id}-result`);
+            
+            nameEl.className = `test-name icon-${status}`;
+            resultEl.innerText = message;
+            if (detail) {
+                const code = document.createElement('div');
+                code.className = 'code';
+                code.innerText = detail;
+                resultEl.appendChild(code);
+            }
+        }
+
+        // ────── TEST 1: Manifest raggiungibile ──────────────────────
+        runTest('Manifest.json raggiungibile', async () => {
+            const resp = await fetch('./manifest.json');
+            if (resp.status !== 200) {
+                return { status: 'fail', message: `HTTP ${resp.status}`, detail: `URL: ${new URL('./manifest.json', location.href).href}` };
+            }
+            try {
+                const manifest = await resp.json();
+                return { status: 'pass', message: 'Manifest caricato e valido', detail: `short_name: "${manifest.short_name}", display: ${manifest.display}` };
+            } catch {
+                return { status: 'fail', message: 'Manifest è JSON rotto', detail: await resp.text() };
+            }
+        });
+
+        // ────── TEST 2: Icone raggiungibili ──────────────────────
+        async function checkIcon(path) {
+            const resp = await fetch(path);
+            if (resp.status !== 200) throw new Error(`${path} → HTTP ${resp.status}`);
+            const blob = await resp.blob();
+            if (!blob.type.startsWith('image/')) throw new Error(`${path} è ${blob.type}, non un'immagine`);
+            return `${path} (${(blob.size/1024).toFixed(1)}KB)`;
+        }
+
+        runTest('Icone (any)', async () => {
+            try {
+                const icons = await Promise.all([
+                    checkIcon('./icon-192.png'),
+                    checkIcon('./icon-512.png')
+                ]);
+                return { status: 'pass', message: 'Icone any disponibili', detail: icons.join('\n') };
+            } catch (err) {
+                return { status: 'fail', message: 'Icona non trovata o invalida', detail: err.message };
+            }
+        });
+
+        runTest('Icone (maskable)', async () => {
+            try {
+                const icons = await Promise.all([
+                    checkIcon('./icon-maskable-192.png'),
+                    checkIcon('./icon-maskable-512.png')
+                ]);
+                return { status: 'pass', message: 'Icone maskable disponibili', detail: icons.join('\n') };
+            } catch (err) {
+                return { status: 'warn', message: 'Icone maskable non trovate', detail: `Non bloccante, ma userai solo le icone "any".\n${err.message}` };
+            }
+        });
+
+        // ────── TEST 3: Service Worker registrabile ──────────────────────
+        runTest('Service Worker (sw.js)', async () => {
+            if (!('serviceWorker' in navigator)) {
+                return { status: 'fail', message: 'Service Workers non supportati', detail: 'Questo browser non supporta PWA' };
+            }
+            try {
+                const resp = await fetch('./sw.js');
+                if (resp.status !== 200) return { status: 'fail', message: `sw.js HTTP ${resp.status}`, detail: `URL: ${new URL('./sw.js', location.href).href}` };
+                return { status: 'pass', message: 'sw.js caricato', detail: `Dimensione: ${(resp.headers.get('content-length')/1024).toFixed(1)}KB` };
+            } catch (err) {
+                return { status: 'fail', message: 'Errore caricamento sw.js', detail: err.message };
+            }
+        });
+
+        // ────── TEST 4: HTTPS ──────────────────────
+        runTest('Connessione HTTPS', async () => {
+            if (location.protocol !== 'https:') {
+                return { status: 'fail', message: 'HTTP, non HTTPS', detail: `Protocollo: ${location.protocol}\nGli app PWA richiedono HTTPS` };
+            }
+            return { status: 'pass', message: 'HTTPS attivo', detail: location.href };
+        });
+
+        // ────── TEST 5: Manifest rispetta lo schema PWA ──────────────────────
+        runTest('Schema manifest (validazione)', async () => {
+            const resp = await fetch('./manifest.json');
+            const manifest = await resp.json();
+
+            const checks = [
+                { key: 'name', ok: !!manifest.name },
+                { key: 'short_name', ok: !!manifest.short_name },
+                { key: 'start_url', ok: !!manifest.start_url },
+                { key: 'display', ok: manifest.display === 'standalone' },
+                { key: 'icons[0]', ok: manifest.icons && manifest.icons.length > 0 },
+                { key: 'theme_color', ok: !!manifest.theme_color }
+            ];
+
+            const missing = checks.filter(c => !c.ok).map(c => c.key);
+            if (missing.length > 0) {
+                return { status: 'warn', message: 'Alcuni campi mancano', detail: `Mancano: ${missing.join(', ')}` };
+            }
+            return { status: 'pass', message: 'Manifest conforme', detail: `name: "${manifest.name}"\nstart_url: "${manifest.start_url}"\ndisplay: ${manifest.display}` };
+        });
+
+        // ────── TEST 6: Install Prompts ──────────────────────
+        runTest('beforeinstallprompt event', async () => {
+            return new Promise(resolve => {
+                let fired = false;
+                window.addEventListener('beforeinstallprompt', () => {
+                    fired = true;
+                    resolve({ status: 'pass', message: 'Prompt installazione disponibile', detail: 'Chrome ha riconosciuto la PWA come installabile' });
+                });
+                setTimeout(() => {
+                    if (!fired) {
+                        resolve({ status: 'warn', message: 'Prompt non ancora scattato', detail: 'Attendi qualche secondo, potrebbe ancora arrivare.' });
+                    }
+                }, 2000);
+            });
+        });
+
+        // ────── TEST 7: localStorage disponibile ──────────────────────
+        runTest('localStorage (persiste dati GPS)', async () => {
+            try {
+                localStorage.setItem('__diag_test', 'ok');
+                localStorage.removeItem('__diag_test');
+                return { status: 'pass', message: 'localStorage disponibile', detail: 'I dati GPS persisteranno offline' };
+            } catch {
+                return { status: 'fail', message: 'localStorage non disponibile', detail: 'L\'app non potrà salvare la posizione' };
+            }
+        });
+
+        // ────── TEST 8: Geolocation ──────────────────────
+        runTest('Geolocation API', async () => {
+            if (!navigator.geolocation) {
+                return { status: 'fail', message: 'Geolocation non supportato', detail: 'Questo device non ha GPS' };
+            }
+            return { status: 'pass', message: 'Geolocation API disponibile', detail: 'Il pulsante "Memorizza" funzionerà' };
+        });
+
+        console.log('Diagnostica avviata');
+    </script>
+</body>
+</html>
