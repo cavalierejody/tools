@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#16161a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Caselle">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%2316161a'/><rect x='10' y='10' width='22' height='22' fill='%23ffffff'/><rect x='32' y='10' width='22' height='22' fill='%230a0a0a'/><rect x='10' y='32' width='22' height='22' fill='%230a0a0a'/><rect x='32' y='32' width='22' height='22' fill='%23f2b441'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%2316161a'/><rect x='10' y='10' width='22' height='22' fill='%23ffffff'/><rect x='32' y='10' width='22' height='22' fill='%230a0a0a'/><rect x='10' y='32' width='22' height='22' fill='%230a0a0a'/><rect x='32' y='32' width='22' height='22' fill='%23f2b441'/></svg>">
+<title>Bianca o Nera — allena il colore delle caselle</title>
+<style>
+  :root{
+    --bg:#16161a; --panel:#1f1f25; --panel-2:#26262e;
+    --ink:#f5f5f2; --ink-dim:#a9a9b3; --line:#34343e;
+    --accent:#f2b441; --accent-ink:#16161a;
+    --ok:#3ecf8e; --bad:#ff6b5e;
+    --white:#ffffff; --black:#0a0a0a;
+    --scale:1; /* dimensione testo regolabile */
+    --r:14px;
+    --tap:#ffffff14;
+    --stage-bg:#0e0e12;
+  }
+  :root[data-theme="day"]{
+    --bg:#faf9f4; --panel:#ffffff; --panel-2:#f1f0ea;
+    --ink:#16161a; --ink-dim:#5b5b63; --line:#dcdbd2;
+    --accent:#b5701a; --accent-ink:#ffffff;
+    --ok:#1c7d52; --bad:#c4382b;
+    --tap:#0000000d;
+    --stage-bg:#e6e5dd;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  html,body{margin:0;height:100%;overflow-x:hidden;width:100%;max-width:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    font-size:calc(17px * var(--scale));
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+    overscroll-behavior:none;
+    -webkit-user-select:none; user-select:none;
+    -webkit-touch-callout:none;
+  }
+  .mono{font-family:ui-monospace,"SF Mono","Cascadia Mono","JetBrains Mono",Consolas,monospace}
+  button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+  :focus-visible{outline:3px solid var(--accent); outline-offset:3px; border-radius:6px}
+  .eyebrow{font-size:.72em;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim);font-weight:700}
+
+  /* ---------- guscio app ---------- */
+  #app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:760px;width:100%;margin:0 auto;
+    padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);position:relative;overflow-x:hidden}
+  main{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;touch-action:pan-y;display:flex;flex-direction:column}
+  .view{display:none;flex:1;min-height:0;flex-direction:column;overflow-x:hidden}
+  .view.active{display:flex}
+  .pad{padding:18px 20px;padding-top:calc(18px + env(safe-area-inset-top))}
+
+  /* ---------- nav inferiore ---------- */
+  nav{
+    display:flex;border-top:1px solid var(--line);
+    background:color-mix(in srgb,var(--panel) 80%, transparent);
+    -webkit-backdrop-filter:saturate(1.4) blur(16px);backdrop-filter:saturate(1.4) blur(16px);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  nav button{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:11px 4px 9px;color:var(--ink-dim);font-size:.66em;font-weight:700;
+    letter-spacing:.04em;border-top:3px solid transparent;margin-top:-1px;
+  }
+  nav button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accent)}
+
+  /* ---------- schermata gioco ---------- */
+  .gamehead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;row-gap:8px;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));border-bottom:1px solid var(--line)}
+  .modepick{display:flex;gap:5px;background:var(--panel);padding:5px;border-radius:999px;min-width:0;flex-shrink:1}
+  .modepick button{padding:7px 12px;border-radius:999px;font-size:.7em;font-weight:700;color:var(--ink-dim);letter-spacing:.01em;white-space:nowrap}
+  .modepick button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+  .hud{display:flex;gap:14px;align-items:center;flex-shrink:0}
+  .hud .stat{text-align:right;line-height:1.05}
+  .hud .num{font-size:1.15em;font-weight:800}
+  .hud .lab{font-size:.6em;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim)}
+
+  .level-banner{padding:8px 18px;font-size:.8em;color:var(--ink-dim);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .level-banner .bar{flex:1;height:8px;border-radius:99px;background:var(--panel-2);overflow:hidden}
+  .level-banner .bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+
+  .stage{flex:1;display:flex;flex-direction:column;min-height:0}
+  .question{flex:0 0 auto;text-align:center;padding:22px 16px 10px}
+  .question .q-label{font-size:.85em;color:var(--ink-dim);margin-bottom:6px}
+  .coord{
+    font-family:ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace;
+    font-size:min(40vw,33vh,260px);font-weight:800;letter-spacing:.02em;
+    line-height:.9;text-transform:uppercase;
+  }
+  .answers{flex:1;min-height:160px;display:flex;gap:12px;padding:6px 14px 16px}
+  .answers button{
+    flex:1;border-radius:var(--r);font-size:1.5em;font-weight:800;
+    letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;
+    justify-content:center;border:3px solid transparent;transition:transform .07s;
+    min-height:120px;
+  }
+  .answers button:active{transform:scale(.97)}
+  .ans-white{background:var(--white);color:#0a0a0a;box-shadow:inset 0 0 0 1px #0000001a}
+  .ans-black{background:var(--black);color:#fff;box-shadow:inset 0 0 0 1px #ffffff26}
+  .hint-keys{text-align:center;font-size:.66em;color:var(--ink-dim);padding-bottom:8px}
+
+  /* riscontro */
+  .feedback{position:absolute;inset:0;z-index:40;display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px}
+  .feedback.show{display:flex;animation:fb-fade .16s ease both}
+  .feedback.show .fb-mark{animation:fb-pop .26s cubic-bezier(.2,.9,.3,1.3) both}
+  @keyframes fb-fade{from{opacity:0}to{opacity:1}}
+  @keyframes fb-pop{from{transform:scale(.45);opacity:0}to{transform:scale(1);opacity:1}}
+  .feedback.ok{background:color-mix(in srgb,var(--ok) 24%,var(--bg))}
+  .feedback.bad{background:color-mix(in srgb,var(--bad) 24%,var(--bg))}
+  .fb-mark{font-size:5em;font-weight:800;line-height:1}
+  .feedback.ok .fb-mark{color:var(--ok)} .feedback.bad .fb-mark{color:var(--bad)}
+  .fb-title{font-size:1.6em;font-weight:800;margin:.1em 0}
+  .fb-sub{font-size:1.05em;color:var(--ink)}
+  .fb-why{margin-top:14px;font-size:.85em;color:var(--ink-dim);max-width:420px}
+  .miniboard{margin:16px auto 0;display:grid;grid-template-columns:repeat(8,1fr);width:min(72vw,240px);aspect-ratio:1;border:2px solid var(--line);border-radius:8px;overflow:hidden}
+  .miniboard div{display:flex;align-items:center;justify-content:center}
+  .miniboard .d{background:#0a0a0a} .miniboard .l{background:#fff}
+  .miniboard .hit{box-shadow:inset 0 0 0 4px var(--accent)}
+  .fb-tap{margin-top:18px;font-size:.75em;color:var(--ink-dim)}
+
+  /* ---------- statistiche ---------- */
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+  .card .big{font-size:2.1em;font-weight:800;line-height:1}
+  .card .lab{font-size:.72em;color:var(--ink-dim);margin-top:4px;letter-spacing:.03em}
+  .chartbox{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-top:14px}
+  .chartbox h3{margin:0 0 4px;font-size:.95em}
+  .chartbox p{margin:0 0 12px;font-size:.74em;color:var(--ink-dim)}
+  .chartbox svg{width:100%;height:120px;display:block}
+  .empty{color:var(--ink-dim);font-size:.85em;text-align:center;padding:30px 10px}
+
+  /* ---------- heatmap ---------- */
+  .hm-wrap{display:flex;flex-direction:column;align-items:center}
+  .hm-grid{display:grid;grid-template-columns:auto repeat(8,minmax(0,1fr));grid-auto-rows:1fr;gap:0;width:100%;max-width:480px;margin-top:8px}
+  .hm-cell{aspect-ratio:1;min-width:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.66em;font-weight:700;border:1px solid var(--bg)}
+  .hm-axis{display:flex;align-items:center;justify-content:center;font-size:.7em;font-weight:700;color:var(--ink-dim);min-width:0;padding:0 5px}
+  .hm-cell.nd{color:var(--ink-dim)}
+  .legend{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin-top:14px;font-size:.74em;color:var(--ink-dim)}
+  .legend .scale{height:14px;flex:1 1 120px;min-width:90px;max-width:180px;border-radius:99px;background:linear-gradient(90deg,#2f6fdb,#7db0e8,#f2c14e,#e8852f,#cf3b2c)}
+
+  /* ---------- impostazioni ---------- */
+  .setrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 14px;padding:15px 0;border-bottom:1px solid var(--line)}
+  .setrow:last-child{border-bottom:none}
+  .setrow>div:first-child{flex:1 1 150px;min-width:0}
+  .setrow .seg,.setrow .toggle{flex:0 0 auto}
+  .setrow .desc{font-size:.74em;color:var(--ink-dim);margin-top:2px}
+  .seg{display:flex;flex-wrap:wrap;background:var(--panel-2);border-radius:10px;padding:4px;gap:4px}
+  .seg button{padding:8px 12px;border-radius:7px;font-size:.78em;font-weight:700;color:var(--ink-dim);white-space:nowrap}
+  .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+  .toggle{width:54px;height:32px;border-radius:99px;background:var(--panel-2);position:relative;flex:0 0 auto}
+  .toggle[aria-pressed="true"]{background:var(--accent)}
+  .toggle::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;transition:left .18s}
+  .toggle[aria-pressed="true"]::after{left:25px}
+  .danger{margin-top:20px;width:100%;padding:14px;border-radius:var(--r);border:2px solid var(--bad);color:var(--bad);font-weight:700;background:transparent}
+  h1.title{font-size:1.35em;font-weight:800;margin:0 0 2px}
+  .sub{font-size:.78em;color:var(--ink-dim);margin:0 0 16px}
+
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+  @media (max-width:380px){ .hud{gap:10px} .modepick button{padding:6px 9px} }
+
+  /* desktop con mouse: l'app vive come una card centrata, non un sito a tutta larghezza */
+  @media (min-width:880px) and (hover:hover) and (pointer:fine){
+    body{display:flex;align-items:center;justify-content:center;padding:32px;background:var(--stage-bg)}
+    #app{height:min(880px,calc(100dvh - 64px));border-radius:30px;overflow:hidden;
+      box-shadow:0 30px 80px #00000059,0 0 0 1px var(--line)}
+    .coord{font-size:min(180px,30vh)}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <main>
+
+    <!-- ====================== GIOCA ====================== -->
+    <section id="v-play" class="view active" aria-label="Gioco">
+      <div class="gamehead">
+        <div class="modepick" role="group" aria-label="Modalità">
+          <button data-mode="path"  aria-pressed="true">Percorso</button>
+          <button data-mode="free"  aria-pressed="false">Libera</button>
+          <button data-mode="learn" aria-pressed="false">Apprendi</button>
+        </div>
+        <div class="hud">
+          <div class="stat"><div class="num mono" id="hud-streak">0</div><div class="lab">Serie</div></div>
+          <div class="stat"><div class="num mono" id="hud-acc">—</div><div class="lab">Sessione</div></div>
+        </div>
+      </div>
+
+      <div class="level-banner" id="level-banner">
+        <span id="level-text">Riga 1</span>
+        <span class="bar"><i id="level-fill"></i></span>
+        <span id="level-prog" class="mono">0/10</span>
+      </div>
+
+      <div class="stage">
+        <div class="question">
+          <div class="q-label" id="q-label">Di che colore è la casella</div>
+          <div class="coord mono" id="coord" aria-live="off">A1</div>
+        </div>
+        <div class="answers">
+          <button class="ans-white" id="btn-white">Bianca</button>
+          <button class="ans-black" id="btn-black">Nera</button>
+        </div>
+        <div class="hint-keys">Da tastiera: ← Bianca · → Nera</div>
+      </div>
+    </section>
+
+    <!-- ====================== STATISTICHE ====================== -->
+    <section id="v-stats" class="view" aria-label="Statistiche">
+      <div class="pad">
+        <h1 class="title">Statistiche</h1>
+        <p class="sub">I tuoi progressi su tutte le modalità.</p>
+        <div class="cards">
+          <div class="card"><div class="big mono" id="s-acc">—</div><div class="lab">Accuratezza totale</div></div>
+          <div class="card"><div class="big mono" id="s-time">—</div><div class="lab">Tempo medio</div></div>
+          <div class="card"><div class="big mono" id="s-best">0</div><div class="lab">Serie migliore</div></div>
+          <div class="card"><div class="big mono" id="s-total">0</div><div class="lab">Risposte totali</div></div>
+        </div>
+        <div class="chartbox">
+          <h3>Andamento accuratezza</h3>
+          <p>Media mobile sulle ultime risposte. Più sale, meglio è.</p>
+          <svg id="chart-acc" viewBox="0 0 300 120" preserveAspectRatio="none" role="img" aria-label="Grafico andamento accuratezza"></svg>
+        </div>
+        <div class="chartbox">
+          <h3>Tempo di risposta</h3>
+          <p>Quanto impieghi in media a rispondere. Più scende, meglio è.</p>
+          <svg id="chart-time" viewBox="0 0 300 120" preserveAspectRatio="none" role="img" aria-label="Grafico tempo di risposta"></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================== MAPPA ====================== -->
+    <section id="v-map" class="view" aria-label="Mappa di difficoltà">
+      <div class="pad hm-wrap">
+        <div style="align-self:stretch">
+          <h1 class="title">Mappa della difficoltà</h1>
+          <p class="sub">Più una casella è calda, più ti mette in difficoltà (errori + lentezza).</p>
+        </div>
+        <div class="hm-grid" id="heatmap" role="img" aria-label="Mappa di calore 8 per 8 della difficoltà per casella"></div>
+        <div class="legend"><span>Facile</span><span class="scale"></span><span>Difficile</span></div>
+        <p class="sub" id="hm-summary" style="margin-top:16px;text-align:center"></p>
+      </div>
+    </section>
+
+    <!-- ====================== IMPOSTAZIONI ====================== -->
+    <section id="v-set" class="view" aria-label="Impostazioni">
+      <div class="pad">
+        <h1 class="title">Impostazioni</h1>
+        <p class="sub">Adatta lettura e comportamento dell'app.</p>
+
+        <div class="setrow">
+          <div><div style="font-weight:700">Tema</div><div class="desc">Entrambi ad alto contrasto.</div></div>
+          <div class="seg" id="seg-theme" role="group" aria-label="Tema">
+            <button data-theme="night" aria-pressed="true">Notte</button>
+            <button data-theme="day" aria-pressed="false">Giorno</button>
+          </div>
+        </div>
+
+        <div class="setrow">
+          <div><div style="font-weight:700">Dimensione testo</div><div class="desc">Ingrandisci tutto a piacere.</div></div>
+          <div class="seg" id="seg-scale" role="group" aria-label="Dimensione testo">
+            <button data-scale="1"   aria-pressed="true">Normale</button>
+            <button data-scale="1.2" aria-pressed="false">Grande</button>
+            <button data-scale="1.45" aria-pressed="false">Enorme</button>
+          </div>
+        </div>
+
+        <div class="setrow">
+          <div><div style="font-weight:700">Mostra la scacchiera nel riscontro</div><div class="desc">Evidenzia dov'è la casella, con la regola del colore.</div></div>
+          <button class="toggle" id="tg-board" role="switch" aria-pressed="false" aria-label="Mostra la scacchiera nel riscontro"></button>
+        </div>
+
+        <div class="setrow">
+          <div><div style="font-weight:700">Avanza da solo dopo la risposta</div><div class="desc">Spento: tocca per andare avanti.</div></div>
+          <button class="toggle" id="tg-auto" role="switch" aria-pressed="true" aria-label="Avanza automaticamente"></button>
+        </div>
+
+        <button class="danger" id="btn-reset">Azzera tutti i dati</button>
+        <p class="sub" style="margin-top:20px">I dati restano solo su questo dispositivo (nessun account, nessuna rete). Funziona offline.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <nav role="tablist" aria-label="Sezioni">
+    <button data-view="v-play" aria-current="true">
+      <svg viewBox="0 0 24 24"><path d="M5 21h14M8 21V10m8 11V10M6 10h12l-1-3a3 3 0 0 0-3-2h-4a3 3 0 0 0-3 2z"/></svg>Gioca</button>
+    <button data-view="v-stats" aria-current="false">
+      <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Statistiche</button>
+    <button data-view="v-map" aria-current="false">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>Mappa</button>
+    <button data-view="v-set" aria-current="false">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7 7 0 0 0-1.7-1L14.5 2h-5l-.3 2.5a7 7 0 0 0-1.7 1l-2.4-1-2 3.4L3 11a7 7 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 1.7 1l.3 2.5h5l.3-2.5a7 7 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6a7 7 0 0 0 .1-1z"/></svg>Impostazioni</button>
+  </nav>
+
+  <!-- riscontro a schermo (confinato dentro l'app) -->
+  <div class="feedback" id="feedback" role="alertdialog" aria-live="assertive" tabindex="-1">
+    <div class="fb-mark" id="fb-mark">✓</div>
+    <div class="fb-title" id="fb-title">Esatto</div>
+    <div class="fb-sub mono" id="fb-sub"></div>
+    <div class="miniboard" id="fb-board" hidden></div>
+    <div class="fb-why" id="fb-why" hidden></div>
+    <div class="fb-tap" id="fb-tap">Tocca per continuare</div>
+  </div>
+</div>
+
+<div class="sr-only" aria-live="polite" id="live"></div>
+
+<script>
+"use strict";
+(function(){
+  const FILES = ["a","b","c","d","e","f","g","h"];
+  const KEY = "colore-casella";
+  const SCHEMA = 1;
+  const PASS_NEEDED = 10;      // risposte buone richieste per sbloccare la riga
+  const PASS_ACC = 0.8;        // accuratezza minima sul rank in prova
+  const ALPHA = 0.3;           // smoothing EMA
+  const T_FAST = 800, T_SLOW = 4000; // ms per normalizzare la lentezza
+  const HIST_CAP = 600;
+
+  // ---------- modello colore ----------
+  // a=0..h=7 ; rank 1..8. mnemonica: (lettera 1-8 + numero) pari => nera
+  function isDark(fileIdx, rank){ return ((fileIdx+1)+rank) % 2 === 0; }
+  function cellId(fileIdx, rank){ return FILES[fileIdx]+rank; }
+
+  // ---------- stato ----------
+  let S = load();
+  function blankCell(){ return {seen:0, correct:0, errEma:0, timeEma:0}; }
+  function freshState(){
+    const cells = {};
+    for(let f=0; f<8; f++) for(let r=1; r<=8; r++) cells[cellId(f,r)] = blankCell();
+    return {
+      version: SCHEMA,
+      cells,
+      path: { rank: 1, run: [] },          // run = ultime risposte sul rank corrente (bool)
+      streak: { current: 0, best: 0 },
+      totals: { answers: 0, correct: 0, timeSum: 0 },
+      history: [],                          // {t,mode,cell,ok,ms}
+      settings: { theme:"night", scale:1, board:false, auto:true }
+    };
+  }
+  function load(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      if(!raw) return freshState();
+      const o = JSON.parse(raw);
+      if(o.version !== SCHEMA) return migrate(o);
+      return o;
+    }catch(e){ return freshState(); }
+  }
+  function migrate(o){ // posto per migrazioni future; per ora reinizializza preservando nulla
+    const f = freshState(); return f;
+  }
+  let saveTimer=null;
+  function save(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }, 120);
+  }
+
+  // ---------- difficoltà combinata ----------
+  function difficulty(c){
+    if(!c || c.seen===0) return null;
+    const timeScore = clamp((c.timeEma - T_FAST)/(T_SLOW - T_FAST), 0, 1);
+    return clamp(0.6*c.errEma + 0.4*timeScore, 0, 1);
+  }
+  function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
+
+  // ---------- selezione casella ----------
+  let mode = "path";
+  let current = null;     // {f, r, id, dark}
+  let askedAt = 0;
+  let lastId = null;
+
+  function pickPath(){
+    const rank = S.path.rank;
+    // 70% sul rank in consolidamento, 30% ripasso dei rank già sbloccati
+    let r;
+    if(rank>1 && Math.random()<0.30) r = 1 + Math.floor(Math.random()*(rank-1));
+    else r = rank;
+    const f = Math.floor(Math.random()*8);
+    return {f, r};
+  }
+  function pickFree(){ return {f:Math.floor(Math.random()*8), r:1+Math.floor(Math.random()*8)}; }
+  function pickLearn(){
+    // peso = base + difficoltà^gamma ; non viste ricevono peso esplorativo
+    const items=[]; let tot=0;
+    for(let f=0; f<8; f++) for(let r=1; r<=8; r++){
+      const id=cellId(f,r), c=S.cells[id];
+      const d = difficulty(c);
+      let w;
+      if(d===null) w = 0.6;                 // esplora le poco viste
+      else w = 0.08 + Math.pow(d, 1.6)*2.2; // insisti sulle difficili
+      if(id===lastId) w*=0.15;              // evita ripetere identica
+      items.push([f,r,w]); tot+=w;
+    }
+    let x=Math.random()*tot;
+    for(const [f,r,w] of items){ x-=w; if(x<=0) return {f,r}; }
+    return {f:0,r:1};
+  }
+  function nextQuestion(){
+    let p;
+    if(mode==="path") p=pickPath();
+    else if(mode==="free") p=pickFree();
+    else p=pickLearn();
+    // evita ripetizione immediata
+    let guard=0;
+    while(cellId(p.f,p.r)===lastId && guard++<6){
+      p = mode==="path"?pickPath():mode==="free"?pickFree():pickLearn();
+    }
+    const id = cellId(p.f,p.r);
+    current = {f:p.f, r:p.r, id, dark:isDark(p.f,p.r)};
+    lastId = id;
+    el("coord").textContent = id.toUpperCase();
+    askedAt = performance.now();
+    setAnswersEnabled(true);
+  }
+
+  // ---------- risposta ----------
+  let locked=false;
+  function answer(guessDark){
+    if(locked || !current) return;
+    locked=true; setAnswersEnabled(false);
+    const ms = Math.round(performance.now()-askedAt);
+    const ok = (guessDark===current.dark);
+    const c = S.cells[current.id];
+    c.seen++; if(ok) c.correct++;
+    c.errEma = ALPHA*(ok?0:1) + (1-ALPHA)*c.errEma;
+    c.timeEma = c.timeEma===0 ? ms : ALPHA*ms + (1-ALPHA)*c.timeEma;
+
+    S.totals.answers++; if(ok) S.totals.correct++; S.totals.timeSum+=ms;
+    S.streak.current = ok ? S.streak.current+1 : 0;
+    if(S.streak.current>S.streak.best) S.streak.best=S.streak.current;
+
+    S.history.push({t:Date.now(), mode, cell:current.id, ok, ms});
+    if(S.history.length>HIST_CAP) S.history.splice(0, S.history.length-HIST_CAP);
+
+    if(mode==="path") progressPath(ok);
+
+    if(navigator.vibrate){ try{ navigator.vibrate(ok?16:[0,35,55,35]); }catch(e){} }
+
+    sess.answers++; if(ok) sess.correct++;
+    updateHud();
+    save();
+    showFeedback(ok, ms);
+  }
+
+  function progressPath(ok){
+    // valuta solo le risposte sul rank attualmente in prova
+    if(current.r !== S.path.rank) return;
+    S.path.run.push(ok);
+    if(S.path.run.length>PASS_NEEDED) S.path.run.shift();
+    const good = S.path.run.filter(Boolean).length;
+    if(S.path.run.length>=PASS_NEEDED && good/S.path.run.length>=PASS_ACC && S.path.rank<8){
+      S.path.rank++;
+      S.path.run=[];
+      pendingUnlock = S.path.rank;
+    }
+  }
+  let pendingUnlock=null;
+
+  // ---------- riscontro ----------
+  function showFeedback(ok, ms){
+    const fb=el("feedback");
+    fb.className = "feedback show " + (ok?"ok":"bad");
+    el("fb-mark").textContent = ok?"✓":"✗";
+    el("fb-title").textContent = ok?"Esatto":"Sbagliato";
+    const colorWord = current.dark?"nera":"bianca";
+    el("fb-sub").textContent = current.id.toUpperCase()+" è "+colorWord;
+    live(el("fb-title").textContent+". "+el("fb-sub").textContent);
+
+    if(S.settings.board){ buildMiniBoard(); el("fb-board").hidden=false;
+      const L=current.f+1, N=current.r, sum=L+N;
+      el("fb-why").hidden=false;
+      el("fb-why").textContent = "Regola: lettera ("+L+") + numero ("+N+") = "+sum+
+        ", "+(sum%2===0?"pari → nera":"dispari → bianca")+".";
+    } else { el("fb-board").hidden=true; el("fb-why").hidden=true; }
+
+    el("fb-tap").textContent = S.settings.auto ? "Avanzo da solo…" : "Tocca per continuare";
+    fb.focus();
+
+    if(S.settings.auto){
+      clearTimeout(autoT);
+      autoT=setTimeout(dismissFeedback, ok?780:1500);
+    }
+  }
+  let autoT=null;
+  function dismissFeedback(){
+    clearTimeout(autoT);
+    const fb=el("feedback");
+    if(!fb.classList.contains("show")) return;
+    fb.classList.remove("show");
+    if(pendingUnlock){ const r=pendingUnlock; pendingUnlock=null; announceUnlock(r); }
+    locked=false;
+    updateLevelBanner();
+    nextQuestion();
+  }
+  function announceUnlock(r){
+    live("Hai sbloccato la riga "+r+".");
+    const lb=el("level-banner");
+    el("level-text").textContent = "Sbloccata: Riga "+r+" 🎉";
+    setTimeout(updateLevelBanner, 1600);
+  }
+
+  function buildMiniBoard(){
+    const b=el("fb-board"); b.innerHTML="";
+    for(let r=8; r>=1; r--) for(let f=0; f<8; f++){
+      const d=document.createElement("div");
+      d.className=(isDark(f,r)?"d":"l")+(f===current.f&&r===current.r?" hit":"");
+      b.appendChild(d);
+    }
+  }
+
+  // ---------- HUD / banner ----------
+  const sess={answers:0, correct:0};
+  function updateHud(){
+    el("hud-streak").textContent = S.streak.current;
+    el("hud-acc").textContent = sess.answers? Math.round(100*sess.correct/sess.answers)+"%" : "—";
+  }
+  function updateLevelBanner(){
+    const lb=el("level-banner");
+    if(mode!=="path"){ lb.style.display="none"; return; }
+    lb.style.display="flex";
+    el("level-text").textContent = "Riga "+S.path.rank+(S.path.rank===8?" (ultima)":"");
+    const good = S.path.run.filter(Boolean).length;
+    el("level-prog").textContent = good+"/"+PASS_NEEDED;
+    el("level-fill").style.width = Math.min(100, 100*good/PASS_NEEDED)+"%";
+  }
+
+  function setAnswersEnabled(on){
+    el("btn-white").disabled=!on; el("btn-black").disabled=!on;
+  }
+
+  // ---------- statistiche ----------
+  function renderStats(){
+    const t=S.totals;
+    el("s-acc").textContent = t.answers? Math.round(100*t.correct/t.answers)+"%" : "—";
+    el("s-time").textContent = t.answers? (t.timeSum/t.answers/1000).toFixed(1)+"s" : "—";
+    el("s-best").textContent = S.streak.best;
+    el("s-total").textContent = t.answers;
+    drawAccChart(); drawTimeChart();
+  }
+  function rollingAcc(win){
+    const h=S.history; if(h.length<3) return [];
+    const out=[]; const w=Math.min(win, Math.max(5, Math.floor(h.length/4)));
+    for(let i=0;i<h.length;i++){
+      const a=Math.max(0,i-w+1); let ok=0,n=0;
+      for(let j=a;j<=i;j++){ n++; if(h[j].ok) ok++; }
+      out.push(ok/n);
+    }
+    return out;
+  }
+  function rollingTime(win){
+    const h=S.history; if(h.length<3) return [];
+    const out=[]; const w=Math.min(win, Math.max(5, Math.floor(h.length/4)));
+    for(let i=0;i<h.length;i++){
+      const a=Math.max(0,i-w+1); let s=0,n=0;
+      for(let j=a;j<=i;j++){ n++; s+=h[j].ms; }
+      out.push(s/n/1000);
+    }
+    return out;
+  }
+  function sparkPath(vals, minV, maxV){
+    const W=300,H=120,pad=8;
+    if(vals.length<2) return null;
+    const span=(maxV-minV)||1;
+    return vals.map((v,i)=>{
+      const x=pad+(W-2*pad)*(i/(vals.length-1));
+      const y=H-pad-(H-2*pad)*((v-minV)/span);
+      return (i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1);
+    }).join(" ");
+  }
+  function drawAccChart(){
+    const svg=el("chart-acc"); const vals=rollingAcc(20);
+    if(vals.length<2){ svg.innerHTML=emptySvg("Gioca un po' per vedere l'andamento"); return; }
+    const d=sparkPath(vals,0,1);
+    const area=d+" L292 112 L8 112 Z";
+    svg.innerHTML =
+      gridLines() +
+      '<path d="'+area+'" fill="var(--accent)" opacity="0.14"/>' +
+      '<path d="'+d+'" fill="none" stroke="var(--accent)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>' +
+      tickLabel(8,14,"100%")+tickLabel(8,112,"0%");
+  }
+  function drawTimeChart(){
+    const svg=el("chart-time"); const vals=rollingTime(20);
+    if(vals.length<2){ svg.innerHTML=emptySvg("Gioca un po' per vedere l'andamento"); return; }
+    const mx=Math.max.apply(null,vals)*1.1, mn=0;
+    const d=sparkPath(vals,mn,mx);
+    svg.innerHTML =
+      gridLines() +
+      '<path d="'+d+'" fill="none" stroke="var(--ok)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>' +
+      tickLabel(8,14,mx.toFixed(1)+"s")+tickLabel(8,112,"0s");
+  }
+  function gridLines(){
+    let g=""; for(let i=1;i<4;i++){ const y=8+(104)*i/4; g+='<line x1="8" y1="'+y+'" x2="292" y2="'+y+'" stroke="var(--line)" stroke-width="1"/>'; }
+    return g;
+  }
+  function tickLabel(x,y,txt){ return '<text x="'+x+'" y="'+y+'" fill="var(--ink-dim)" font-size="9" font-family="monospace">'+txt+'</text>'; }
+  function emptySvg(msg){ return '<text x="150" y="62" fill="var(--ink-dim)" font-size="11" text-anchor="middle">'+msg+'</text>'; }
+
+  // ---------- heatmap ----------
+  function heatColor(d){
+    // scala percettiva blu->giallo->rosso (distinguibile anche da daltonici, + numero in cella)
+    const stops=[[47,111,219],[125,176,232],[242,193,78],[232,133,47],[207,59,44]];
+    const seg=d*(stops.length-1); const i=Math.min(stops.length-2, Math.floor(seg)); const f=seg-i;
+    const a=stops[i], b=stops[i+1];
+    const c=a.map((v,k)=>Math.round(v+(b[k]-v)*f));
+    return "rgb("+c[0]+","+c[1]+","+c[2]+")";
+  }
+  function renderHeatmap(){
+    const g=el("heatmap"); g.innerHTML="";
+    g.appendChild(document.createElement("div")); // angolo vuoto
+    for(let f=0; f<8; f++){ const a=document.createElement("div"); a.className="hm-axis"; a.textContent=FILES[f]; g.appendChild(a); }
+    let hardest=null, hd=-1, totDiff=0, n=0;
+    for(let r=8; r>=1; r--){
+      const ax=document.createElement("div"); ax.className="hm-axis"; ax.textContent=r; g.appendChild(ax);
+      for(let f=0; f<8; f++){
+        const id=cellId(f,r), c=S.cells[id], d=difficulty(c);
+        const cell=document.createElement("div"); cell.className="hm-cell";
+        if(d===null){ cell.classList.add("nd"); cell.style.background="var(--panel-2)"; cell.textContent="·";
+          cell.setAttribute("aria-label", id.toUpperCase()+": non ancora provata"); }
+        else{
+          cell.style.background=heatColor(d);
+          const pct=Math.round(d*100);
+          cell.textContent=pct;
+          cell.style.color = d>0.45 ? "#16161a" : "#f5f5f2";
+          cell.setAttribute("aria-label", id.toUpperCase()+": difficoltà "+pct+" su 100");
+          totDiff+=d; n++;
+          if(d>hd){ hd=d; hardest=id; }
+        }
+        g.appendChild(cell);
+      }
+    }
+    const sum=el("hm-summary");
+    if(n===0) sum.textContent="Nessuna casella ancora provata. Gioca per riempire la mappa.";
+    else sum.textContent="Casella più ostica: "+(hardest?hardest.toUpperCase():"—")+
+      " · difficoltà media "+Math.round(100*totDiff/n)+"/100 su "+n+" caselle.";
+  }
+
+  // ---------- navigazione ----------
+  function show(view){
+    document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active", v.id===view));
+    document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-current", b.dataset.view===view ? "true":"false"));
+    if(view==="v-stats") renderStats();
+    if(view==="v-map") renderHeatmap();
+  }
+
+  // ---------- modalità ----------
+  function setMode(m){
+    mode=m;
+    document.querySelectorAll(".modepick button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.mode===m?"true":"false"));
+    el("q-label").textContent = m==="learn" ? "Insisto sulle caselle difficili" :
+                                m==="free"  ? "Tutte le 64 caselle" : "Di che colore è la casella";
+    updateLevelBanner();
+    locked=false; setAnswersEnabled(true);
+    nextQuestion();
+  }
+
+  // ---------- impostazioni ----------
+  function applySettings(){
+    document.documentElement.setAttribute("data-theme", S.settings.theme==="day"?"day":"night");
+    document.documentElement.style.setProperty("--scale", S.settings.scale);
+    document.querySelectorAll("#seg-theme button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.theme===S.settings.theme?"true":"false"));
+    document.querySelectorAll("#seg-scale button").forEach(b=>b.setAttribute("aria-pressed", (+b.dataset.scale)===S.settings.scale?"true":"false"));
+    el("tg-board").setAttribute("aria-pressed", S.settings.board?"true":"false");
+    el("tg-auto").setAttribute("aria-pressed", S.settings.auto?"true":"false");
+    document.querySelector('meta[name=theme-color]').setAttribute("content", S.settings.theme==="day"?"#faf9f4":"#16161a");
+  }
+
+  // ---------- util ----------
+  function el(id){ return document.getElementById(id); }
+  function live(msg){ const l=el("live"); l.textContent=""; setTimeout(()=>l.textContent=msg,30); }
+
+  // ---------- eventi ----------
+  el("btn-white").addEventListener("click", ()=>answer(false));
+  el("btn-black").addEventListener("click", ()=>answer(true));
+  el("feedback").addEventListener("click", ()=>{ if(!S.settings.auto) dismissFeedback(); else dismissFeedback(); });
+
+  document.querySelectorAll(".modepick button").forEach(b=>b.addEventListener("click", ()=>setMode(b.dataset.mode)));
+  document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click", ()=>show(b.dataset.view)));
+
+  document.querySelectorAll("#seg-theme button").forEach(b=>b.addEventListener("click", ()=>{ S.settings.theme=b.dataset.theme; applySettings(); save(); }));
+  document.querySelectorAll("#seg-scale button").forEach(b=>b.addEventListener("click", ()=>{ S.settings.scale=+b.dataset.scale; applySettings(); save(); }));
+  el("tg-board").addEventListener("click", ()=>{ S.settings.board=!S.settings.board; applySettings(); save(); });
+  el("tg-auto").addEventListener("click", ()=>{ S.settings.auto=!S.settings.auto; applySettings(); save(); });
+  el("btn-reset").addEventListener("click", ()=>{
+    if(confirm("Azzerare statistiche, mappa e progresso del percorso? L'operazione non è reversibile.")){
+      S=freshState(); save(); applySettings(); sess.answers=0; sess.correct=0;
+      updateHud(); updateLevelBanner(); setMode(mode); show("v-play");
+    }
+  });
+
+  document.addEventListener("keydown", e=>{
+    const fbOpen = el("feedback").classList.contains("show");
+    if(fbOpen){ if(e.key===" "||e.key==="Enter"){ e.preventDefault(); dismissFeedback(); } return; }
+    if(!el("v-play").classList.contains("active")) return;
+    if(e.key==="ArrowLeft"||e.key.toLowerCase()==="b"){ e.preventDefault(); answer(false); }
+    else if(e.key==="ArrowRight"||e.key.toLowerCase()==="n"){ e.preventDefault(); answer(true); }
+  });
+
+  // ---------- avvio ----------
+  // service worker per l'offline (attivo solo se servito via http/https con sw.js accanto)
+  if("serviceWorker" in navigator && location.protocol.indexOf("http")===0){
+    window.addEventListener("load", ()=>{ navigator.serviceWorker.register("./sw.js").catch(()=>{}); });
+  }
+
+  // manifest inline: rende l'app installabile (Aggiungi a schermata Home) senza file esterni
+  try{
+    const ICON="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%2316161a'/><rect x='10' y='10' width='22' height='22' fill='%23ffffff'/><rect x='32' y='10' width='22' height='22' fill='%230a0a0a'/><rect x='10' y='32' width='22' height='22' fill='%230a0a0a'/><rect x='32' y='32' width='22' height='22' fill='%23f2b441'/></svg>";
+    const mf={name:"Bianca o Nera",short_name:"Caselle",display:"standalone",orientation:"any",
+      background_color:"#16161a",theme_color:"#16161a",start_url:".",
+      icons:[{src:ICON,sizes:"any",type:"image/svg+xml",purpose:"any maskable"}]};
+    const link=document.createElement("link"); link.rel="manifest";
+    link.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:"application/manifest+json"}));
+    document.head.appendChild(link);
+  }catch(e){}
+
+  applySettings();
+  updateHud();
+  setMode("path");
+})();
+</script>
+</body>
+</html>
