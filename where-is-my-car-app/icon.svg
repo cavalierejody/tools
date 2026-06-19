@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background rounded rect iOS style -->
+  <rect width="512" height="512" rx="112" ry="112" fill="#007AFF"/>
+
+  <!-- Car body -->
+  <rect x="90" y="270" width="332" height="110" rx="28" fill="white"/>
+
+  <!-- Car roof / cabin -->
+  <path d="M160 270 L185 185 Q190 170 205 170 L307 170 Q322 170 327 185 L352 270 Z" fill="white"/>
+
+  <!-- Windshield (blue tint) -->
+  <path d="M195 265 L213 200 Q216 190 225 190 L287 190 Q296 190 299 200 L317 265 Z" fill="#5BB8FF" opacity="0.6"/>
+
+  <!-- Left window -->
+  <path d="M165 265 L183 205 Q186 195 195 195 L213 195 L195 265 Z" fill="#5BB8FF" opacity="0.5"/>
+
+  <!-- Right window -->
+  <path d="M347 265 L329 205 Q326 195 317 195 L299 195 L317 265 Z" fill="#5BB8FF" opacity="0.5"/>
+
+  <!-- Left wheel -->
+  <circle cx="163" cy="375" r="42" fill="#1a1a2e"/>
+  <circle cx="163" cy="375" r="22" fill="#e0e0e0"/>
+  <circle cx="163" cy="375" r="10" fill="#007AFF"/>
+
+  <!-- Right wheel -->
+  <circle cx="349" cy="375" r="42" fill="#1a1a2e"/>
+  <circle cx="349" cy="375" r="22" fill="#e0e0e0"/>
+  <circle cx="349" cy="375" r="10" fill="#007AFF"/>
+
+  <!-- Headlight left -->
+  <rect x="95" y="295" width="36" height="18" rx="9" fill="#FFD60A"/>
+
+  <!-- Taillight right -->
+  <rect x="381" y="295" width="36" height="18" rx="9" fill="#FF3B30"/>
+
+  <!-- Pin / location marker above car -->
+  <circle cx="256" cy="95" r="28" fill="white"/>
+  <path d="M256 67 C238 67 224 81 224 99 C224 120 256 148 256 148 C256 148 288 120 288 99 C288 81 274 67 256 67 Z" fill="white"/>
+  <circle cx="256" cy="97" r="12" fill="#007AFF"/>
+</svg>

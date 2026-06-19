@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>WhereIsMyCar</title>
+    
+    <!-- PWA Meta -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WhereIsMyCar">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="WhereIsMyCar">
+    <meta name="theme-color" content="#007AFF" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+    <meta name="description" content="Salva la posizione della tua auto e ritrovala facilmente">
+
+    <!-- Icons -->
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <style>
+        :root {
+            --bg-light: #f2f2f7;
+            --bg-dark: #000000;
+            --card-light: #ffffff;
+            --card-dark: #1c1c1e;
+            --text-light: #000000;
+            --text-dark: #ffffff;
+            --accent: #007AFF;
+            --success: #34C759;
+            --danger: #FF3B30;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --radius: 22px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-current: var(--bg-dark);
+                --card-current: var(--card-dark);
+                --text-current: var(--text-dark);
+                --subtext: #98989f;
+            }
+        }
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-current: var(--bg-light);
+                --card-current: var(--card-light);
+                --text-current: var(--text-light);
+                --subtext: #86868b;
+            }
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-current);
+            color: var(--text-current);
+            margin: 0;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .app-shell {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            height: 100%;
+            padding: env(safe-area-inset-top) 24px env(safe-area-inset-bottom) 24px;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* HEADER */
+        header {
+            padding-top: 20px;
+            text-align: center;
+        }
+
+        .header-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            margin: 0 auto 10px;
+            display: block;
+            box-shadow: 0 4px 12px rgba(0,122,255,0.25);
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        /* CARD */
+        .card-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .status-card {
+            background: var(--card-current);
+            border-radius: var(--radius);
+            width: 100%;
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 250px;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 20px;
+        }
+
+        .status-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .status-desc {
+            font-size: 15px;
+            color: var(--subtext);
+        }
+
+        .time-badge {
+            margin-top: 10px;
+            background: rgba(128, 128, 128, 0.15);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* FOOTER */
+        .action-area {
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            gap: 12px;
+            padding-bottom: 10px;
+        }
+
+        button {
+            width: 100%;
+            height: 54px;
+            border: none;
+            border-radius: 16px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+
+        button:active { transform: scale(0.96); }
+
+        .btn-primary { background: var(--accent); color: white; box-shadow: 0 4px 12px rgba(0,122,255,0.3); }
+        .btn-success { background: var(--success); color: white; box-shadow: 0 4px 12px rgba(52,199,89,0.3); }
+        .btn-ghost { background: transparent; color: var(--danger); font-size: 15px; }
+
+        /* Install prompt banner */
+        #install-banner {
+            background: var(--card-current);
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow);
+            font-size: 14px;
+        }
+
+        #install-banner img {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+        }
+
+        #install-banner .banner-text {
+            flex: 1;
+            color: var(--subtext);
+            line-height: 1.3;
+        }
+
+        #install-banner .banner-text strong {
+            color: var(--text-current);
+            display: block;
+        }
+
+        #btn-install {
+            width: auto;
+            height: 32px;
+            padding: 0 14px;
+            font-size: 14px;
+            border-radius: 10px;
+            flex-shrink: 0;
+        }
+
+        .hidden { display: none !important; }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .animate-pop { animation: popIn 0.3s ease-out; }
+    </style>
+</head>
+<body>
+
+    <div class="app-shell">
+
+        <header>
+            <img class="header-icon" src="icon-192.png" alt="WhereIsMyCar">
+            <h1>WhereIsMyCar</h1>
+        </header>
+
+        <div class="card-container">
+
+            <div id="view-empty" class="status-card animate-pop">
+                <div class="icon-circle" style="background: rgba(0,122,255,0.1)">📍</div>
+                <div class="status-title">Dove hai parcheggiato?</div>
+                <div class="status-desc">Premi il tasto blu per salvare la posizione GPS attuale.</div>
+            </div>
+
+            <div id="view-saved" class="status-card animate-pop hidden">
+                <div class="icon-circle" style="background: rgba(52,199,89,0.1)">🚗</div>
+                <div class="status-title">Auto Parcheggiata</div>
+                <div class="time-badge" id="time-display">--:--</div>
+            </div>
+
+        </div>
+
+        <div class="action-area">
+
+            <!-- Install banner (shown only when installable) -->
+            <div id="install-banner" class="hidden">
+                <img src="icon-192.png" alt="">
+                <div class="banner-text">
+                    <strong>Aggiungi alla schermata Home</strong>
+                    Accesso rapido, funziona offline
+                </div>
+                <button id="btn-install" class="btn-primary" onclick="handleInstall()">Installa</button>
+            </div>
+
+            <button id="btn-save" class="btn-primary" onclick="handleSave()">
+                📍 Memorizza Posizione
+            </button>
+
+            <div id="group-saved" class="hidden" style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                <button class="btn-success" onclick="handleNavigate()">
+                    🧭 Portami all'auto
+                </button>
+                <button class="btn-ghost" onclick="handleDelete()">
+                    Cancella posizione
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // ── Service Worker registration ──────────────────────────────────
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('[SW] Registrato, scope:', reg.scope))
+                    .catch(err => console.warn('[SW] Errore registrazione:', err));
+            });
+        }
+
+        // ── PWA Install prompt ───────────────────────────────────────────
+        let deferredPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', e => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-banner').classList.remove('hidden');
+        });
+
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+            document.getElementById('install-banner').classList.add('hidden');
+        });
+
+        async function handleInstall() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            document.getElementById('install-banner').classList.add('hidden');
+        }
+
+        // ── App logic ────────────────────────────────────────────────────
+        const els = {
+            viewEmpty: document.getElementById('view-empty'),
+            viewSaved: document.getElementById('view-saved'),
+            btnSave: document.getElementById('btn-save'),
+            groupSaved: document.getElementById('group-saved'),
+            timeDisplay: document.getElementById('time-display')
+        };
+
+        window.onload = () => {
+            if (localStorage.getItem('car_lat')) showSavedUI();
+        };
+
+        function haptic() { if (navigator.vibrate) navigator.vibrate(15); }
+
+        function handleSave() {
+            haptic();
+            if (!navigator.geolocation) return alert("GPS non disponibile su questo dispositivo.");
+
+            els.btnSave.innerText = "Ricerca GPS…";
+            els.btnSave.style.opacity = 0.7;
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const now = new Date();
+                    const timeStr =
+                        now.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }) + ', ' +
+                        now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+
+                    localStorage.setItem('car_lat', pos.coords.latitude);
+                    localStorage.setItem('car_lng', pos.coords.longitude);
+                    localStorage.setItem('car_time', timeStr);
+
+                    showSavedUI();
+                    if (navigator.vibrate) navigator.vibrate([20, 50, 20]);
+                },
+                () => {
+                    alert("Errore GPS. Assicurati di essere all'aperto e di aver concesso i permessi di posizione.");
+                    els.btnSave.innerText = "📍 Memorizza Posizione";
+                    els.btnSave.style.opacity = 1;
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+
+        function handleNavigate() {
+            haptic();
+            const lat = localStorage.getItem('car_lat');
+            const lng = localStorage.getItem('car_lng');
+            if (lat) {
+                window.location.href = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`;
+            }
+        }
+
+        function handleDelete() {
+            haptic();
+            if (confirm("Vuoi cancellare la posizione salvata?")) {
+                localStorage.removeItem('car_lat');
+                localStorage.removeItem('car_lng');
+                localStorage.removeItem('car_time');
+                showEmptyUI();
+            }
+        }
+
+        function showSavedUI() {
+            els.viewEmpty.classList.add('hidden');
+            els.btnSave.classList.add('hidden');
+
+            els.viewSaved.classList.remove('hidden');
+            els.groupSaved.classList.remove('hidden');
+            els.groupSaved.style.display = 'flex';
+
+            els.timeDisplay.innerText = localStorage.getItem('car_time');
+
+            els.btnSave.innerText = "📍 Memorizza Posizione";
+            els.btnSave.style.opacity = 1;
+        }
+
+        function showEmptyUI() {
+            els.viewSaved.classList.add('hidden');
+            els.groupSaved.classList.add('hidden');
+
+            els.viewEmpty.classList.remove('hidden');
+            els.btnSave.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
