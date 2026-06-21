@@ -251,6 +251,16 @@ h1{font-family:"Fraunces",serif; font-weight:900; font-size:clamp(2.4rem,9vw,3.4
   .actions{order:3}
 }
 
+/* mobile: schermo pieno, niente card flottante */
+@media(max-width:640px){
+  body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  .menu{
+    max-width:none; width:100%; margin:0;
+    background:transparent; border:none; border-radius:0; box-shadow:none;
+    padding:6vh 20px;
+  }
+}
+
 /* schermi bassi e larghi (mobile landscape): board a fianco dei controlli */
 @media(orientation:landscape) and (max-height:560px){
   body{overflow:auto}
