@@ -232,6 +232,62 @@
             100% { opacity: 1; transform: scale(1); }
         }
         .animate-pop { animation: popIn 0.3s ease-out; }
+
+        /* ── Dialog conferma custom ─────────────────────────────────── */
+        .dialog-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 0 24px calc(env(safe-area-inset-bottom) + 16px);
+            z-index: 100;
+        }
+
+        .dialog-box {
+            background: var(--card-current);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 500px;
+            padding: 24px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .dialog-title {
+            font-size: 17px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .dialog-msg {
+            font-size: 14px;
+            color: var(--subtext);
+            text-align: center;
+            line-height: 1.4;
+            padding: 0 8px 16px;
+        }
+
+        .dialog-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255,59,48,0.3);
+        }
+
+        .btn-cancel {
+            background: rgba(128,128,128,0.15);
+            color: var(--text-current);
+            box-shadow: none;
+        }
     </style>
 </head>
 <body>
@@ -288,6 +344,22 @@
 
     </div>
 
+    <!-- Dialog conferma cancellazione -->
+    <div id="confirm-dialog" class="dialog-overlay hidden">
+        <div class="dialog-box animate-pop">
+            <div class="dialog-title">Cancella posizione</div>
+            <div class="dialog-msg">Sei sicuro? La posizione dell'auto verrà rimossa.</div>
+            <div class="dialog-actions">
+                <button class="btn-danger" onclick="confirmDelete()">
+                    🗑 Cancella
+                </button>
+                <button class="btn-cancel" onclick="closeDialog()">
+                    Annulla
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ── Service Worker registration ──────────────────────────────────
         if ('serviceWorker' in navigator) {
@@ -322,11 +394,12 @@
 
         // ── App logic ────────────────────────────────────────────────────
         const els = {
-            viewEmpty: document.getElementById('view-empty'),
-            viewSaved: document.getElementById('view-saved'),
-            btnSave: document.getElementById('btn-save'),
-            groupSaved: document.getElementById('group-saved'),
-            timeDisplay: document.getElementById('time-display')
+            viewEmpty:   document.getElementById('view-empty'),
+            viewSaved:   document.getElementById('view-saved'),
+            btnSave:     document.getElementById('btn-save'),
+            groupSaved:  document.getElementById('group-saved'),
+            timeDisplay: document.getElementById('time-display'),
+            dialog:      document.getElementById('confirm-dialog')
         };
 
         window.onload = () => {
@@ -376,13 +449,26 @@
 
         function handleDelete() {
             haptic();
-            if (confirm("Vuoi cancellare la posizione salvata?")) {
-                localStorage.removeItem('car_lat');
-                localStorage.removeItem('car_lng');
-                localStorage.removeItem('car_time');
-                showEmptyUI();
-            }
+            els.dialog.classList.remove('hidden');
         }
+
+        function confirmDelete() {
+            haptic();
+            localStorage.removeItem('car_lat');
+            localStorage.removeItem('car_lng');
+            localStorage.removeItem('car_time');
+            closeDialog();
+            showEmptyUI();
+        }
+
+        function closeDialog() {
+            els.dialog.classList.add('hidden');
+        }
+
+        // Chiudi toccando lo sfondo
+        els.dialog.addEventListener('click', (e) => {
+            if (e.target === els.dialog) closeDialog();
+        });
 
         function showSavedUI() {
             els.viewEmpty.classList.add('hidden');
