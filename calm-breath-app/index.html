@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <title>Respirazione 4-7-8 | Calma Profonda</title>
+
+    <!-- ── PWA Manifest ─────────────────────────────────────────────────────── -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- ── iOS / Safari PWA meta ────────────────────────────────────────────── -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="4-7-8 Respira">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192x192.png">
+
+    <!-- ── Splash screens (iOS) ─────────────────────────────────────────────── -->
+    <!-- iPhone 14 Pro Max -->
+    <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="icons/icon-512x512.png">
+    <!-- iPhone 13/14 -->
+    <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="icons/icon-512x512.png">
+
+    <!-- ── Theme / favicon ──────────────────────────────────────────────────── -->
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="msapplication-TileColor" content="#1e3a8a">
+    <meta name="msapplication-TileImage" content="icons/icon-144x144.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+
+    <!-- ── SEO / Social ─────────────────────────────────────────────────────── -->
+    <meta name="description" content="Tecnica di respirazione rilassante 4-7-8. Inspira 4 secondi, trattieni 7, espira 8. Funziona offline.">
+    <meta name="keywords" content="respirazione, rilassamento, 4-7-8, meditazione, calma, ansia, sonno">
+    <meta name="author" content="4-7-8 Respirazione">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Respirazione 4-7-8 | Calma Profonda">
+    <meta property="og:description" content="Inspira 4s · Trattieni 7s · Espira 8s. Tecnica di rilassamento profondo — funziona offline.">
+    <meta property="og:image" content="icons/icon-512x512.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Respirazione 4-7-8">
+    <meta name="twitter:description" content="Calma in 19 secondi. Tecnica 4-7-8 guidata visivamente.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ---------- Sizing variables (drive ALL responsive scaling) ---------- */
+        :root {
+            --viz: min(60vw, 42vh, 15rem);
+            --core: calc(var(--viz) * 0.56);
+            --ring2: calc(var(--viz) * 0.78);
+        }
+
+        * { -webkit-tap-highlight-color: transparent; }
+
+        html {
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            inset: 0;
+            width: 100%;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            position: fixed;
+            inset: 0;
+            height: 100vh;
+            height: 100svh;
+            width: 100vw;
+            overflow: hidden;
+            overscroll-behavior: none;
+            touch-action: none;
+            -webkit-overflow-scrolling: auto;
+            padding:
+                env(safe-area-inset-top)
+                env(safe-area-inset-right)
+                env(safe-area-inset-bottom)
+                env(safe-area-inset-left);
+        }
+
+        button { touch-action: manipulation; }
+
+        /* Background Animation */
+        .ambient-bg {
+            background: linear-gradient(-45deg, #1e3a8a, #3b82f6, #06b6d4, #1e3a8a);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .breath-circle {
+            transition: transform 0s, box-shadow 0.5s ease;
+            will-change: transform;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .fade-text { transition: opacity 0.5s ease-in-out; }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+            20%  { opacity: 0.7; }
+            80%  { opacity: 0.7; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.1s linear;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        /* ---------- Responsive layout helpers ---------- */
+        .stage {
+            width: var(--viz);
+            height: var(--viz);
+            overflow: visible;
+        }
+        .core  { width: var(--core);  height: var(--core); }
+        .ring-2 { width: var(--ring2); height: var(--ring2); }
+
+        .header-gap   { margin-bottom: clamp(0.75rem, 3vh, 1.5rem); }
+        .stage-gap    { margin-bottom: clamp(1.25rem, 4vh, 2rem); }
+        .controls-gap { gap: clamp(0.5rem, 2vh, 1rem); }
+
+        .h-title       { font-size: clamp(1.5rem, 7vw, 1.875rem); }
+        .h-sub         { font-size: clamp(0.65rem, 3vw, 0.75rem); }
+        .t-instruction { font-size: clamp(1.05rem, 5.5vw, 1.5rem); }
+        .t-timer       { font-size: clamp(1.75rem, 9vw, 2.25rem); }
+
+        #timer {
+            font-variant-numeric: tabular-nums;
+            display: inline-block;
+            min-width: 1.4em;
+        }
+
+        main {
+            max-height: 100%;
+            flex-shrink: 1;
+        }
+
+        /* ── PWA Install Banner ────────────────────────────────────────────── */
+        #install-banner {
+            position: fixed;
+            bottom: env(safe-area-inset-bottom, 0);
+            left: 0; right: 0;
+            background: rgba(15, 30, 80, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(255,255,255,0.15);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.85rem 1.25rem calc(0.85rem + env(safe-area-inset-bottom, 0)) 1.25rem;
+            z-index: 999;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #install-banner.visible { transform: translateY(0); }
+        #install-banner img { width: 2.5rem; height: 2.5rem; border-radius: 0.5rem; flex-shrink: 0; }
+        #install-banner .info { flex: 1; min-width: 0; }
+        #install-banner .info strong { display: block; font-size: 0.875rem; font-weight: 600; color: #fff; }
+        #install-banner .info span   { font-size: 0.75rem; color: rgba(255,255,255,0.6); }
+        #install-banner button { touch-action: manipulation; }
+        #btn-install {
+            background: #06b6d4; color: #fff;
+            border: none; border-radius: 999px;
+            padding: 0.45rem 1.1rem;
+            font-size: 0.8rem; font-weight: 700;
+            white-space: nowrap; cursor: pointer;
+            font-family: 'Quicksand', sans-serif;
+        }
+        #btn-dismiss {
+            background: transparent; color: rgba(255,255,255,0.4);
+            border: none; font-size: 1.3rem; line-height: 1;
+            cursor: pointer; padding: 0.25rem 0.1rem;
+        }
+
+        /* ── Update notification toast ─────────────────────────────────────── */
+        #update-toast {
+            position: fixed;
+            top: max(1rem, env(safe-area-inset-top));
+            left: 50%; transform: translateX(-50%) translateY(-120%);
+            background: rgba(15, 30, 80, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            border-radius: 999px;
+            padding: 0.55rem 1.25rem;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            z-index: 1000;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex; align-items: center; gap: 0.6rem;
+        }
+        #update-toast.visible { transform: translateX(-50%) translateY(0); }
+        #btn-reload {
+            background: #06b6d4; color: #fff;
+            border: none; border-radius: 999px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem; font-weight: 700;
+            cursor: pointer; font-family: 'Quicksand', sans-serif;
+        }
+
+        /* ── Offline indicator ─────────────────────────────────────────────── */
+        #offline-pill {
+            position: fixed;
+            top: max(0.6rem, env(safe-area-inset-top));
+            right: 1rem;
+            background: rgba(239, 68, 68, 0.85);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            z-index: 998;
+            display: none;
+            align-items: center; gap: 0.3rem;
+        }
+        #offline-pill.show { display: flex; }
+
+        @media (orientation: landscape) and (max-height: 520px) {
+            :root { --viz: min(34vw, 56vh, 11rem); }
+            .header-gap { margin-bottom: clamp(0.4rem, 2vh, 1rem); }
+            .stage-gap  { margin-bottom: clamp(0.75rem, 3vh, 1.5rem); }
+            footer { display: none; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ambient-bg { animation: none; }
+            .particle { display: none; }
+        }
+    </style>
+</head>
+<body class="ambient-bg text-white flex flex-col items-center justify-center relative">
+
+    <!-- Ambient Particles Container -->
+    <div id="particles" class="absolute inset-0 overflow-hidden z-0"></div>
+
+    <!-- Offline pill -->
+    <div id="offline-pill" aria-live="polite">
+        <span>●</span> Offline
+    </div>
+
+    <!-- Update toast -->
+    <div id="update-toast" role="alert">
+        <span>🔄 Aggiornamento disponibile</span>
+        <button id="btn-reload">Ricarica</button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="z-10 flex flex-col items-center justify-center w-full max-w-md px-6 text-center">
+
+        <!-- Header -->
+        <div class="header-gap opacity-80">
+            <h1 class="h-title font-bold tracking-wide mb-1">4-7-8</h1>
+            <p class="h-sub font-light text-blue-100 uppercase tracking-widest">Respirazione Rilassante</p>
+        </div>
+
+        <!-- Breathing Visualizer -->
+        <div class="stage stage-gap relative flex items-center justify-center">
+            <div id="outer-ring" class="absolute w-full h-full rounded-full border border-white/10 scale-100 transition-transform duration-[4000ms] ease-in-out"></div>
+            <div id="outer-ring-2" class="ring-2 absolute rounded-full border border-white/20 scale-100 transition-transform duration-[4000ms] ease-in-out"></div>
+
+            <svg class="absolute w-full h-full" viewBox="0 0 120 120" preserveAspectRatio="xMidYMid meet">
+                <circle class="text-white/10" stroke-width="4" stroke="currentColor" fill="transparent" r="52" cx="60" cy="60" />
+                <circle
+                    id="progress-ring"
+                    class="progress-ring__circle text-cyan-300 drop-shadow-[0_0_10px_rgba(103,232,249,0.8)]"
+                    stroke-width="4"
+                    stroke-linecap="round"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="52"
+                    cx="60"
+                    cy="60"
+                />
+            </svg>
+
+            <div id="breath-core" class="core breath-circle absolute bg-gradient-to-tr from-cyan-400 to-blue-500 rounded-full shadow-[0_0_50px_rgba(59,130,246,0.5)] flex items-center justify-center">
+                <div class="flex flex-col items-center">
+                    <span id="instruction" class="t-instruction font-bold fade-text">Pronto?</span>
+                    <span id="timer" class="t-timer font-light mt-1 fade-text opacity-0"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex flex-col controls-gap w-full max-w-xs z-20">
+            <button id="toggle-btn" class="glass w-full py-4 rounded-full text-lg font-semibold hover:bg-white/20 transition-all duration-300 active:scale-95 tracking-wide shadow-lg group" aria-label="Avvia o ferma la sessione di respirazione">
+                <span id="btn-text">Inizia Sessione</span>
+                <div class="h-1 w-1 bg-white rounded-full mx-auto mt-1 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </button>
+
+            <p id="status-message" class="text-sm text-blue-100/70 min-h-[20px] transition-opacity duration-500" aria-live="polite">
+                Tocca per iniziare il ciclo di rilassamento
+            </p>
+        </div>
+
+    </main>
+
+    <!-- Info Footer -->
+    <footer class="absolute bottom-[max(1.5rem,env(safe-area-inset-bottom))] text-xs text-white/40 px-4 text-center">
+        Inspirazione (4s) · Ritenzione (7s) · Espirazione (8s)
+    </footer>
+
+    <!-- PWA Install Banner -->
+    <div id="install-banner" role="complementary" aria-label="Installa l'app">
+        <img src="icons/icon-96x96.png" alt="App icon">
+        <div class="info">
+            <strong>4-7-8 Respira</strong>
+            <span>Installa per accesso rapido e uso offline</span>
+        </div>
+        <button id="btn-install">Installa</button>
+        <button id="btn-dismiss" aria-label="Chiudi">×</button>
+    </div>
+
+    <script>
+        // ── Configuration ────────────────────────────────────────────────────
+        const PHASES = {
+            IDLE:   { text: "Pronto?",   time: 0, scale: 1.0,  guideText: "Tocca per iniziare il ciclo di rilassamento" },
+            INHALE: { text: "Inspira",   time: 4, scale: 1.45, guideText: "Espandi i polmoni" },
+            HOLD:   { text: "Trattieni", time: 7, scale: 1.45, guideText: "Mantieni la calma" },
+            EXHALE: { text: "Espira",    time: 8, scale: 1.0,  guideText: "Rilascia tutto lentamente" }
+        };
+
+        // ── DOM Elements ─────────────────────────────────────────────────────
+        const toggleBtn      = document.getElementById('toggle-btn');
+        const btnText        = document.getElementById('btn-text');
+        const instructionEl  = document.getElementById('instruction');
+        const timerEl        = document.getElementById('timer');
+        const statusEl       = document.getElementById('status-message');
+        const breathCore     = document.getElementById('breath-core');
+        const outerRing      = document.getElementById('outer-ring');
+        const outerRing2     = document.getElementById('outer-ring-2');
+        const progressCircle = document.getElementById('progress-ring');
+        const installBanner  = document.getElementById('install-banner');
+        const btnInstall     = document.getElementById('btn-install');
+        const btnDismiss     = document.getElementById('btn-dismiss');
+        const updateToast    = document.getElementById('update-toast');
+        const btnReload      = document.getElementById('btn-reload');
+        const offlinePill    = document.getElementById('offline-pill');
+
+        // ── Progress Ring Setup ───────────────────────────────────────────────
+        const radius        = progressCircle.r.baseVal.value;
+        const circumference = radius * 2 * Math.PI;
+        progressCircle.style.strokeDasharray  = `${circumference} ${circumference}`;
+        progressCircle.style.strokeDashoffset = circumference;
+
+        // ── State ─────────────────────────────────────────────────────────────
+        let isRunning      = false;
+        let currentPhase   = 'IDLE';
+        let animationFrameId;
+        let deferredPrompt = null;   // BeforeInstallPromptEvent
+
+        // ── Particles ─────────────────────────────────────────────────────────
+        function initParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 15; i++) {
+                const p = document.createElement('div');
+                p.classList.add('particle');
+                p.style.left             = `${Math.random() * 100}%`;
+                p.style.width            = `${Math.random() * 4 + 2}px`;
+                p.style.height           = p.style.width;
+                p.style.animationDuration = `${Math.random() * 10 + 10}s`;
+                p.style.animationDelay   = `${Math.random() * 5}s`;
+                container.appendChild(p);
+            }
+        }
+
+        // ── Progress Ring ──────────────────────────────────────────────────────
+        function setProgress(percent) {
+            const offset = circumference - (percent / 100) * circumference;
+            progressCircle.style.strokeDashoffset = offset;
+        }
+
+        // ── Phase Styling ──────────────────────────────────────────────────────
+        function applyPhaseStyles(phaseKey) {
+            const phase = PHASES[phaseKey];
+
+            instructionEl.textContent = phase.text;
+            statusEl.textContent      = phase.guideText;
+
+            let transitionTime = 0;
+            if (phaseKey === 'INHALE') transitionTime = 4;
+            else if (phaseKey === 'EXHALE') transitionTime = 8;
+            else if (phaseKey === 'IDLE') transitionTime = 0.5;
+
+            const ease = phaseKey === 'EXHALE' ? 'ease-out' : 'ease-in-out';
+            breathCore.style.transition  = `transform ${transitionTime}s ${ease}, background 1s ease`;
+            outerRing.style.transition   = `transform ${transitionTime}s ${ease}`;
+            outerRing2.style.transition  = `transform ${transitionTime}s ${ease}`;
+
+            breathCore.style.transform  = `scale(${phase.scale})`;
+            outerRing.style.transform   = `scale(${phase.scale * 1.15})`;
+            outerRing2.style.transform  = `scale(${phase.scale * 1.3})`;
+
+            if (phaseKey === 'HOLD') {
+                breathCore.style.filter = "hue-rotate(20deg)";
+            } else if (phaseKey === 'EXHALE') {
+                breathCore.style.filter = "hue-rotate(0deg) saturate(0.8)";
+            } else {
+                breathCore.style.filter = "none";
+            }
+        }
+
+        // ── Run a single phase ────────────────────────────────────────────────
+        function runPhase(phaseName) {
+            if (!isRunning) return Promise.resolve();
+
+            return new Promise(resolve => {
+                const phase = PHASES[phaseName];
+                currentPhase = phaseName;
+
+                applyPhaseStyles(phaseName);
+                timerEl.classList.remove('opacity-0');
+
+                const startTime  = Date.now();
+                const durationMs = phase.time * 1000;
+
+                function tick() {
+                    if (!isRunning) { resolve(); return; }
+
+                    const elapsed    = Date.now() - startTime;
+                    const remaining  = Math.max(0, durationMs - elapsed);
+                    const progressPct = (elapsed / durationMs) * 100;
+
+                    timerEl.textContent = Math.ceil(remaining / 1000);
+
+                    if (phaseName === 'INHALE')      setProgress(progressPct);
+                    else if (phaseName === 'HOLD')   setProgress(100);
+                    else if (phaseName === 'EXHALE') setProgress(100 - progressPct);
+
+                    if (remaining > 0) {
+                        animationFrameId = requestAnimationFrame(tick);
+                    } else {
+                        resolve();
+                    }
+                }
+
+                tick();
+
+                if (navigator.vibrate) {
+                    if (phaseName === 'INHALE') navigator.vibrate(50);
+                    if (phaseName === 'HOLD')   navigator.vibrate([30, 30]);
+                    if (phaseName === 'EXHALE')  navigator.vibrate(100);
+                }
+            });
+        }
+
+        // ── Main breathing loop ───────────────────────────────────────────────
+        async function startBreathingCycle() {
+            while (isRunning) {
+                await runPhase('INHALE');
+                if (!isRunning) break;
+                await runPhase('HOLD');
+                if (!isRunning) break;
+                await runPhase('EXHALE');
+            }
+            resetUI();
+        }
+
+        function resetUI() {
+            currentPhase = 'IDLE';
+            cancelAnimationFrame(animationFrameId);
+            applyPhaseStyles('IDLE');
+            timerEl.classList.add('opacity-0');
+            setProgress(0);
+            btnText.textContent = "Inizia Sessione";
+            toggleBtn.classList.remove('bg-white/20');
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            if (isRunning) {
+                isRunning = false;
+                resetUI();
+            } else {
+                isRunning = true;
+                btnText.textContent = "Ferma Sessione";
+                toggleBtn.classList.add('bg-white/20');
+                startBreathingCycle();
+            }
+        });
+
+        // ── Anti-scroll safety ────────────────────────────────────────────────
+        document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+        window.addEventListener('scroll', () => window.scrollTo(0, 0));
+
+        // ── Autostart via ?autostart=1 (shortcut support) ─────────────────────
+        if (new URLSearchParams(location.search).get('autostart') === '1') {
+            // Small delay to let the page paint first
+            setTimeout(() => toggleBtn.click(), 600);
+        }
+
+        // ── Offline / Online detection ─────────────────────────────────────────
+        function updateOnlineStatus() {
+            offlinePill.classList.toggle('show', !navigator.onLine);
+        }
+        window.addEventListener('online',  updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+
+        // ── PWA Install Prompt ─────────────────────────────────────────────────
+        window.addEventListener('beforeinstallprompt', e => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Show banner after 3 seconds if the user hasn't dismissed before
+            const dismissed = localStorage.getItem('install-dismissed');
+            if (!dismissed) {
+                setTimeout(() => installBanner.classList.add('visible'), 3000);
+            }
+        });
+
+        btnInstall.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            installBanner.classList.remove('visible');
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            if (outcome === 'accepted') localStorage.setItem('install-dismissed', '1');
+        });
+
+        btnDismiss.addEventListener('click', () => {
+            installBanner.classList.remove('visible');
+            localStorage.setItem('install-dismissed', '1');
+        });
+
+        // Hide banner if already installed as standalone
+        if (window.matchMedia('(display-mode: standalone)').matches ||
+            window.navigator.standalone === true) {
+            installBanner.style.display = 'none';
+        }
+
+        // ── Service Worker Registration ────────────────────────────────────────
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', async () => {
+                try {
+                    const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+
+                    // Listen for updates
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // New content available → show toast
+                                updateToast.classList.add('visible');
+                            }
+                        });
+                    });
+
+                    // Reload once the new SW has taken over
+                    btnReload.addEventListener('click', () => {
+                        updateToast.classList.remove('visible');
+                        window.location.reload();
+                    });
+
+                    // Auto-hide toast after 12 seconds if user ignores it
+                    updateToast.addEventListener('transitionend', () => {
+                        if (updateToast.classList.contains('visible')) {
+                            setTimeout(() => updateToast.classList.remove('visible'), 12000);
+                        }
+                    });
+
+                } catch (err) {
+                    console.warn('[SW] Registration failed:', err);
+                }
+            });
+        }
+
+        // ── Init ───────────────────────────────────────────────────────────────
+        initParticles();
+        resetUI();
+    </script>
+</body>
+</html>
