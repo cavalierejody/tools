@@ -3,14 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#16161a">
+
+<!-- ===== PWA / installabilità ===== -->
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" id="meta-theme" content="#16161a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Caselle">
+
+<!-- ===== Icone Apple (splash screen / home screen) ===== -->
+<link rel="apple-touch-icon"       href="./icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="./icons/icon-512.png">
+<link rel="icon" type="image/png"  sizes="192x192" href="./icons/icon-192.png">
+<link rel="icon" type="image/png"  sizes="512x512" href="./icons/icon-512.png">
+
+<!-- ===== SEO / social ===== -->
+<meta name="description" content="Allena il colore delle caselle degli scacchi. Percorso guidato, pratica libera e modalità apprendimento adattivo. Funziona offline.">
 <meta name="format-detection" content="telephone=no">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%2316161a'/><rect x='10' y='10' width='22' height='22' fill='%23ffffff'/><rect x='32' y='10' width='22' height='22' fill='%230a0a0a'/><rect x='10' y='32' width='22' height='22' fill='%230a0a0a'/><rect x='32' y='32' width='22' height='22' fill='%23f2b441'/></svg>">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%2316161a'/><rect x='10' y='10' width='22' height='22' fill='%23ffffff'/><rect x='32' y='10' width='22' height='22' fill='%230a0a0a'/><rect x='10' y='32' width='22' height='22' fill='%230a0a0a'/><rect x='32' y='32' width='22' height='22' fill='%23f2b441'/></svg>">
+
 <title>Bianca o Nera — allena il colore delle caselle</title>
 <style>
   :root{
@@ -19,7 +32,7 @@
     --accent:#f2b441; --accent-ink:#16161a;
     --ok:#3ecf8e; --bad:#ff6b5e;
     --white:#ffffff; --black:#0a0a0a;
-    --scale:1; /* dimensione testo regolabile */
+    --scale:1;
     --r:14px;
     --tap:#ffffff14;
     --stage-bg:#0e0e12;
@@ -48,6 +61,20 @@
   button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   :focus-visible{outline:3px solid var(--accent); outline-offset:3px; border-radius:6px}
   .eyebrow{font-size:.72em;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim);font-weight:700}
+
+  /* ---- banner aggiornamento SW ---- */
+  #update-banner{
+    display:none;position:fixed;top:0;left:0;right:0;z-index:100;
+    background:var(--accent);color:var(--accent-ink);
+    padding:10px 16px;font-size:.82em;font-weight:700;
+    display:none;align-items:center;justify-content:space-between;gap:10px;
+    padding-top:calc(10px + env(safe-area-inset-top));
+  }
+  #update-banner.visible{display:flex}
+  #update-banner button{
+    background:var(--accent-ink);color:var(--accent);
+    border-radius:8px;padding:6px 14px;font-size:.9em;font-weight:800;flex-shrink:0;
+  }
 
   /* ---------- guscio app ---------- */
   #app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:760px;width:100%;margin:0 auto;
@@ -167,7 +194,6 @@
   @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
   @media (max-width:380px){ .hud{gap:10px} .modepick button{padding:6px 9px} }
 
-  /* desktop con mouse: l'app vive come una card centrata, non un sito a tutta larghezza */
   @media (min-width:880px) and (hover:hover) and (pointer:fine){
     body{display:flex;align-items:center;justify-content:center;padding:32px;background:var(--stage-bg)}
     #app{height:min(880px,calc(100dvh - 64px));border-radius:30px;overflow:hidden;
@@ -177,6 +203,13 @@
 </style>
 </head>
 <body>
+
+<!-- Banner aggiornamento SW (compare solo quando c'è una nuova versione cached) -->
+<div id="update-banner" role="status" aria-live="polite">
+  <span>Nuova versione disponibile</span>
+  <button id="btn-update">Aggiorna ora</button>
+</div>
+
 <div id="app">
   <main>
 
@@ -267,8 +300,8 @@
         <div class="setrow">
           <div><div style="font-weight:700">Dimensione testo</div><div class="desc">Ingrandisci tutto a piacere.</div></div>
           <div class="seg" id="seg-scale" role="group" aria-label="Dimensione testo">
-            <button data-scale="1"   aria-pressed="true">Normale</button>
-            <button data-scale="1.2" aria-pressed="false">Grande</button>
+            <button data-scale="1"    aria-pressed="true">Normale</button>
+            <button data-scale="1.2"  aria-pressed="false">Grande</button>
             <button data-scale="1.45" aria-pressed="false">Enorme</button>
           </div>
         </div>
@@ -301,7 +334,7 @@
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7 7 0 0 0-1.7-1L14.5 2h-5l-.3 2.5a7 7 0 0 0-1.7 1l-2.4-1-2 3.4L3 11a7 7 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 1.7 1l.3 2.5h5l.3-2.5a7 7 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6a7 7 0 0 0 .1-1z"/></svg>Impostazioni</button>
   </nav>
 
-  <!-- riscontro a schermo (confinato dentro l'app) -->
+  <!-- riscontro a schermo -->
   <div class="feedback" id="feedback" role="alertdialog" aria-live="assertive" tabindex="-1">
     <div class="fb-mark" id="fb-mark">✓</div>
     <div class="fb-title" id="fb-title">Esatto</div>
@@ -320,18 +353,15 @@
   const FILES = ["a","b","c","d","e","f","g","h"];
   const KEY = "colore-casella";
   const SCHEMA = 1;
-  const PASS_NEEDED = 10;      // risposte buone richieste per sbloccare la riga
-  const PASS_ACC = 0.8;        // accuratezza minima sul rank in prova
-  const ALPHA = 0.3;           // smoothing EMA
-  const T_FAST = 800, T_SLOW = 4000; // ms per normalizzare la lentezza
+  const PASS_NEEDED = 10;
+  const PASS_ACC = 0.8;
+  const ALPHA = 0.3;
+  const T_FAST = 800, T_SLOW = 4000;
   const HIST_CAP = 600;
 
-  // ---------- modello colore ----------
-  // a=0..h=7 ; rank 1..8. mnemonica: (lettera 1-8 + numero) pari => nera
   function isDark(fileIdx, rank){ return ((fileIdx+1)+rank) % 2 === 0; }
   function cellId(fileIdx, rank){ return FILES[fileIdx]+rank; }
 
-  // ---------- stato ----------
   let S = load();
   function blankCell(){ return {seen:0, correct:0, errEma:0, timeEma:0}; }
   function freshState(){
@@ -340,10 +370,10 @@
     return {
       version: SCHEMA,
       cells,
-      path: { rank: 1, run: [] },          // run = ultime risposte sul rank corrente (bool)
+      path: { rank: 1, run: [] },
       streak: { current: 0, best: 0 },
       totals: { answers: 0, correct: 0, timeSum: 0 },
-      history: [],                          // {t,mode,cell,ok,ms}
+      history: [],
       settings: { theme:"night", scale:1, board:false, auto:true }
     };
   }
@@ -352,12 +382,9 @@
       const raw = localStorage.getItem(KEY);
       if(!raw) return freshState();
       const o = JSON.parse(raw);
-      if(o.version !== SCHEMA) return migrate(o);
+      if(o.version !== SCHEMA) return freshState();
       return o;
     }catch(e){ return freshState(); }
-  }
-  function migrate(o){ // posto per migrazioni future; per ora reinizializza preservando nulla
-    const f = freshState(); return f;
   }
   let saveTimer=null;
   function save(){
@@ -365,7 +392,6 @@
     saveTimer = setTimeout(()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }, 120);
   }
 
-  // ---------- difficoltà combinata ----------
   function difficulty(c){
     if(!c || c.seen===0) return null;
     const timeScore = clamp((c.timeEma - T_FAST)/(T_SLOW - T_FAST), 0, 1);
@@ -373,15 +399,13 @@
   }
   function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
 
-  // ---------- selezione casella ----------
   let mode = "path";
-  let current = null;     // {f, r, id, dark}
+  let current = null;
   let askedAt = 0;
   let lastId = null;
 
   function pickPath(){
     const rank = S.path.rank;
-    // 70% sul rank in consolidamento, 30% ripasso dei rank già sbloccati
     let r;
     if(rank>1 && Math.random()<0.30) r = 1 + Math.floor(Math.random()*(rank-1));
     else r = rank;
@@ -390,15 +414,14 @@
   }
   function pickFree(){ return {f:Math.floor(Math.random()*8), r:1+Math.floor(Math.random()*8)}; }
   function pickLearn(){
-    // peso = base + difficoltà^gamma ; non viste ricevono peso esplorativo
     const items=[]; let tot=0;
     for(let f=0; f<8; f++) for(let r=1; r<=8; r++){
       const id=cellId(f,r), c=S.cells[id];
       const d = difficulty(c);
       let w;
-      if(d===null) w = 0.6;                 // esplora le poco viste
-      else w = 0.08 + Math.pow(d, 1.6)*2.2; // insisti sulle difficili
-      if(id===lastId) w*=0.15;              // evita ripetere identica
+      if(d===null) w = 0.6;
+      else w = 0.08 + Math.pow(d, 1.6)*2.2;
+      if(id===lastId) w*=0.15;
       items.push([f,r,w]); tot+=w;
     }
     let x=Math.random()*tot;
@@ -410,7 +433,6 @@
     if(mode==="path") p=pickPath();
     else if(mode==="free") p=pickFree();
     else p=pickLearn();
-    // evita ripetizione immediata
     let guard=0;
     while(cellId(p.f,p.r)===lastId && guard++<6){
       p = mode==="path"?pickPath():mode==="free"?pickFree():pickLearn();
@@ -423,7 +445,6 @@
     setAnswersEnabled(true);
   }
 
-  // ---------- risposta ----------
   let locked=false;
   function answer(guessDark){
     if(locked || !current) return;
@@ -453,7 +474,6 @@
   }
 
   function progressPath(ok){
-    // valuta solo le risposte sul rank attualmente in prova
     if(current.r !== S.path.rank) return;
     S.path.run.push(ok);
     if(S.path.run.length>PASS_NEEDED) S.path.run.shift();
@@ -466,7 +486,6 @@
   }
   let pendingUnlock=null;
 
-  // ---------- riscontro ----------
   function showFeedback(ok, ms){
     const fb=el("feedback");
     fb.className = "feedback show " + (ok?"ok":"bad");
@@ -504,7 +523,6 @@
   }
   function announceUnlock(r){
     live("Hai sbloccato la riga "+r+".");
-    const lb=el("level-banner");
     el("level-text").textContent = "Sbloccata: Riga "+r+" 🎉";
     setTimeout(updateLevelBanner, 1600);
   }
@@ -518,7 +536,6 @@
     }
   }
 
-  // ---------- HUD / banner ----------
   const sess={answers:0, correct:0};
   function updateHud(){
     el("hud-streak").textContent = S.streak.current;
@@ -538,7 +555,7 @@
     el("btn-white").disabled=!on; el("btn-black").disabled=!on;
   }
 
-  // ---------- statistiche ----------
+  /* ---- statistiche ---- */
   function renderStats(){
     const t=S.totals;
     el("s-acc").textContent = t.answers? Math.round(100*t.correct/t.answers)+"%" : "—";
@@ -605,9 +622,8 @@
   function tickLabel(x,y,txt){ return '<text x="'+x+'" y="'+y+'" fill="var(--ink-dim)" font-size="9" font-family="monospace">'+txt+'</text>'; }
   function emptySvg(msg){ return '<text x="150" y="62" fill="var(--ink-dim)" font-size="11" text-anchor="middle">'+msg+'</text>'; }
 
-  // ---------- heatmap ----------
+  /* ---- heatmap ---- */
   function heatColor(d){
-    // scala percettiva blu->giallo->rosso (distinguibile anche da daltonici, + numero in cella)
     const stops=[[47,111,219],[125,176,232],[242,193,78],[232,133,47],[207,59,44]];
     const seg=d*(stops.length-1); const i=Math.min(stops.length-2, Math.floor(seg)); const f=seg-i;
     const a=stops[i], b=stops[i+1];
@@ -616,7 +632,7 @@
   }
   function renderHeatmap(){
     const g=el("heatmap"); g.innerHTML="";
-    g.appendChild(document.createElement("div")); // angolo vuoto
+    g.appendChild(document.createElement("div"));
     for(let f=0; f<8; f++){ const a=document.createElement("div"); a.className="hm-axis"; a.textContent=FILES[f]; g.appendChild(a); }
     let hardest=null, hd=-1, totDiff=0, n=0;
     for(let r=8; r>=1; r--){
@@ -644,7 +660,7 @@
       " · difficoltà media "+Math.round(100*totDiff/n)+"/100 su "+n+" caselle.";
   }
 
-  // ---------- navigazione ----------
+  /* ---- navigazione ---- */
   function show(view){
     document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active", v.id===view));
     document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-current", b.dataset.view===view ? "true":"false"));
@@ -652,7 +668,7 @@
     if(view==="v-map") renderHeatmap();
   }
 
-  // ---------- modalità ----------
+  /* ---- modalità ---- */
   function setMode(m){
     mode=m;
     document.querySelectorAll(".modepick button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.mode===m?"true":"false"));
@@ -663,7 +679,7 @@
     nextQuestion();
   }
 
-  // ---------- impostazioni ----------
+  /* ---- impostazioni ---- */
   function applySettings(){
     document.documentElement.setAttribute("data-theme", S.settings.theme==="day"?"day":"night");
     document.documentElement.style.setProperty("--scale", S.settings.scale);
@@ -671,17 +687,18 @@
     document.querySelectorAll("#seg-scale button").forEach(b=>b.setAttribute("aria-pressed", (+b.dataset.scale)===S.settings.scale?"true":"false"));
     el("tg-board").setAttribute("aria-pressed", S.settings.board?"true":"false");
     el("tg-auto").setAttribute("aria-pressed", S.settings.auto?"true":"false");
-    document.querySelector('meta[name=theme-color]').setAttribute("content", S.settings.theme==="day"?"#faf9f4":"#16161a");
+    const tc = S.settings.theme==="day"?"#faf9f4":"#16161a";
+    document.querySelector('meta[name=theme-color]').setAttribute("content", tc);
   }
 
-  // ---------- util ----------
+  /* ---- util ---- */
   function el(id){ return document.getElementById(id); }
   function live(msg){ const l=el("live"); l.textContent=""; setTimeout(()=>l.textContent=msg,30); }
 
-  // ---------- eventi ----------
+  /* ---- eventi UI ---- */
   el("btn-white").addEventListener("click", ()=>answer(false));
   el("btn-black").addEventListener("click", ()=>answer(true));
-  el("feedback").addEventListener("click", ()=>{ if(!S.settings.auto) dismissFeedback(); else dismissFeedback(); });
+  el("feedback").addEventListener("click", ()=>dismissFeedback());
 
   document.querySelectorAll(".modepick button").forEach(b=>b.addEventListener("click", ()=>setMode(b.dataset.mode)));
   document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click", ()=>show(b.dataset.view)));
@@ -705,23 +722,58 @@
     else if(e.key==="ArrowRight"||e.key.toLowerCase()==="n"){ e.preventDefault(); answer(true); }
   });
 
-  // ---------- avvio ----------
-  // service worker per l'offline (attivo solo se servito via http/https con sw.js accanto)
+  /* ---- Service Worker + banner aggiornamento ---- */
   if("serviceWorker" in navigator && location.protocol.indexOf("http")===0){
-    window.addEventListener("load", ()=>{ navigator.serviceWorker.register("./sw.js").catch(()=>{}); });
+    let waitingSW = null;
+
+    window.addEventListener("load", async () => {
+      try {
+        const reg = await navigator.serviceWorker.register("./sw.js", { scope: "./" });
+
+        // Controlla aggiornamenti periodicamente (ogni 60 minuti)
+        setInterval(() => reg.update(), 60 * 60 * 1000);
+
+        // Nuovo SW pronto in attesa
+        const handleWaiting = (sw) => {
+          waitingSW = sw;
+          el("update-banner").classList.add("visible");
+        };
+
+        if(reg.waiting) handleWaiting(reg.waiting);
+
+        reg.addEventListener("updatefound", () => {
+          const newSW = reg.installing;
+          if(!newSW) return;
+          newSW.addEventListener("statechange", () => {
+            if(newSW.state === "installed" && navigator.serviceWorker.controller){
+              handleWaiting(newSW);
+            }
+          });
+        });
+
+        // Quando il nuovo SW prende il controllo, ricarica la pagina
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          window.location.reload();
+        });
+
+      } catch(err) {
+        console.warn("[PWA] SW non registrato:", err);
+      }
+    });
+
+    // Bottone "Aggiorna ora" nel banner
+    el("btn-update").addEventListener("click", () => {
+      el("update-banner").classList.remove("visible");
+      if(waitingSW){
+        waitingSW.postMessage({ type: "SKIP_WAITING" });
+      }
+    });
+  } else {
+    // Non su http/https: nascondi il banner (non sarà mai usato)
+    el("update-banner").style.display = "none";
   }
 
-  // manifest inline: rende l'app installabile (Aggiungi a schermata Home) senza file esterni
-  try{
-    const ICON="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%2316161a'/><rect x='10' y='10' width='22' height='22' fill='%23ffffff'/><rect x='32' y='10' width='22' height='22' fill='%230a0a0a'/><rect x='10' y='32' width='22' height='22' fill='%230a0a0a'/><rect x='32' y='32' width='22' height='22' fill='%23f2b441'/></svg>";
-    const mf={name:"Bianca o Nera",short_name:"Caselle",display:"standalone",orientation:"any",
-      background_color:"#16161a",theme_color:"#16161a",start_url:".",
-      icons:[{src:ICON,sizes:"any",type:"image/svg+xml",purpose:"any maskable"}]};
-    const link=document.createElement("link"); link.rel="manifest";
-    link.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:"application/manifest+json"}));
-    document.head.appendChild(link);
-  }catch(e){}
-
+  /* ---- Avvio ---- */
   applySettings();
   updateHud();
   setMode("path");
