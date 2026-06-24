@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Fasce di allenamento · Test dei 6 minuti</title>
+<title>6min · Zone di allenamento</title>
 
 <!-- ── PWA ────────────────────────────────────────────────── -->
 <link rel="manifest" href="manifest.json">
@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Fasce">
+<meta name="apple-mobile-web-app-title" content="6min">
 <link rel="apple-touch-icon" href="icons/icon-152.png">
 <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
@@ -645,7 +645,7 @@
   const btnInstall = document.getElementById('btn-install');
   const btnDismiss = document.getElementById('btn-dismiss-install');
 
-  const DISMISSED_KEY = 'fasce_install_dismissed';
+  const DISMISSED_KEY = '6min_install_dismissed';
 
   window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault();
@@ -689,7 +689,7 @@
   window.addEventListener('offline', showOfflineToast);
 
   // ── PWA: Persist user inputs in localStorage ───────────────────────────
-  const STORAGE_KEY = 'fasce_inputs';
+  const STORAGE_KEY = '6min_inputs';
 
   function saveInputs() {
     try {
@@ -1246,14 +1246,14 @@
     ctx.fillStyle = "#9AA6B0";
     ctx.fillText(dateStr, P, fy + 22);
     ctx.textAlign = "right";
-    ctx.fillText("fasce-cardiache · test dei 6 minuti", W - P, fy + 22);
+    ctx.fillText("6min · test dei 6 minuti", W - P, fy + 22);
     ctx.textAlign = "left";
 
     return c;
   }
 
   function fileName() {
-    return "fasce-" + (mode === "fc" ? "zone-cardio" : "zone-ritmo");
+    return "6min-" + (mode === "fc" ? "zone-cardio" : "zone-ritmo");
   }
 
   async function getExportCanvas() {
@@ -1311,7 +1311,7 @@
       const file = new File([blob], fileName() + ".jpg", { type: "image/jpeg" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
-          title: "Le mie fasce di allenamento",
+          title: "6min · Le mie zone",
           text: mode === "fc"
             ? "Le mie zone cardiache (FCmax " + fcmaxEl.value + " bpm)"
             : "Le mie zone di ritmo (VAM " + (parseInt(distEl.value, 10) / 100).toFixed(1) + " km/h)",

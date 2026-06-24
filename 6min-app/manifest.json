@@ -1,6 +1,6 @@
 {
-  "name": "Fasce di Allenamento",
-  "short_name": "Fasce",
+  "name": "6min",
+  "short_name": "6min",
   "description": "Calcolatore zone cardiache e di ritmo dal test dei 6 minuti",
   "start_url": "./index.html",
   "display": "standalone",
