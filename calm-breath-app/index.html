@@ -200,8 +200,9 @@
         /* ── Update notification toast ─────────────────────────────────────── */
         #update-toast {
             position: fixed;
-            top: max(1rem, env(safe-area-inset-top));
-            left: 50%; transform: translateX(-50%) translateY(-120%);
+            top: -6rem; /* ben fuori dallo schermo, indipendente dall'altezza dell'elemento */
+            left: 50%;
+            transform: translateX(-50%);
             background: rgba(15, 30, 80, 0.92);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -212,16 +213,11 @@
             font-size: 0.8rem;
             white-space: nowrap;
             z-index: 1000;
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             display: flex; align-items: center; gap: 0.6rem;
         }
-        #update-toast.visible { transform: translateX(-50%) translateY(0); }
-        #btn-reload {
-            background: #06b6d4; color: #fff;
-            border: none; border-radius: 999px;
-            padding: 0.25rem 0.75rem;
-            font-size: 0.75rem; font-weight: 700;
-            cursor: pointer; font-family: 'Quicksand', sans-serif;
+        #update-toast.visible {
+            top: max(1rem, env(safe-area-inset-top));
         }
 
         /* ── Offline indicator ─────────────────────────────────────────────── */
