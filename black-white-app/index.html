@@ -13,12 +13,12 @@
 <meta name="apple-mobile-web-app-title" content="Caselle">
 
 <!-- Icone -->
-<link rel="apple-touch-icon" href="./icons/icon-152.png">
-<link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152.png">
-<link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192.png">
-<link rel="apple-touch-icon" sizes="512x512" href="./icons/icon-512.png">
-<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png">
+<link rel="apple-touch-icon" href="./icon-152.png">
+<link rel="apple-touch-icon" sizes="152x152" href="./icon-152.png">
+<link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
 
 <meta name="description" content="Allena il colore e la visualizzazione delle caselle degli scacchi. Percorso, pratica adattiva, sprint e sfida giornaliera. Funziona offline.">
 <meta name="format-detection" content="telephone=no">
@@ -116,12 +116,14 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
 .level-banner .bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
 .submode-bar{padding:7px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;flex:0 0 auto}
 .submode-label{font-size:.7em;color:var(--ink-dim);font-weight:750;text-transform:uppercase;letter-spacing:.08em}
+.audio-bar .seg button[disabled]{opacity:.48}
 
 /* Stage e domande */
 .stage{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
 .question{flex:0 0 auto;text-align:center;padding:20px 16px 8px}
 .question .q-label{font-size:.84em;color:var(--ink-dim);margin-bottom:5px;min-height:1.45em}
 .coord{font-size:min(38vw,31vh,240px);font-weight:850;letter-spacing:.02em;line-height:.9;text-transform:uppercase}
+.coord.voice-hidden{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:min(25vw,18vh,120px);color:var(--accent);line-height:1}
 .q-detail{font-size:.82em;color:var(--ink-dim);margin:10px auto 0;max-width:460px}
 .answers{flex:1;min-height:155px;display:flex;gap:12px;padding:6px 14px 14px}
 .answers button{
@@ -191,6 +193,10 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
 .chartbox{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:15px;margin-top:13px}
 .chartbox h3{margin:0 0 4px;font-size:.93em}.chartbox p{margin:0 0 11px;font-size:.72em;color:var(--ink-dim)}
 .chartbox svg{width:100%;height:120px;display:block}.recommendations .secondary{margin-top:2px}
+.diagnosis-list{display:grid;gap:8px}.diagnosis-empty{font-size:.75em;color:var(--ink-dim);padding:8px 0 2px}
+.diagnosis-item{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel-2);border:1px solid var(--line);border-radius:11px;padding:10px 11px}
+.diagnosis-copy{min-width:0}.diagnosis-copy strong{display:block;font-size:.8em}.diagnosis-copy span{display:block;margin-top:2px;font-size:.66em;color:var(--ink-dim)}
+.diagnosis-item button{flex:0 0 auto;background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:7px 9px;font-size:.68em;font-weight:800}
 
 /* Heatmap */
 .hm-wrap{display:flex;flex-direction:column;align-items:center}
@@ -206,6 +212,8 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
 .setrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 14px;padding:14px 0;border-bottom:1px solid var(--line)}
 .setrow>div:first-child{flex:1 1 165px;min-width:0}.setrow .seg,.setrow .toggle{flex:0 0 auto}
 .settitle{font-weight:750}.desc{font-size:.72em;color:var(--ink-dim);margin-top:2px}
+.install-settings{margin:0 0 8px;padding:13px 14px;background:var(--panel);border:1px solid var(--accent);border-radius:var(--r)}
+.install-settings .desc.is-error{color:var(--bad)}
 .toggle{width:54px;height:32px;border-radius:99px;background:var(--panel-2);position:relative;flex:0 0 auto}
 .toggle[aria-pressed="true"]{background:var(--accent)}
 .toggle::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;transition:left .18s;box-shadow:0 1px 4px #0004}
@@ -224,7 +232,7 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
 .install-prompt:not([hidden]){animation:install-up .28s cubic-bezier(.2,.8,.2,1) both}
 @keyframes install-up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 .install-icon{width:46px;height:46px;border-radius:12px;overflow:hidden;background:var(--panel-2)}
-.install-icon img{display:block;width:100%;height:100%;object-fit:cover}.install-copy{min-width:0}
+.install-icon svg{display:block;width:100%;height:100%}.install-copy{min-width:0}
 .install-title{font-size:.86em;font-weight:850;line-height:1.2}.install-text{margin-top:3px;font-size:.68em;line-height:1.35;color:var(--ink-dim)}
 .install-text strong{color:var(--ink)}
 .install-share{display:inline-flex;width:18px;height:18px;vertical-align:-4px;align-items:center;justify-content:center;color:var(--accent)}
@@ -288,6 +296,7 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
             <button data-mode="learn" aria-pressed="false" type="button">Apprendi</button>
             <button data-mode="sprint" aria-pressed="false" type="button">Sprint</button>
             <button data-mode="daily" aria-pressed="false" type="button">Oggi</button>
+            <button data-mode="audio" aria-pressed="false" type="button">Audio</button>
             <button data-mode="advanced" aria-pressed="false" type="button">Avanzata</button>
           </div>
         </div>
@@ -309,6 +318,15 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
           <button data-advanced="locate" aria-pressed="true" type="button">Trova</button>
           <button data-advanced="diagonal" aria-pressed="false" type="button">Diagonali</button>
           <button data-advanced="knight" aria-pressed="false" type="button">Cavallo</button>
+          <button data-advanced="paths" aria-pressed="false" type="button">Percorsi</button>
+        </div>
+      </div>
+
+      <div class="submode-bar audio-bar" id="audio-bar" hidden>
+        <span class="submode-label">Coordinate vocali</span>
+        <div class="seg compact" role="group" aria-label="Comandi audio">
+          <button id="btn-voice-toggle" aria-pressed="false" type="button">Voce: OFF</button>
+          <button id="btn-replay-voice" type="button" disabled>Riascolta</button>
         </div>
       </div>
 
@@ -354,6 +372,7 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
             <button data-filter="learn" aria-pressed="false" type="button">Apprendi</button>
             <button data-filter="sprint" aria-pressed="false" type="button">Sprint</button>
             <button data-filter="daily" aria-pressed="false" type="button">Oggi</button>
+            <button data-filter="audio" aria-pressed="false" type="button">Audio</button>
             <button data-filter="advanced" aria-pressed="false" type="button">Avanzata</button>
           </div>
         </div>
@@ -380,6 +399,11 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
           <p id="recommendation-text">Completa qualche domanda per ricevere un consiglio.</p>
           <button class="secondary small" id="btn-recommended-training" type="button" hidden>Allena ora</button>
         </div>
+        <div class="chartbox diagnosis" id="diagnosis-box">
+          <h3>Diagnosi degli errori</h3>
+          <p>Individua schemi ricorrenti nelle risposte recenti, non soltanto singole caselle.</p>
+          <div class="diagnosis-list" id="diagnosis-list"></div>
+        </div>
       </div>
     </section>
 
@@ -402,6 +426,11 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
       <div class="pad">
         <h1 class="title">Impostazioni</h1>
         <p class="sub">Adatta lettura, feedback e durata degli esercizi.</p>
+
+        <div class="setrow actions-row install-settings" id="install-settings-row" hidden>
+          <div><div class="settitle">Installa Caselle</div><div class="desc" id="install-settings-desc">Verifico se l’installazione nativa è disponibile…</div></div>
+          <button class="primary small" id="btn-install-settings" type="button">Verifica</button>
+        </div>
 
         <div class="setrow">
           <div><div class="settitle">Tema</div><div class="desc">Entrambi ad alto contrasto.</div></div>
@@ -441,6 +470,11 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
         </div>
 
         <div class="setrow">
+          <div><div class="settitle">Coordinate pronunciate</div><div class="desc">Nella modalità Audio legge la casella ad alta voce. I toni di risposta restano separati.</div></div>
+          <button class="toggle" id="tg-voice" role="switch" aria-pressed="false" aria-label="Coordinate pronunciate" type="button"></button>
+        </div>
+
+        <div class="setrow">
           <div><div class="settitle">Durata Sprint</div><div class="desc">Puoi cambiarla prima di ogni nuova prova.</div></div>
           <div class="seg" id="seg-sprint" role="group" aria-label="Durata Sprint">
             <button data-sprint="30" aria-pressed="false" type="button">30 s</button>
@@ -470,7 +504,14 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
 
   <!-- Popup installazione PWA -->
   <aside id="install-prompt" class="install-prompt" hidden aria-live="polite" aria-labelledby="install-title">
-    <div class="install-icon" aria-hidden="true"><img src="./icons/icon-192.png" alt=""></div>
+    <div class="install-icon" aria-hidden="true">
+      <svg viewBox="0 0 64 64" focusable="false">
+        <rect width="64" height="64" rx="14" fill="#16161a"/>
+        <rect x="14" y="14" width="36" height="36" rx="5" fill="#f2b441"/>
+        <path fill="#f5f5f2" d="M18 18h7v7h-7zm14 0h7v7h-7zm7 7h7v7h-7zm-14 0h7v7h-7zm-7 7h7v7h-7zm14 0h7v7h-7zm7 7h7v7h-7zm-14 0h7v7h-7z"/>
+        <path fill="#090909" d="M25 18h7v7h-7zm14 0h7v7h-7zm-21 7h7v7h-7zm14 0h7v7h-7zm-7 7h7v7h-7zm14 0h7v7h-7zm-21 7h7v7h-7zm14 0h7v7h-7z"/>
+      </svg>
+    </div>
     <div class="install-copy">
       <div class="install-title" id="install-title">Installa Caselle</div>
       <div class="install-text" id="install-text">Aprila come un’app e usala anche offline.</div>
@@ -565,8 +606,8 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
   const DAY = 86400000;
   const ALPHA = 0.30;
   const MODE_NAMES = {
-    path:"Percorso",free:"Libera",learn:"Apprendi",sprint:"Sprint",daily:"Sfida giornaliera",
-    "advanced-locate":"Trova la casella","advanced-diagonal":"Diagonali","advanced-knight":"Cavallo"
+    path:"Percorso",free:"Libera",learn:"Apprendi",sprint:"Sprint",daily:"Sfida giornaliera",audio:"Audio",
+    "advanced-locate":"Trova la casella","advanced-diagonal":"Diagonali","advanced-knight":"Cavallo","advanced-paths":"Percorsi mentali"
   };
 
   function el(id){ return document.getElementById(id); }
@@ -596,7 +637,7 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
       totals:{answers:0,correct:0,timeSum:0},
       byMode:{},history:[],sessions:[],
       daily:{records:{}},
-      settings:{theme:"night",scale:1,board:false,auto:true,haptics:true,sound:false,sprintSeconds:60,onboardingDone:false}
+      settings:{theme:"night",scale:1,board:false,auto:true,haptics:true,sound:false,voicePrompts:false,sprintSeconds:60,onboardingDone:false}
     };
   }
   function finiteNumber(value,fallback=0){ return Number.isFinite(+value)?+value:fallback; }
@@ -661,6 +702,7 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
     out.settings.theme=out.settings.theme==="day"?"day":"night";
     out.settings.scale=[1,1.2,1.45].includes(+out.settings.scale)?+out.settings.scale:1;
     out.settings.sprintSeconds=+out.settings.sprintSeconds===30?30:60;
+    out.settings.voicePrompts=!!out.settings.voicePrompts;
     out.version=SCHEMA;
 
     if(Object.keys(out.byMode).length===0){
@@ -723,6 +765,9 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
   let dailySequence=[],dailyIndex=0;
   let summaryData=null;
   let audioContext=null;
+  let speechToken=0;
+  let mentalPieceIndex=0;
+  let recommendedFocusIds=[];
   const sprint={running:false,endsAt:0,durationMs:60000,timer:null,pausedAt:0};
   let session=makeSession("path");
 
@@ -772,9 +817,59 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
   function shuffle(array){
     for(let i=array.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[array[i],array[j]]=[array[j],array[i]];}return array;
   }
+  const MENTAL_PIECES=["knight","bishop","rook"];
+  function mentalMoveOptions(piece,f,r){
+    const out=[];
+    if(piece==="knight"){
+      for(const point of knightSquares(f,r)){
+        const dx=point.f-f,dr=point.r-r;
+        out.push({...point,label:Math.abs(dx)+(dx>0?"→":"←")+" "+Math.abs(dr)+(dr>0?"↑":"↓")});
+      }
+    }else if(piece==="bishop"){
+      for(const point of diagonalSquares(f,r)){
+        const dx=point.f-f,dr=point.r-r,arrow=dx>0?(dr>0?"↗":"↘"):(dr>0?"↖":"↙");
+        out.push({...point,label:Math.abs(dx)+arrow});
+      }
+    }else{
+      for(let tf=0;tf<8;tf++)if(tf!==f)out.push({f:tf,r,label:Math.abs(tf-f)+(tf>f?"→":"←")});
+      for(let tr=1;tr<=8;tr++)if(tr!==r)out.push({f,r:tr,label:Math.abs(tr-r)+(tr>r?"↑":"↓")});
+    }
+    return out;
+  }
+  function buildMentalPathQuestion(){
+    const piece=MENTAL_PIECES[mentalPieceIndex%MENTAL_PIECES.length],pieceLabel={knight:"Cavallo",bishop:"Alfiere",rook:"Torre"}[piece];
+    const steps=2+Math.min(2,Math.floor((session&&session.answers||0)/7));
+    for(let attempt=0;attempt<80;attempt++){
+      const start=randomCell(),startId=cellId(start.f,start.r),moves=[];let point={...start};
+      for(let step=0;step<steps;step++){
+        const options=mentalMoveOptions(piece,point.f,point.r);
+        if(!options.length)break;
+        const move=options[Math.floor(Math.random()*options.length)];moves.push(move.label);point={f:move.f,r:move.r};
+      }
+      const id=cellId(point.f,point.r);
+      if(moves.length!==steps||id===startId)continue;
+      const targetDark=isDark(point.f,point.r),sameColor=[],others=[];
+      for(let f=0;f<8;f++)for(let r=1;r<=8;r++){
+        const candidate=cellId(f,r);if(candidate===id||candidate===startId)continue;
+        (isDark(f,r)===targetDark?sameColor:others).push(candidate);
+      }
+      shuffle(sameColor);shuffle(others);
+      const choices=shuffle([id,...sameColor,...others].slice(0,4));mentalPieceIndex++;
+      const pathText=moves.join(" · ");
+      return {f:point.f,r:point.r,id,dark:targetDark,type:"choice",kind:"paths",startId,startF:start.f,startR:start.r,
+        piece,pieceLabel,pathText,correctChoice:id,choices,explanation:startId.toUpperCase()+" · "+pieceLabel+": "+pathText+" → "+id.toUpperCase()+"."};
+    }
+    const fallbackRoutes={knight:[[0,1],[2,2],[4,3],[6,4],[4,5]],bishop:[[0,1],[1,2],[2,3],[3,4],[4,5]],rook:[[0,1],[0,2],[1,2],[1,3],[2,3]]};
+    const route=fallbackRoutes[piece],moves=[];for(let i=1;i<=steps;i++){const from=route[i-1],to=route[i],move=mentalMoveOptions(piece,from[0],from[1]).find(item=>item.f===to[0]&&item.r===to[1]);moves.push(move.label);}
+    const start=route[0],point=route[steps],startId=cellId(start[0],start[1]),id=cellId(point[0],point[1]),sameColor=[];
+    for(let f=0;f<8;f++)for(let r=1;r<=8;r++){const candidate=cellId(f,r);if(candidate!==id&&candidate!==startId&&isDark(f,r)===isDark(point[0],point[1]))sameColor.push(candidate);}
+    shuffle(sameColor);const choices=shuffle([id,...sameColor.slice(0,3)]),pathText=moves.join(" · ");mentalPieceIndex++;
+    return {f:point[0],r:point[1],id,dark:isDark(point[0],point[1]),type:"choice",kind:"paths",startId,startF:start[0],startR:start[1],piece,pieceLabel,pathText,correctChoice:id,choices,explanation:startId.toUpperCase()+" · "+pieceLabel+": "+pathText+" → "+id.toUpperCase()+"."};
+  }
   function buildAdvancedQuestion(){
     const start=randomCell(),id=cellId(start.f,start.r);
     if(advancedMode==="locate") return {f:start.f,r:start.r,id,dark:isDark(start.f,start.r),type:"locate",kind:"locate"};
+    if(advancedMode==="paths") return buildMentalPathQuestion();
     const legal=advancedMode==="diagonal"?diagonalSquares(start.f,start.r):knightSquares(start.f,start.r);
     if(legal.length===0) return buildAdvancedQuestion();
     const correct=legal[Math.floor(Math.random()*legal.length)],correctId=cellId(correct.f,correct.r);
@@ -823,7 +918,7 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
     updateLevelBanner();updateHud();
   }
   function prepareMode(){
-    stopSprint(false);pendingAfterFeedback=null;pendingUnlock=null;locked=false;clearTimeout(autoTimer);
+    stopSprint(false);cancelSpeech();pendingAfterFeedback=null;pendingUnlock=null;locked=false;clearTimeout(autoTimer);
     el("feedback").classList.remove("show");
     resetSession(recordModeKey());
     if(mode==="sprint"){showStartCard("sprint");return;}
@@ -835,22 +930,25 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
     if((mode==="sprint"&&!sprint.running)||mode==="daily"&&dailyIndex>=20) return;
     hideStartCard();ensureSession();
     current=pickQuestion();lastId=current.id;renderQuestion();startQuestionClock();setAnswersEnabled(true);locked=false;
+    if(mode==="audio"&&S.settings.voicePrompts)setTimeout(()=>speakCurrentCoordinate(),30);
     updateLevelBanner();updateHud();
   }
   function renderQuestion(){
-    const q=current;el("choice-answers").innerHTML="";el("training-board").innerHTML="";
+    const q=current,coord=el("coord");el("choice-answers").innerHTML="";el("training-board").innerHTML="";
+    coord.classList.remove("voice-hidden");coord.removeAttribute("aria-label");
     el("q-detail").hidden=true;el("locate-wrap").hidden=true;el("choice-answers").hidden=true;el("color-answers").hidden=true;
     if(q.type==="color"){
-      el("coord").textContent=q.id.toUpperCase();
-      el("q-label").textContent=mode==="learn"?"Ripasso adattivo: di che colore è":mode==="daily"?"Sfida di oggi: di che colore è":"Di che colore è la casella";
+      if(mode==="audio"&&S.settings.voicePrompts){coord.textContent="🔊";coord.classList.add("voice-hidden");coord.setAttribute("aria-label","Coordinata pronunciata");}
+      else coord.textContent=q.id.toUpperCase();
+      el("q-label").textContent=mode==="learn"?"Ripasso adattivo: di che colore è":mode==="daily"?"Sfida di oggi: di che colore è":mode==="audio"?(S.settings.voicePrompts?"Ascolta e scegli il colore":"Modalità Audio: di che colore è"):"Di che colore è la casella";
       el("color-answers").hidden=false;el("hint-keys").textContent="Da tastiera: ← Bianca · → Nera";
     }else if(q.type==="locate"){
-      el("coord").textContent=q.id.toUpperCase();el("q-label").textContent="Tocca questa casella sulla scacchiera";
+      coord.textContent=q.id.toUpperCase();el("q-label").textContent="Tocca questa casella sulla scacchiera";
       el("locate-wrap").hidden=false;el("hint-keys").textContent="Orientamento: il Bianco è in basso";buildTrainingBoard();
     }else{
-      el("coord").textContent=q.id.toUpperCase();
-      el("q-label").textContent=q.kind==="diagonal"?"Quale casella è sulla stessa diagonale?":"Quale casella può raggiungere il cavallo?";
-      el("q-detail").textContent=q.kind==="diagonal"?"Scegli una destinazione valida per un alfiere.":"Scegli una delle mosse a L valide.";
+      coord.textContent=(q.kind==="paths"?q.startId:q.id).toUpperCase();
+      el("q-label").textContent=q.kind==="diagonal"?"Quale casella è sulla stessa diagonale?":q.kind==="paths"?"Dove arrivi con questo percorso?":"Quale casella può raggiungere il cavallo?";
+      el("q-detail").textContent=q.kind==="diagonal"?"Scegli una destinazione valida per un alfiere.":q.kind==="paths"?q.pieceLabel+" · "+q.pathText:"Scegli una delle mosse a L valide.";
       el("q-detail").hidden=false;el("choice-answers").hidden=false;el("hint-keys").textContent="Da tastiera: tasti 1–4";
       q.choices.forEach((id,index)=>{
         const button=document.createElement("button");button.type="button";button.textContent=id.toUpperCase();button.dataset.choice=id;
@@ -872,6 +970,23 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
   function responseTime(){
     if(questionPausedAt) resumeQuestionClock();
     return clamp(Math.round(performance.now()-askedAt),100,60000);
+  }
+  function voiceSupported(){return "speechSynthesis" in window&&"SpeechSynthesisUtterance" in window;}
+  function cancelSpeech(){
+    speechToken++;if(voiceSupported()){try{window.speechSynthesis.cancel();}catch(e){}}
+  }
+  function coordinateSpeech(id){
+    const numbers=["","uno","due","tre","quattro","cinque","sei","sette","otto"];
+    return "Casella "+id.charAt(0).toUpperCase()+", "+numbers[+id.slice(1)];
+  }
+  function speakCurrentCoordinate(){
+    if(mode!=="audio"||!current||current.type!=="color"||!S.settings.voicePrompts||locked||!voiceSupported())return;
+    cancelSpeech();const token=++speechToken,utterance=new SpeechSynthesisUtterance(coordinateSpeech(current.id));
+    utterance.lang="it-IT";utterance.rate=.86;utterance.pitch=1;
+    try{const voices=window.speechSynthesis.getVoices?window.speechSynthesis.getVoices():[],italian=voices.find(voice=>/^it([-_]|$)/i.test(voice.lang));if(italian)utterance.voice=italian;}catch(e){}
+    const restartClock=()=>{if(token===speechToken&&mode==="audio"&&current&&!locked)startQuestionClock();};
+    utterance.onend=restartClock;utterance.onerror=restartClock;
+    try{window.speechSynthesis.speak(utterance);}catch(e){showToast("Sintesi vocale non disponibile");}
   }
   function setAnswersEnabled(on){
     el("btn-white").disabled=!on;el("btn-black").disabled=!on;
@@ -915,7 +1030,7 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
 
   function submitAnswer(ok){
     if(locked||!current)return;
-    locked=true;setAnswersEnabled(false);
+    cancelSpeech();locked=true;setAnswersEnabled(false);
     const ms=responseTime();recordResult(ok,ms);triggerFeedbackEffects(ok);
     const pathOutcome=mode==="path"?progressPath(ok,ms):null;
     if(mode==="daily")dailyIndex++;
@@ -932,7 +1047,7 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
 
   function sessionEndReason(){
     if(mode==="daily"&&dailyIndex>=20)return {kind:"daily"};
-    if((mode==="free"||mode==="learn"||mode==="advanced"||(mode==="path"&&S.path.completed))&&session.answers>=SESSION_GOAL)return {kind:"session"};
+    if((mode==="free"||mode==="learn"||mode==="audio"||mode==="advanced"||(mode==="path"&&S.path.completed))&&session.answers>=SESSION_GOAL)return {kind:"session"};
     return null;
   }
   function progressPath(ok,ms){
@@ -1114,17 +1229,21 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
     }else if(mode==="daily"){
       text.textContent="Sfida · "+new Intl.DateTimeFormat("it",{day:"numeric",month:"short"}).format(new Date());prog.textContent=dailyIndex+"/20";fill.style.width=100*dailyIndex/20+"%";
     }else{
-      const labels={free:"Pratica libera",learn:"Ripasso adattivo",advanced:"Allenamento avanzato"};text.textContent=labels[mode];const n=session?session.answers:0;prog.textContent=n+"/"+SESSION_GOAL;fill.style.width=100*Math.min(n,SESSION_GOAL)/SESSION_GOAL+"%";
+      const labels={free:"Pratica libera",learn:"Ripasso adattivo",audio:"Allenamento audio",advanced:"Allenamento avanzato"};text.textContent=labels[mode];const n=session?session.answers:0;prog.textContent=n+"/"+SESSION_GOAL;fill.style.width=100*Math.min(n,SESSION_GOAL)/SESSION_GOAL+"%";
     }
   }
 
-  function setMode(next){
+  function syncModeUrl(next){
+    try{const url=new URL(location.href);if(["daily","sprint","learn","audio"].includes(next))url.searchParams.set("mode",next);else url.searchParams.delete("mode");history.replaceState(null,"",url.pathname+url.search+url.hash);}catch(e){}
+  }
+  function setMode(next,syncUrl=true){
     if(next===mode&&current&&!el("start-card").hidden)return;
-    mode=next;document.querySelectorAll(".modepick button").forEach(button=>button.setAttribute("aria-pressed",button.dataset.mode===mode?"true":"false"));
-    el("advanced-bar").hidden=mode!=="advanced";prepareMode();
+    cancelSpeech();mode=next;if(syncUrl)syncModeUrl(next);
+    document.querySelectorAll(".modepick button").forEach(button=>button.setAttribute("aria-pressed",button.dataset.mode===mode?"true":"false"));
+    el("advanced-bar").hidden=mode!=="advanced";el("audio-bar").hidden=mode!=="audio";prepareMode();
   }
   function setAdvancedMode(next){
-    advancedMode=next;document.querySelectorAll("[data-advanced]").forEach(button=>button.setAttribute("aria-pressed",button.dataset.advanced===next?"true":"false"));
+    cancelSpeech();advancedMode=next;document.querySelectorAll("[data-advanced]").forEach(button=>button.setAttribute("aria-pressed",button.dataset.advanced===next?"true":"false"));
     if(mode==="advanced"){resetSession(recordModeKey());nextQuestion();}
   }
 
@@ -1150,7 +1269,7 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
     el("s-time").textContent=total.answers?formatSeconds(total.timeSum/total.answers):"—";
     el("s-best").textContent=total.best||0;el("s-total").textContent=total.answers||0;el("s-days").textContent=dailyStreak();
     el("s-sessions").textContent=S.sessions.filter(item=>matchesFilter(item.mode)).length;
-    drawAccChart(history);drawTimeChart(history);renderRecommendation();
+    drawAccChart(history);drawTimeChart(history);const diagnoses=renderDiagnosis();renderRecommendation(diagnoses);
   }
   function rolling(history,kind){
     if(history.length<3)return[];const width=Math.min(20,Math.max(5,Math.floor(history.length/4))),out=[];
@@ -1180,15 +1299,52 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
   function hardestIds(limit=3){
     return Object.entries(S.cells).map(([id,cell])=>({id,d:difficulty(cell)})).filter(item=>item.d!==null).sort((a,b)=>b.d-a.d).slice(0,limit).map(item=>item.id);
   }
-  function renderRecommendation(){
-    const ids=hardestIds(3),button=el("btn-recommended-training");
+  function diagnosisGroups(){
+    const groups=[
+      {key:"odd-files",label:"Colonne A/C/E/G",test:(f,r)=>f%2===0},
+      {key:"even-files",label:"Colonne B/D/F/H",test:(f,r)=>f%2===1},
+      {key:"low-ranks",label:"Traverse 1–4",test:(f,r)=>r<=4},
+      {key:"high-ranks",label:"Traverse 5–8",test:(f,r)=>r>=5},
+      {key:"center",label:"Centro C3–F6",test:(f,r)=>f>=2&&f<=5&&r>=3&&r<=6},
+      {key:"edges",label:"Bordi della scacchiera",test:(f,r)=>f===0||f===7||r===1||r===8},
+      {key:"light",label:"Caselle bianche",test:(f,r)=>!isDark(f,r)},
+      {key:"dark",label:"Caselle nere",test:(f,r)=>isDark(f,r)}
+    ];
+    return groups.map(group=>({...group,ids:Object.keys(S.cells).filter(id=>{const p=parseCell(id);return group.test(p.f,p.r);})}));
+  }
+  function errorDiagnoses(){
+    const recent=S.history.filter(item=>item.kind==="color").slice(-400);if(recent.length<8)return[];
+    const baseline=recentBaseline(),overallError=recent.filter(item=>!item.ok).length/recent.length;
+    return diagnosisGroups().map(group=>{
+      const samples=recent.filter(item=>group.ids.includes(item.cell));if(samples.length<8)return null;
+      const errors=samples.filter(item=>!item.ok).length,errorRate=errors/samples.length;
+      const avgMs=samples.reduce((sum,item)=>sum+clamp(item.ms,100,15000),0)/samples.length;
+      const speedPenalty=clamp(avgMs/baseline-1,0,1),score=.62*errorRate+.18*Math.max(0,errorRate-overallError)+.20*speedPenalty;
+      return {...group,samples:samples.length,accuracy:1-errorRate,avgMs,score,critical:errorRate>=.16||avgMs>baseline*1.18};
+    }).filter(Boolean).filter(item=>item.critical).sort((a,b)=>b.score-a.score).slice(0,3);
+  }
+  function renderDiagnosis(){
+    const list=el("diagnosis-list"),diagnoses=errorDiagnoses(),colorAnswers=S.history.filter(item=>item.kind==="color").length;list.innerHTML="";
+    if(!diagnoses.length){const empty=document.createElement("div");empty.className="diagnosis-empty";empty.textContent=colorAnswers<8?"Servono almeno 8 risposte sul colore per riconoscere uno schema.":"Nessun pattern critico nelle risposte recenti.";list.appendChild(empty);return[];}
+    diagnoses.forEach(item=>{
+      const row=document.createElement("div");row.className="diagnosis-item";
+      const copy=document.createElement("div");copy.className="diagnosis-copy";copy.innerHTML="<strong>"+item.label+"</strong><span>"+Math.round(item.accuracy*100)+"% corrette · "+formatSeconds(item.avgMs)+" · "+item.samples+" risposte</span>";
+      const button=document.createElement("button");button.type="button";button.textContent="Allena";button.setAttribute("aria-label","Allena "+item.label);button.addEventListener("click",()=>startFocusedTraining(item.ids,item.label));
+      row.append(copy,button);list.appendChild(row);
+    });
+    return diagnoses;
+  }
+  function renderRecommendation(diagnoses=[]){
+    const button=el("btn-recommended-training");
+    if(diagnoses.length){const top=diagnoses[0];recommendedFocusIds=top.ids.slice();el("recommendation-text").textContent="Il pattern più debole è "+top.label+". Un ripasso mirato può separare gli errori sistematici da quelli occasionali.";button.hidden=false;return;}
+    const ids=hardestIds(3);recommendedFocusIds=ids.slice();
     if(!ids.length){el("recommendation-text").textContent="Completa qualche domanda per ricevere un consiglio.";button.hidden=true;return;}
     const average=S.totals.answers?S.totals.correct/S.totals.answers:0;
     el("recommendation-text").textContent=(average<.8?"Consolida":"Lavora sulla velocità di")+" "+ids.map(id=>id.toUpperCase()).join(", ")+" con un ripasso mirato.";
     button.hidden=false;
   }
-  function startFocusedTraining(ids=hardestIds(3)){
-    if(!ids.length)return;focusIds=ids.slice();show("v-play");setMode("learn");showToast("Ripasso: "+ids.map(id=>id.toUpperCase()).join(", "));
+  function startFocusedTraining(ids=hardestIds(3),label=""){
+    if(!ids.length)return;focusIds=ids.slice();show("v-play");setMode("learn");showToast(label?"Ripasso: "+label:"Ripasso: "+ids.map(id=>id.toUpperCase()).join(", "));
   }
 
   function heatColor(value){
@@ -1218,19 +1374,30 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
   function show(view){
     document.querySelectorAll(".view").forEach(node=>node.classList.toggle("active",node.id===view));
     document.querySelectorAll("nav button").forEach(button=>button.setAttribute("aria-current",button.dataset.view===view?"true":"false"));
-    if(view==="v-stats")renderStats();if(view==="v-map")renderHeatmap();
-    if(view!=="v-play"){pauseQuestionClock();pauseSprint();}else{resumeQuestionClock();resumeSprint();}
+    if(view==="v-stats")renderStats();if(view==="v-map")renderHeatmap();if(view==="v-set")updateInstallEntry();
+    if(view!=="v-play"){cancelSpeech();pauseQuestionClock();pauseSprint();}else{resumeQuestionClock();resumeSprint();if(mode==="audio"&&S.settings.voicePrompts)setTimeout(speakCurrentCoordinate,30);}
   }
 
+  function updateVoiceControls(){
+    const enabled=!!S.settings.voicePrompts,supported=voiceSupported();
+    el("btn-voice-toggle").setAttribute("aria-pressed",enabled?"true":"false");el("btn-voice-toggle").textContent="Voce: "+(enabled?"ON":"OFF");
+    el("btn-replay-voice").disabled=!enabled||!supported;
+  }
   function applySettings(){
     document.documentElement.setAttribute("data-theme",S.settings.theme);document.documentElement.style.setProperty("--scale",S.settings.scale);
     document.querySelectorAll("#seg-theme button").forEach(button=>button.setAttribute("aria-pressed",button.dataset.theme===S.settings.theme?"true":"false"));
     document.querySelectorAll("#seg-scale button").forEach(button=>button.setAttribute("aria-pressed",+button.dataset.scale===S.settings.scale?"true":"false"));
     document.querySelectorAll("#seg-sprint button").forEach(button=>button.setAttribute("aria-pressed",+button.dataset.sprint===S.settings.sprintSeconds?"true":"false"));
-    for(const [id,key] of [["tg-board","board"],["tg-auto","auto"],["tg-haptics","haptics"],["tg-sound","sound"]])el(id).setAttribute("aria-pressed",S.settings[key]?"true":"false");
+    for(const [id,key] of [["tg-board","board"],["tg-auto","auto"],["tg-haptics","haptics"],["tg-sound","sound"],["tg-voice","voicePrompts"]])el(id).setAttribute("aria-pressed",S.settings[key]?"true":"false");
+    updateVoiceControls();
     el("meta-theme").setAttribute("content",S.settings.theme==="day"?"#faf9f4":"#16161a");
   }
   function toggleSetting(key,id){S.settings[key]=!S.settings[key];applySettings();save();if(key==="sound"&&S.settings.sound)playTone(true);}
+  function setVoicePrompts(enabled){
+    if(enabled&&!voiceSupported()){S.settings.voicePrompts=false;applySettings();showToast("La voce non è disponibile in questo browser");return;}
+    S.settings.voicePrompts=!!enabled;cancelSpeech();applySettings();save();
+    if(mode==="audio"&&current){renderQuestion();startQuestionClock();if(enabled&&el("v-play").classList.contains("active"))setTimeout(speakCurrentCoordinate,30);}
+  }
   function showToast(message){
     const toast=el("toast");toast.textContent=message;toast.hidden=false;clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>{toast.hidden=true;},2200);
   }
@@ -1289,55 +1456,118 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
     el("tutorial-modal").hidden=true;S.settings.onboardingDone=true;save();resumeQuestionClock();resumeSprint();maybeShowInstall();
   }
 
-  const installUI={deferred:null,kind:null,pendingKind:null,iosHelpOpen:false};
-  const INSTALL_DISMISSED=KEY+"-install-dismissed-session-v2";
+  const installUI={deferred:null,kind:null,pendingKind:null,helpOpen:false,checking:false,diagnostic:"",diagnosticError:false};
+  const INSTALL_DISMISSED=KEY+"-install-dismissed-session-v3";
+  const INSTALLED_MARKER=KEY+"-installed";
   function isStandalone(){
     return window.matchMedia("(display-mode: standalone)").matches||window.matchMedia("(display-mode: fullscreen)").matches||window.matchMedia("(display-mode: minimal-ui)").matches||window.navigator.standalone===true||document.referrer.indexOf("android-app://")===0;
   }
   function isIOS(){return/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);}
   function isAndroid(){return/android/i.test(navigator.userAgent);}
+  function installedMarker(){try{return localStorage.getItem(INSTALLED_MARKER)==="1";}catch(e){return false;}}
+  function setInstalledMarker(installed){try{if(installed)localStorage.setItem(INSTALLED_MARKER,"1");else localStorage.removeItem(INSTALLED_MARKER);}catch(e){}}
+  function isKnownInstalled(){return isStandalone()||installedMarker();}
   function installDismissed(){try{return sessionStorage.getItem(INSTALL_DISMISSED)==="1";}catch(e){return false;}}
+  function clearInstallDismissed(){try{sessionStorage.removeItem(INSTALL_DISMISSED);}catch(e){}}
+  function updateInstallEntry(){
+    if(!document||!document.getElementById)return;const row=el("install-settings-row"),description=el("install-settings-desc"),button=el("btn-install-settings");if(!row||!description||!button)return;
+    const installed=isKnownInstalled();row.hidden=installed;if(installed)return;
+    description.classList.toggle("is-error",!!installUI.diagnosticError);
+    if(installUI.deferred){description.textContent="Installazione nativa pronta: Chrome mostrerà la conferma di sistema.";button.textContent="Installa";button.disabled=false;}
+    else if(installUI.checking){description.textContent="Controllo manifest, icone e Service Worker…";button.textContent="Verifico…";button.disabled=true;}
+    else if(isIOS()){description.textContent="Su iPhone e iPad l’installazione passa dal menu Condividi di Safari.";button.textContent="Come installare";button.disabled=false;}
+    else if(installUI.diagnostic){description.textContent=installUI.diagnostic;button.textContent="Riprova";button.disabled=false;}
+    else{description.textContent="Attendo che Chrome renda disponibile l’installazione nativa.";button.textContent="Verifica";button.disabled=false;}
+  }
+  async function refreshInstallState(){
+    if(isStandalone()){setInstalledMarker(true);hideInstallPrompt(false);updateInstallEntry();return true;}
+    if(navigator.getInstalledRelatedApps){
+      try{const related=await navigator.getInstalledRelatedApps();if(Array.isArray(related)&&related.length){setInstalledMarker(true);hideInstallPrompt(false);updateInstallEntry();return true;}}catch(e){}
+    }
+    updateInstallEntry();return installedMarker();
+  }
   function hideInstallPrompt(remember){
     el("install-prompt").hidden=true;if(remember){try{sessionStorage.setItem(INSTALL_DISMISSED,"1");}catch(e){}}
   }
   function resetInstallPrompt(){
-    installUI.iosHelpOpen=false;el("install-title").textContent="Installa Caselle";el("install-text").textContent="Aprila come un’app e usala anche offline.";
+    installUI.helpOpen=false;el("install-title").textContent="Installa Caselle";el("install-text").textContent="Aprila come un’app a schermo intero e usala anche offline.";
     el("btn-install-later").hidden=false;el("btn-install-now").textContent="Installa";el("btn-install-now").disabled=false;
   }
   function anyModalOpen(){return!el("tutorial-modal").hidden||!el("summary-modal").hidden;}
-  function maybeShowInstall(kind){
+  function maybeShowInstall(kind,force=false){
     if(kind)installUI.pendingKind=kind;
-    if(isStandalone()||installDismissed()){hideInstallPrompt(false);return;}
+    if(isKnownInstalled()){hideInstallPrompt(false);updateInstallEntry();return;}
+    updateInstallEntry();if(installDismissed()&&!force){hideInstallPrompt(false);return;}
     if(anyModalOpen()||el("feedback").classList.contains("show"))return;
     const nextKind=installUI.pendingKind;if(!nextKind)return;installUI.kind=nextKind;resetInstallPrompt();el("install-prompt").hidden=false;
   }
   function showIOSInstallHelp(){
-    installUI.iosHelpOpen=true;el("install-title").textContent="Aggiungi alla schermata Home";
+    installUI.helpOpen=true;el("install-title").textContent="Aggiungi alla schermata Home";
     el("install-text").innerHTML='Tocca <span class="install-share" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 16V3m0 0L8 7m4-4 4 4"/><path d="M5 11v9h14v-9"/></svg></span> <strong>Condividi</strong>, poi <strong>Aggiungi alla schermata Home</strong>. Se la voce non compare, apri la pagina in Safari.';
     el("btn-install-later").hidden=true;el("btn-install-now").textContent="Ho capito";live("Tocca Condividi, poi Aggiungi alla schermata Home.");
   }
-  function showAndroidInstallHelp(){
-    installUI.iosHelpOpen=true;el("install-title").textContent="Installa dal menu del browser";
-    el("install-text").innerHTML='Tocca il menu <strong>⋮</strong> del browser, poi <strong>Installa app</strong> o <strong>Aggiungi a schermata Home</strong>.';
+  function showBrowserInstallHelp(){
+    installUI.helpOpen=true;el("install-title").textContent="Installa dal browser";
+    el("install-text").innerHTML='Apri il menu del browser e scegli <strong>Installa app</strong> o <strong>Aggiungi alla schermata Home</strong>. Su Android usa preferibilmente Chrome.';
     el("btn-install-later").hidden=true;el("btn-install-now").textContent="Ho capito";live("Apri il menu del browser e scegli Installa app.");
   }
   async function requestInstall(){
-    if(isStandalone()){hideInstallPrompt(false);return;}
-    if(installUI.iosHelpOpen){hideInstallPrompt(true);return;}
+    if(isKnownInstalled()){hideInstallPrompt(false);updateInstallEntry();return;}
+    if(installUI.helpOpen){hideInstallPrompt(true);return;}
     if(installUI.kind==="ios"){showIOSInstallHelp();return;}
-    if(installUI.kind==="android-manual"){showAndroidInstallHelp();return;}
-    if(!installUI.deferred){hideInstallPrompt(true);return;}
+    if(installUI.kind==="browser-manual"){showBrowserInstallHelp();return;}
+    if(!installUI.deferred){hideInstallPrompt(false);runInstallDiagnostics(true);return;}
     const event=installUI.deferred;installUI.deferred=null;el("btn-install-now").disabled=true;
-    try{const choice=await event.prompt();hideInstallPrompt(choice&&choice.outcome==="dismissed");}
-    catch(e){hideInstallPrompt(true);}finally{el("btn-install-now").disabled=false;}
+    try{
+      const promptResult=await event.prompt(),choice=promptResult&&promptResult.outcome?promptResult:event.userChoice?await event.userChoice:null;
+      if(choice&&choice.outcome==="accepted"){installUI.diagnostic="Installazione accettata. Attendo la conferma di Chrome…";hideInstallPrompt(false);}
+      else{installUI.diagnostic="Installazione annullata. Ricarica la pagina quando vuoi riprovare.";hideInstallPrompt(true);}
+    }
+    catch(e){installUI.diagnostic="Chrome non ha potuto aprire il prompt. Ricarica la pagina e riprova.";installUI.diagnosticError=true;hideInstallPrompt(false);}finally{el("btn-install-now").disabled=false;updateInstallEntry();}
+  }
+  function withTimeout(promise,ms){
+    return new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error("timeout")),ms);Promise.resolve(promise).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});});
+  }
+  async function runInstallDiagnostics(notify=false){
+    if(!document||!document.getElementById)return;
+    if(isKnownInstalled()){updateInstallEntry();return;}
+    if(installUI.deferred){maybeShowInstall("native",true);return;}
+    installUI.checking=true;installUI.diagnostic="";installUI.diagnosticError=false;updateInstallEntry();const problems=[];
+    if(window.isSecureContext===false&&!/^localhost$|^127\./.test(location.hostname))problems.push("Il sito deve essere aperto in HTTPS.");
+    if(!("serviceWorker" in navigator))problems.push("Questo browser non supporta il Service Worker.");
+    else{
+      try{const registration=await withTimeout(navigator.serviceWorker.ready,4500);if(registration&&registration.update)registration.update();if(!navigator.serviceWorker.controller)problems.push("Il Service Worker è pronto: ricarica una volta la pagina per attivarlo.");}
+      catch(e){problems.push("Il Service Worker non risulta attivo.");}
+    }
+    const manifestLink=document.querySelector('link[rel="manifest"]');
+    if(!manifestLink)problems.push("Manca il collegamento al manifest.");
+    else if(typeof window.fetch!=="function")problems.push("Non riesco a verificare il manifest in questo browser.");
+    else{
+      try{
+        const manifestUrl=new URL(manifestLink.getAttribute("href"),location.href),response=await fetch(manifestUrl.href,{cache:"no-store"});if(!response.ok)throw new Error("HTTP "+response.status);
+        const manifest=await response.json(),icons=Array.isArray(manifest.icons)?manifest.icons:[];
+        for(const size of ["192x192","512x512"]){
+          const icon=icons.find(item=>String(item.sizes||"").split(/\s+/).includes(size)&&(!item.purpose||String(item.purpose).split(/\s+/).includes("any")));
+          if(!icon){problems.push("Nel manifest manca l’icona "+size+".");continue;}
+          try{const iconResponse=await fetch(new URL(icon.src,manifestUrl).href,{cache:"no-store"});if(!iconResponse.ok)throw new Error("HTTP "+iconResponse.status);}
+          catch(e){problems.push("L’icona "+size+" non è raggiungibile.");}
+        }
+      }catch(e){problems.push("Il manifest non è raggiungibile o non contiene JSON valido.");}
+    }
+    installUI.checking=false;installUI.diagnosticError=problems.length>0;
+    installUI.diagnostic=problems[0]||(isAndroid()?"Requisiti verificati. Attendo il prompt nativo di Chrome; se è il primo accesso, ricarica una volta la pagina.":"Requisiti verificati. Il browser renderà disponibile il comando quando consentito.");
+    updateInstallEntry();if(notify)showToast(problems[0]||"Verifica completata");
+  }
+  function showInstallFromSettings(){
+    clearInstallDismissed();if(installUI.deferred){maybeShowInstall("native",true);return;}if(isIOS()){installUI.pendingKind="ios";maybeShowInstall("ios",true);return;}runInstallDiagnostics(true);
   }
 
   window.addEventListener("beforeinstallprompt",event=>{
-    if(isStandalone())return;event.preventDefault();installUI.deferred=event;maybeShowInstall("native");
+    if(isStandalone())return;event.preventDefault();setInstalledMarker(false);installUI.deferred=event;installUI.pendingKind="native";installUI.diagnostic="";installUI.diagnosticError=false;updateInstallEntry();maybeShowInstall("native");
   });
-  window.addEventListener("appinstalled",()=>{installUI.deferred=null;installUI.pendingKind=null;hideInstallPrompt(false);});
+  window.addEventListener("appinstalled",()=>{setInstalledMarker(true);installUI.deferred=null;installUI.pendingKind=null;hideInstallPrompt(false);updateInstallEntry();});
   const standaloneQuery=window.matchMedia("(display-mode: standalone)");
-  const onDisplayModeChange=()=>{if(isStandalone())hideInstallPrompt(false);};
+  const onDisplayModeChange=()=>{if(isStandalone()){setInstalledMarker(true);hideInstallPrompt(false);}updateInstallEntry();};
   if(standaloneQuery.addEventListener)standaloneQuery.addEventListener("change",onDisplayModeChange);else if(standaloneQuery.addListener)standaloneQuery.addListener(onDisplayModeChange);
 
   function resetAll(){
@@ -1356,7 +1586,7 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
   document.querySelectorAll("#stats-filter button").forEach(button=>button.addEventListener("click",()=>{
     statsFilter=button.dataset.filter;document.querySelectorAll("#stats-filter button").forEach(item=>item.setAttribute("aria-pressed",item===button?"true":"false"));renderStats();
   }));
-  el("btn-recommended-training").addEventListener("click",()=>startFocusedTraining());
+  el("btn-recommended-training").addEventListener("click",()=>startFocusedTraining(recommendedFocusIds));
   el("btn-map-train").addEventListener("click",()=>startFocusedTraining());
 
   document.querySelectorAll("#seg-theme button").forEach(button=>button.addEventListener("click",()=>{S.settings.theme=button.dataset.theme;applySettings();save();}));
@@ -1366,13 +1596,16 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
   el("tg-auto").addEventListener("click",()=>toggleSetting("auto","tg-auto"));
   el("tg-haptics").addEventListener("click",()=>toggleSetting("haptics","tg-haptics"));
   el("tg-sound").addEventListener("click",()=>toggleSetting("sound","tg-sound"));
+  el("tg-voice").addEventListener("click",()=>setVoicePrompts(!S.settings.voicePrompts));
+  el("btn-voice-toggle").addEventListener("click",()=>setVoicePrompts(!S.settings.voicePrompts));
+  el("btn-replay-voice").addEventListener("click",speakCurrentCoordinate);
   el("btn-export").addEventListener("click",exportData);el("btn-import").addEventListener("click",()=>el("file-import").click());
   el("file-import").addEventListener("change",event=>importData(event.target.files&&event.target.files[0]));
   el("btn-tutorial").addEventListener("click",openTutorial);el("btn-reset").addEventListener("click",resetAll);
 
   el("btn-summary-close").addEventListener("click",closeSummary);el("btn-summary-train").addEventListener("click",trainSummaryWeak);el("btn-summary-share").addEventListener("click",shareSummary);
   el("btn-tutorial-next").addEventListener("click",nextTutorial);el("btn-tutorial-skip").addEventListener("click",closeTutorial);
-  el("btn-install-later").addEventListener("click",()=>hideInstallPrompt(true));el("btn-install-now").addEventListener("click",requestInstall);
+  el("btn-install-later").addEventListener("click",()=>hideInstallPrompt(true));el("btn-install-now").addEventListener("click",requestInstall);el("btn-install-settings").addEventListener("click",showInstallFromSettings);
 
   document.addEventListener("keydown",event=>{
     if(!el("tutorial-modal").hidden||!el("summary-modal").hidden)return;
@@ -1386,7 +1619,7 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
     }
   });
   document.addEventListener("visibilitychange",()=>{
-    if(document.hidden){pauseQuestionClock();pauseSprint();saveNow();}
+    if(document.hidden){cancelSpeech();pauseQuestionClock();pauseSprint();saveNow();}
     else{resumeQuestionClock();if(el("v-play").classList.contains("active"))resumeSprint();if(isStandalone())hideInstallPrompt(false);}
   });
   // Impedisce pinch-to-zoom e gesti di ingrandimento, mantenendo lo scroll a un dito.
@@ -1396,7 +1629,7 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
   document.addEventListener("touchmove",event=>{
     if(event.touches&&event.touches.length>1)event.preventDefault();
   },{passive:false});
-  window.addEventListener("pagehide",saveNow);window.addEventListener("pageshow",()=>{if(isStandalone())hideInstallPrompt(false);});
+  window.addEventListener("pagehide",()=>{cancelSpeech();saveNow();});window.addEventListener("pageshow",()=>{if(isStandalone())hideInstallPrompt(false);});
 
   /* Service Worker + aggiornamenti */
   if("serviceWorker" in navigator&&location.protocol.indexOf("http")===0){
@@ -1414,12 +1647,15 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
   }else el("update-banner").style.display="none";
 
   /* Avvio */
-  applySettings();dailySequence=buildDailySequence();resetSession("path");prepareMode();
+  applySettings();dailySequence=buildDailySequence();
+  const requestedMode=new URLSearchParams(location.search).get("mode"),initialMode=["path","free","learn","sprint","daily","audio","advanced"].includes(requestedMode)?requestedMode:"path";
+  setMode(initialMode,false);
   if(!S.settings.onboardingDone)openTutorial();
-  if(isIOS()&&!isStandalone())setTimeout(()=>maybeShowInstall("ios"),900);
-  if(isAndroid()&&!isStandalone())setTimeout(()=>{
-    if(!installUI.deferred)maybeShowInstall("android-manual");
-  },1200);
+  refreshInstallState().then(installed=>{
+    if(installed)return;updateInstallEntry();
+    if(isIOS())setTimeout(()=>{installUI.pendingKind="ios";maybeShowInstall("ios");},900);
+    else setTimeout(()=>runInstallDiagnostics(false),1200);
+  });
 })();
 </script>
 </body>
