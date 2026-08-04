@@ -2,7 +2,7 @@
 // Strategy: Cache-First for shell assets, Network-First fallback to cache
 // for external resources (Google Fonts, Tailwind CDN).
 
-const CACHE_VERSION = 'v1.0.2';
+const CACHE_VERSION = 'v1.0.3';
 const SHELL_CACHE   = `478-shell-${CACHE_VERSION}`;
 const FONT_CACHE    = `478-fonts-${CACHE_VERSION}`;
 

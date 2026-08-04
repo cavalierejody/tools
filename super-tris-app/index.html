@@ -3,6 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<script>
+(() => {
+  const blockGesture = event => event.preventDefault();
+  document.addEventListener('gesturestart', blockGesture, { passive: false, capture: true });
+  document.addEventListener('gesturechange', blockGesture, { passive: false, capture: true });
+  document.addEventListener('gestureend', blockGesture, { passive: false, capture: true });
+  document.addEventListener('touchmove', event => {
+    if (event.touches && event.touches.length > 1) event.preventDefault();
+  }, { passive: false, capture: true });
+})();
+</script>
 <title>Super Tris — il tris dentro il tris</title>
 
 <!-- native / PWA -->
@@ -70,7 +81,7 @@ body{
   -webkit-font-smoothing:antialiased; overflow:hidden;
   transition:background .4s ease, color .3s ease;
   user-select:none; -webkit-user-select:none;
-  touch-action:manipulation;
+  touch-action:none;
 }
 .app{width:100%; max-width:1080px; display:flex; align-items:center; justify-content:center}
 
