@@ -93,6 +93,8 @@ Per le app che espongono aggiornamenti all'utente, mantenere il flusso locale al
 6. nel Service Worker, gestire il messaggio chiamando `self.skipWaiting()`;
 7. ricaricare una sola volta dopo `controllerchange`.
 
+Se l'attivazione è controllata da un pulsante “Aggiorna”, non chiamare `self.skipWaiting()` incondizionatamente nell'evento `install`: il worker deve restare in attesa fino all'azione dell'utente. Scegliere esplicitamente tra aggiornamento automatico e aggiornamento controllato, senza mescolare i due modelli.
+
 Per giochi, timer o sessioni attive, non forzare un reload automatico mentre l'utente sta operando. Preferire un pulsante esplicito “Aggiorna”.
 
 ### Cache e navigazione
