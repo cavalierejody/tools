@@ -742,11 +742,11 @@ class SuperTris{
 const game=new SuperTris();
 window.game=game;
 
-let superTrisWaitingWorker=null;let superTrisReloading=false;navigator.serviceWorker?.addEventListener('controllerchange',()=>{if(superTrisReloading)return;superTrisReloading=true;location.reload();});
+let superTrisWaitingWorker=null;let superTrisUpdateRequested=false;navigator.serviceWorker?.addEventListener('controllerchange',()=>{if(!superTrisUpdateRequested)return;superTrisUpdateRequested=false;location.reload();});
 /* ---------- service worker (offline + installabilità) ---------- */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js').then(reg=>{const banner=document.getElementById('pwa-update-banner');const button=document.getElementById('pwa-update-button');const show=worker=>{superTrisWaitingWorker=worker;banner.classList.add('show');};if(reg.waiting)show(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)show(worker);});});reg.update();setInterval(()=>reg.update(),3600000);button.addEventListener('click',()=>{banner.classList.remove('show');if(superTrisWaitingWorker)superTrisWaitingWorker.postMessage({type:'SKIP_WAITING'});else location.reload();});}).catch(()=>{});
+    navigator.serviceWorker.register('sw.js').then(reg=>{const banner=document.getElementById('pwa-update-banner');const button=document.getElementById('pwa-update-button');const show=worker=>{superTrisWaitingWorker=worker;banner.classList.add('show');};if(reg.waiting)show(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)show(worker);});});reg.update();setInterval(()=>reg.update(),3600000);button.addEventListener('click',()=>{banner.classList.remove('show');if(superTrisWaitingWorker){superTrisUpdateRequested=true;superTrisWaitingWorker.postMessage({type:'SKIP_WAITING'});}else location.reload();});}).catch(()=>{});
   });
 }
 </script>

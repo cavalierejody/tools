@@ -977,7 +977,7 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
   }
   function coordinateSpeech(id){
     const numbers=["","uno","due","tre","quattro","cinque","sei","sette","otto"];
-    return "Casella "+id.charAt(0).toUpperCase()+", "+numbers[+id.slice(1)];
+    return "Casella "+id.charAt(0).toUpperCase()+" "+numbers[+id.slice(1)];
   }
   function speakCurrentCoordinate(){
     if(mode!=="audio"||!current||current.type!=="color"||!S.settings.voicePrompts||locked||!voiceSupported())return;
@@ -1633,17 +1633,17 @@ nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accen
 
   /* Service Worker + aggiornamenti */
   if("serviceWorker" in navigator&&location.protocol.indexOf("http")===0){
-    let waitingSW=null;
+    let waitingSW=null,reloadRequested=false;
     window.addEventListener("load",async()=>{
       try{
-        const registration=await navigator.serviceWorker.register("./sw.js",{scope:"./"});setInterval(()=>registration.update(),60*60*1000);
+        const registration=await navigator.serviceWorker.register("./sw.js",{scope:"./"});registration.update();setInterval(()=>registration.update(),60*60*1000);
         const handleWaiting=worker=>{waitingSW=worker;el("update-banner").classList.add("visible");};
         if(registration.waiting)handleWaiting(registration.waiting);
         registration.addEventListener("updatefound",()=>{const worker=registration.installing;if(!worker)return;worker.addEventListener("statechange",()=>{if(worker.state==="installed"&&navigator.serviceWorker.controller)handleWaiting(worker);});});
-        navigator.serviceWorker.addEventListener("controllerchange",()=>window.location.reload());
+        navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!reloadRequested)return;reloadRequested=false;window.location.reload();});
       }catch(error){console.warn("[PWA] Service Worker non registrato:",error);}
     });
-    el("btn-update").addEventListener("click",()=>{el("update-banner").classList.remove("visible");if(waitingSW)waitingSW.postMessage({type:"SKIP_WAITING"});});
+    el("btn-update").addEventListener("click",()=>{el("update-banner").classList.remove("visible");if(waitingSW){reloadRequested=true;waitingSW.postMessage({type:"SKIP_WAITING"});}});
   }else el("update-banner").style.display="none";
 
   /* Avvio */

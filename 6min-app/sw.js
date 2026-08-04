@@ -3,7 +3,8 @@
 // IMPORTANTE: manifest.json NON viene mai cachato — deve essere sempre fresco
 // così il browser legge subito il nome corretto al momento dell'install prompt.
 
-const CACHE_NAME = '6min-v4';
+const CACHE_PREFIX = '6min-';
+const CACHE_NAME = '6min-v5';
 
 // Shell dell'app da pre-cachare (NO manifest.json)
 const PRECACHE = [
@@ -37,17 +38,19 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE))
   );
-  self.skipWaiting();
 });
 
 // ── Activate: pulizia vecchie cache ─────────────────────────────────────────
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
+      Promise.all(
+        keys
+          .filter(k => k.startsWith(CACHE_PREFIX) && k !== CACHE_NAME)
+          .map(k => caches.delete(k))
+      )
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 // ── Fetch ────────────────────────────────────────────────────────────────────
@@ -57,6 +60,9 @@ self.addEventListener('fetch', event => {
 
   if (request.method !== 'GET') return;
 
+  const isAllowedCDN = isCDN(url);
+  if (url.origin !== self.location.origin && !isAllowedCDN) return;
+
   // manifest.json — sempre dalla rete, mai dalla cache
   if (isNeverCache(url)) {
     event.respondWith(
@@ -65,21 +71,23 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  if (isCDN(url)) {
+  if (isAllowedCDN) {
     // Network-first per CDN (font, librerie)
     event.respondWith(
       fetch(request)
         .then(response => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(c => c.put(request, clone));
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(c => c.put(request, clone));
+          }
           return response;
         })
-        .catch(() => caches.match(request))
+        .catch(() => caches.open(CACHE_NAME).then(cache => cache.match(request)))
     );
   } else {
     // Cache-first + stale-while-revalidate per risorse locali
     event.respondWith(
-      caches.match(request).then(cached => {
+      caches.open(CACHE_NAME).then(cache => cache.match(request)).then(cached => {
         if (cached) {
           fetch(request).then(fresh => {
             if (fresh && fresh.status === 200) {

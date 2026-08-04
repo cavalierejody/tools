@@ -3,6 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<script>
+(() => {
+  const blockGesture = event => event.preventDefault();
+  for (const eventName of ['gesturestart', 'gesturechange', 'gestureend']) {
+    document.addEventListener(eventName, blockGesture, { passive: false, capture: true });
+  }
+  document.addEventListener('touchmove', event => {
+    if (event.touches && event.touches.length > 1) event.preventDefault();
+  }, { passive: false, capture: true });
+})();
+</script>
 <title>Trixxx</title>
 
 <!-- ── PWA ── -->
@@ -30,7 +41,7 @@
     --shadow:0 24px 60px -20px rgba(0,0,0,.7);
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%}
+  html,body{height:100%;touch-action:pan-x pan-y}
   body{
     font-family:"Inter",system-ui,sans-serif;color:var(--text);
     background:
@@ -355,22 +366,14 @@
 (function(){
   "use strict";
 
-  // Impedisce pinch-to-zoom e gesti di ingrandimento, mantenendo lo scroll a un dito.
-for (const eventName of ["gesturestart", "gesturechange", "gestureend"]) {
-  document.addEventListener(eventName, event => event.preventDefault(), { passive: false });
-}
-document.addEventListener("touchmove", event => {
-  if (event.touches && event.touches.length > 1) event.preventDefault();
-}, { passive: false });
-
   /* ── Service Worker ── */
   if("serviceWorker" in navigator){
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register('./sw.js').then(reg=>{const banner=document.getElementById('pwa-update-banner');const button=document.getElementById('pwa-update-button');const show=worker=>{trixxxWaitingWorker=worker;banner.classList.add('show');};if(reg.waiting)show(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)show(worker);});});reg.update();setInterval(()=>reg.update(),3600000);button.addEventListener('click',()=>{banner.classList.remove('show');if(trixxxWaitingWorker)trixxxWaitingWorker.postMessage({type:'SKIP_WAITING'});else location.reload();});}).catch(()=>{});
+      navigator.serviceWorker.register('./sw.js').then(reg=>{const banner=document.getElementById('pwa-update-banner');const button=document.getElementById('pwa-update-button');const show=worker=>{trixxxWaitingWorker=worker;banner.classList.add('show');};if(reg.waiting)show(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)show(worker);});});reg.update();setInterval(()=>reg.update(),3600000);button.addEventListener('click',()=>{banner.classList.remove('show');if(trixxxWaitingWorker){trixxxUpdateRequested=true;trixxxWaitingWorker.postMessage({type:'SKIP_WAITING'});}else location.reload();});}).catch(()=>{});
     });
   }
 
-  let trixxxWaitingWorker=null;let trixxxReloading=false;navigator.serviceWorker?.addEventListener('controllerchange',()=>{if(trixxxReloading)return;trixxxReloading=true;location.reload();});
+  let trixxxWaitingWorker=null;let trixxxUpdateRequested=false;navigator.serviceWorker?.addEventListener('controllerchange',()=>{if(!trixxxUpdateRequested)return;trixxxUpdateRequested=false;location.reload();});
 /* ── PWA Install prompt ── */
   let deferredPrompt = null;
   const banner = document.getElementById("installBanner");
