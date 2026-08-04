@@ -1,0 +1,180 @@
+name: Apply independent PWA banners v2
+
+on:
+  push:
+    paths:
+      - .github/workflows/apply-independent-pwa-install-banners-v2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/pwa-install-banners-independent
+          fetch-depth: 0
+      - name: Patch app-specific install UI
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def append_before_body(path_name, marker, block):
+              path = Path(path_name)
+              text = path.read_text(encoding='utf-8')
+              if marker in text:
+                  return
+              if '</body>' not in text:
+                  raise RuntimeError(f'Chiusura body non trovata in {path}')
+              path.write_text(text.replace('</body>', block + '\n</body>', 1), encoding='utf-8')
+
+          append_before_body('6min-app/index.html', 'Installazione iOS dedicata a 6min', r'''
+          <script>
+          // Installazione iOS dedicata a 6min.
+          (() => {
+            const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+            const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+            if (!ios || standalone) return;
+            addEventListener('DOMContentLoaded', () => {
+              const bar = document.getElementById('install-bar');
+              const button = document.getElementById('btn-install');
+              const title = bar?.querySelector('.ib-text strong');
+              const text = bar?.querySelector('.ib-text span');
+              if (!bar || !button || localStorage.getItem('6min_install_dismissed')) return;
+              if (title) title.textContent = 'Installa 6min';
+              if (text) text.textContent = 'In Safari: Condividi → Aggiungi alla schermata Home';
+              button.textContent = 'Come fare';
+              button.addEventListener('click', event => {
+                event.preventDefault(); event.stopImmediatePropagation();
+                alert('Tocca Condividi in Safari, poi “Aggiungi alla schermata Home”.');
+              }, true);
+              bar.classList.add('visible');
+            });
+          })();
+          </script>
+          ''')
+
+          append_before_body('trixxx-app/index.html', 'Installazione iOS dedicata a Trixxx', r'''
+          <script>
+          // Installazione iOS dedicata a Trixxx.
+          (() => {
+            const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+            const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+            if (!ios || standalone) return;
+            addEventListener('DOMContentLoaded', () => {
+              const banner = document.getElementById('installBanner');
+              const button = document.getElementById('installBtn');
+              if (!banner || !button) return;
+              button.textContent = 'Come installare';
+              button.addEventListener('click', event => {
+                event.preventDefault(); event.stopImmediatePropagation();
+                alert('Apri Trixxx in Safari, tocca Condividi e scegli “Aggiungi alla schermata Home”.');
+              }, true);
+              banner.classList.add('show');
+            });
+          })();
+          </script>
+          ''')
+
+          append_before_body('calm-breath-app/index.html', 'Installazione iOS dedicata a 4-7-8 Respira', r'''
+          <script>
+          // Installazione iOS dedicata a 4-7-8 Respira.
+          (() => {
+            const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+            const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+            if (!ios || standalone) return;
+            addEventListener('DOMContentLoaded', () => {
+              const banner = document.getElementById('install-banner');
+              const button = document.getElementById('btn-install');
+              const info = banner?.querySelector('.info span');
+              if (!banner || !button || localStorage.getItem('install-dismissed')) return;
+              if (info) info.textContent = 'In Safari: Condividi → Aggiungi alla schermata Home';
+              button.textContent = 'Come fare';
+              button.addEventListener('click', event => {
+                event.preventDefault(); event.stopImmediatePropagation();
+                alert('Tocca Condividi in Safari, poi “Aggiungi alla schermata Home”.');
+              }, true);
+              setTimeout(() => banner.classList.add('visible'), 1200);
+            });
+          })();
+          </script>
+          ''')
+
+          append_before_body('where-is-my-car-app/index.html', 'Installazione iOS dedicata a WhereIsMyCar', r'''
+          <script>
+          // Installazione iOS dedicata a WhereIsMyCar.
+          (() => {
+            const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+            const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+            if (!ios || standalone) return;
+            addEventListener('DOMContentLoaded', () => {
+              const banner = document.getElementById('install-banner');
+              const button = document.getElementById('btn-install');
+              const text = banner?.querySelector('.banner-text');
+              if (!banner || !button) return;
+              if (text) text.innerHTML = '<strong>Installa WhereIsMyCar</strong>In Safari: Condividi → Aggiungi alla schermata Home';
+              button.textContent = 'Come fare';
+              button.removeAttribute('onclick');
+              button.addEventListener('click', event => {
+                event.preventDefault();
+                alert('Tocca Condividi in Safari, poi “Aggiungi alla schermata Home”.');
+              });
+              banner.classList.remove('hidden');
+            });
+          })();
+          </script>
+          ''')
+
+          append_before_body('super-tris-app/index.html', 'Banner installazione dedicato a Super Tris', r'''
+          <style>
+          /* Banner installazione dedicato a Super Tris. */
+          #super-install-banner{position:fixed;left:14px;right:14px;bottom:max(14px,env(safe-area-inset-bottom));z-index:1000;display:none;align-items:center;gap:12px;max-width:520px;margin:0 auto;padding:13px 14px;border:1px solid var(--gold-soft);border-radius:16px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+          #super-install-banner.show{display:flex}#super-install-banner .copy{flex:1;min-width:0;font-size:.78rem;color:var(--muted);line-height:1.35}#super-install-banner .copy strong{display:block;color:var(--ink);font-size:.9rem;margin-bottom:2px}#super-install-now,#super-install-close{font:inherit;cursor:pointer}#super-install-now{border:0;border-radius:10px;background:var(--gold);color:#161310;font-weight:700;padding:9px 12px;white-space:nowrap}#super-install-close{border:0;background:transparent;color:var(--muted);font-size:1.2rem;padding:4px}
+          </style>
+          <div id="super-install-banner" role="complementary" aria-label="Installa Super Tris">
+            <div class="copy"><strong>Installa Super Tris</strong><span id="super-install-copy">Gioca a schermo intero e anche offline</span></div>
+            <button id="super-install-now" type="button">Installa</button><button id="super-install-close" type="button" aria-label="Chiudi">×</button>
+          </div>
+          <script>
+          // Logica installazione dedicata esclusivamente a Super Tris.
+          (() => {
+            let promptEvent = null;
+            const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+            const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+            const key = 'super_tris_install_dismissed';
+            const banner = document.getElementById('super-install-banner');
+            const button = document.getElementById('super-install-now');
+            const close = document.getElementById('super-install-close');
+            const copy = document.getElementById('super-install-copy');
+            const previous = document.getElementById('installBtn');
+            if (previous) previous.hidden = true;
+            const show = () => { if (!standalone() && !localStorage.getItem(key)) banner.classList.add('show'); };
+            const hide = () => banner.classList.remove('show');
+            addEventListener('beforeinstallprompt', event => {
+              event.preventDefault(); promptEvent = event; button.textContent = 'Installa';
+              copy.textContent = 'Gioca a schermo intero e anche offline'; show();
+            });
+            if (ios && !standalone()) {
+              button.textContent = 'Come fare'; copy.textContent = 'In Safari: Condividi → Aggiungi alla schermata Home';
+              setTimeout(show, 1200);
+            }
+            button.addEventListener('click', async () => {
+              if (promptEvent) { promptEvent.prompt(); await promptEvent.userChoice.catch(() => null); promptEvent = null; hide(); return; }
+              alert('Apri Super Tris in Safari, tocca Condividi e scegli “Aggiungi alla schermata Home”.');
+            });
+            close.addEventListener('click', () => { localStorage.setItem(key, '1'); hide(); });
+            addEventListener('appinstalled', hide);
+          })();
+          </script>
+          ''')
+          PY
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 6min-app/index.html trixxx-app/index.html calm-breath-app/index.html super-tris-app/index.html where-is-my-car-app/index.html
+          git diff --cached --check
+          git commit -m "Completa i banner di installazione delle PWA"
+          git push origin HEAD:agent/pwa-install-banners-independent
