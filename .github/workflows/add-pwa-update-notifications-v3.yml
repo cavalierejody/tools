@@ -1,0 +1,43 @@
+name: Add PWA update notifications v3
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/add-pwa-update-notifications-v3.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/pwa-update-notifications
+          fetch-depth: 0
+      - shell: bash
+        run: |
+          git show origin/main:.github/workflows/add-pwa-update-notifications-v2.yml > /tmp/source.yml
+          python - <<'PY'
+          from pathlib import Path
+          text=Path('/tmp/source.yml').read_text()
+          start=text.index("          python - <<'PY'\n")+len("          python - <<'PY'\n")
+          end=text.index("\n          PY",start)
+          lines=text[start:end].splitlines()
+          script='\n'.join(line[10:] if line.startswith('          ') else line for line in lines)
+          exec(compile(script,'pwa_patch.py','exec'))
+          for path in ['6min-app/index.html','6min-app/sw.js','trixxx-app/index.html','trixxx-app/sw.js','super-tris-app/index.html','super-tris-app/sw.js','where-is-my-car-app/index.html','where-is-my-car-app/sw.js']:
+              p=Path(path)
+              cleaned='\n'.join(line.rstrip() for line in p.read_text(encoding='utf-8').splitlines())+'\n'
+              p.write_text(cleaned,encoding='utf-8')
+          PY
+      - shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 6min-app/index.html 6min-app/sw.js trixxx-app/index.html trixxx-app/sw.js super-tris-app/index.html super-tris-app/sw.js where-is-my-car-app/index.html where-is-my-car-app/sw.js
+          git diff --cached --check
+          git commit -m "Aggiunge notifiche aggiornamento alle PWA"
+          git push origin HEAD:agent/pwa-update-notifications
