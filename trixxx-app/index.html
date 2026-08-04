@@ -624,5 +624,26 @@ document.addEventListener("touchmove", event => {
   refreshNames();syncBoard();render();
 })();
 </script>
+
+<script>
+// Installazione iOS dedicata a Trixxx.
+(() => {
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  if (!ios || standalone) return;
+  addEventListener('DOMContentLoaded', () => {
+    const banner = document.getElementById('installBanner');
+    const button = document.getElementById('installBtn');
+    if (!banner || !button) return;
+    button.textContent = 'Come installare';
+    button.addEventListener('click', event => {
+      event.preventDefault(); event.stopImmediatePropagation();
+      alert('Apri Trixxx in Safari, tocca Condividi e scegli “Aggiungi alla schermata Home”.');
+    }, true);
+    banner.classList.add('show');
+  });
+})();
+</script>
+
 </body>
 </html>

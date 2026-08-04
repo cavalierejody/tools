@@ -735,5 +735,47 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
+
+<style>
+/* Banner installazione dedicato a Super Tris. */
+#super-install-banner{position:fixed;left:14px;right:14px;bottom:max(14px,env(safe-area-inset-bottom));z-index:1000;display:none;align-items:center;gap:12px;max-width:520px;margin:0 auto;padding:13px 14px;border:1px solid var(--gold-soft);border-radius:16px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+#super-install-banner.show{display:flex}#super-install-banner .copy{flex:1;min-width:0;font-size:.78rem;color:var(--muted);line-height:1.35}#super-install-banner .copy strong{display:block;color:var(--ink);font-size:.9rem;margin-bottom:2px}#super-install-now,#super-install-close{font:inherit;cursor:pointer}#super-install-now{border:0;border-radius:10px;background:var(--gold);color:#161310;font-weight:700;padding:9px 12px;white-space:nowrap}#super-install-close{border:0;background:transparent;color:var(--muted);font-size:1.2rem;padding:4px}
+</style>
+<div id="super-install-banner" role="complementary" aria-label="Installa Super Tris">
+  <div class="copy"><strong>Installa Super Tris</strong><span id="super-install-copy">Gioca a schermo intero e anche offline</span></div>
+  <button id="super-install-now" type="button">Installa</button><button id="super-install-close" type="button" aria-label="Chiudi">×</button>
+</div>
+<script>
+// Logica installazione dedicata esclusivamente a Super Tris.
+(() => {
+  let promptEvent = null;
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const key = 'super_tris_install_dismissed';
+  const banner = document.getElementById('super-install-banner');
+  const button = document.getElementById('super-install-now');
+  const close = document.getElementById('super-install-close');
+  const copy = document.getElementById('super-install-copy');
+  const previous = document.getElementById('installBtn');
+  if (previous) previous.hidden = true;
+  const show = () => { if (!standalone() && !localStorage.getItem(key)) banner.classList.add('show'); };
+  const hide = () => banner.classList.remove('show');
+  addEventListener('beforeinstallprompt', event => {
+    event.preventDefault(); promptEvent = event; button.textContent = 'Installa';
+    copy.textContent = 'Gioca a schermo intero e anche offline'; show();
+  });
+  if (ios && !standalone()) {
+    button.textContent = 'Come fare'; copy.textContent = 'In Safari: Condividi → Aggiungi alla schermata Home';
+    setTimeout(show, 1200);
+  }
+  button.addEventListener('click', async () => {
+    if (promptEvent) { promptEvent.prompt(); await promptEvent.userChoice.catch(() => null); promptEvent = null; hide(); return; }
+    alert('Apri Super Tris in Safari, tocca Condividi e scegli “Aggiungi alla schermata Home”.');
+  });
+  close.addEventListener('click', () => { localStorage.setItem(key, '1'); hide(); });
+  addEventListener('appinstalled', hide);
+})();
+</script>
+
 </body>
 </html>

@@ -586,5 +586,29 @@
             els.btnSave.classList.remove('hidden');
         }
     </script>
+
+<script>
+// Installazione iOS dedicata a WhereIsMyCar.
+(() => {
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  if (!ios || standalone) return;
+  addEventListener('DOMContentLoaded', () => {
+    const banner = document.getElementById('install-banner');
+    const button = document.getElementById('btn-install');
+    const text = banner?.querySelector('.banner-text');
+    if (!banner || !button) return;
+    if (text) text.innerHTML = '<strong>Installa WhereIsMyCar</strong>In Safari: Condividi → Aggiungi alla schermata Home';
+    button.textContent = 'Come fare';
+    button.removeAttribute('onclick');
+    button.addEventListener('click', event => {
+      event.preventDefault();
+      alert('Tocca Condividi in Safari, poi “Aggiungi alla schermata Home”.');
+    });
+    banner.classList.remove('hidden');
+  });
+})();
+</script>
+
 </body>
 </html>

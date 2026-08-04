@@ -1349,5 +1349,30 @@ document.addEventListener("touchmove", event => {
   render();
 })();
 </script>
+
+<script>
+// Installazione iOS dedicata a 6min.
+(() => {
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  if (!ios || standalone) return;
+  addEventListener('DOMContentLoaded', () => {
+    const bar = document.getElementById('install-bar');
+    const button = document.getElementById('btn-install');
+    const title = bar?.querySelector('.ib-text strong');
+    const text = bar?.querySelector('.ib-text span');
+    if (!bar || !button || localStorage.getItem('6min_install_dismissed')) return;
+    if (title) title.textContent = 'Installa 6min';
+    if (text) text.textContent = 'In Safari: Condividi → Aggiungi alla schermata Home';
+    button.textContent = 'Come fare';
+    button.addEventListener('click', event => {
+      event.preventDefault(); event.stopImmediatePropagation();
+      alert('Tocca Condividi in Safari, poi “Aggiungi alla schermata Home”.');
+    }, true);
+    bar.classList.add('visible');
+  });
+})();
+</script>
+
 </body>
 </html>
