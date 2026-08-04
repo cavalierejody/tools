@@ -56,6 +56,12 @@
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+        html,
+        body {
+            touch-action: none;
+            overscroll-behavior: none;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-current);
@@ -400,6 +406,23 @@
         function haptic(pattern = 15) {
             if (navigator.vibrate) navigator.vibrate(pattern);
         }
+
+        // Il meta viewport viene ignorato da alcune versioni di Safari/iOS.
+        // Questi listener bloccano esplicitamente pinch e gesture multi-touch.
+        function preventGesture(event) {
+            event.preventDefault();
+        }
+
+        function preventMultiTouch(event) {
+            if (event.touches.length > 1) event.preventDefault();
+        }
+
+        const activeTouchListener = { passive: false };
+        document.addEventListener('touchstart', preventMultiTouch, activeTouchListener);
+        document.addEventListener('touchmove', preventMultiTouch, activeTouchListener);
+        document.addEventListener('gesturestart', preventGesture, activeTouchListener);
+        document.addEventListener('gesturechange', preventGesture, activeTouchListener);
+        document.addEventListener('gestureend', preventGesture, activeTouchListener);
 
         function buildMapsUrl() {
             const lat = localStorage.getItem('car_lat');
