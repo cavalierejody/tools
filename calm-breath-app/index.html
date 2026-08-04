@@ -3,6 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<script>
+(() => {
+  const blockGesture = event => event.preventDefault();
+  document.addEventListener('gesturestart', blockGesture, { passive: false, capture: true });
+  document.addEventListener('gesturechange', blockGesture, { passive: false, capture: true });
+  document.addEventListener('gestureend', blockGesture, { passive: false, capture: true });
+  document.addEventListener('touchmove', event => {
+    if (event.touches && event.touches.length > 1) event.preventDefault();
+  }, { passive: false, capture: true });
+})();
+</script>
     <title>Respirazione 4-7-8 | Calma Profonda</title>
 
     <!-- ── PWA Manifest ─────────────────────────────────────────────────────── -->
