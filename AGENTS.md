@@ -13,6 +13,20 @@ Le PWA sono già distribuite e possono essere già installate sui dispositivi de
 
 Le istruzioni di questo file si applicano all'intero repository, salvo la presenza di un `AGENTS.md` più specifico in una sottocartella.
 
+## Dashboard principale
+
+Il file `index.html` nella root è la dashboard/mappa del repository e costituisce il punto di accesso alle singole app.
+
+Deve essere mantenuto aggiornato insieme all'evoluzione delle applicazioni:
+
+- aggiungere una voce quando viene introdotta una nuova app destinata agli utenti;
+- aggiornare nome, descrizione, icona e destinazione quando un'app viene rinominata o cambia percorso;
+- rimuovere o correggere collegamenti obsoleti quando un'app viene eliminata, sostituita o spostata;
+- verificare che ogni collegamento punti a una risorsa realmente pubblicata su GitHub Pages;
+- mantenere la dashboard coerente con lo stato effettivo del repository, senza lasciare app raggiungibili solo conoscendone manualmente l'URL.
+
+Ogni PR che aggiunge, rinomina, sposta, sostituisce o rimuove un'app deve includere anche l'eventuale aggiornamento del file `index.html` della root.
+
 ## Principi fondamentali
 
 1. **Ogni app è indipendente.**
@@ -177,6 +191,7 @@ Quando non è possibile eseguire un test reale sul dispositivo, dichiarare espli
 - [ ] Non ho introdotto reload distruttivi durante sessioni attive.
 - [ ] Ho testato installazione, aggiornamento e offline per quanto possibile.
 - [ ] Ho controllato pinch e gesture dall'avvio quando pertinenti.
+- [ ] Ho aggiornato `index.html` della root se l'app è stata aggiunta, rinominata, spostata, sostituita o rimossa.
 - [ ] La PR contiene solo i file previsti.
 - [ ] Il deploy GitHub Pages è terminato correttamente.
 
