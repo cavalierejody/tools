@@ -237,6 +237,8 @@
     .chip .who{display:none}
     .vs{display:none}
   }
+
+#pwa-update-banner{display:none;position:fixed;top:max(12px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:9999;background:#111827;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:10px 14px;align-items:center;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.35);font:600 13px system-ui}#pwa-update-banner.show{display:flex}#pwa-update-banner button{border:0;border-radius:999px;padding:7px 12px;background:#22c55e;color:#07120b;font-weight:800;cursor:pointer}
 </style>
 </head>
 <body>
@@ -348,6 +350,7 @@
   <button id="dismissBtn" aria-label="Chiudi">✕</button>
 </div>
 
+<div id="pwa-update-banner" role="status" aria-live="polite"><span>Aggiornamento disponibile</span><button id="pwa-update-button">Aggiorna</button></div>
 <script>
 (function(){
   "use strict";
@@ -363,11 +366,12 @@ document.addEventListener("touchmove", event => {
   /* ── Service Worker ── */
   if("serviceWorker" in navigator){
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js").catch(()=>{});
+      navigator.serviceWorker.register('./sw.js').then(reg=>{const banner=document.getElementById('pwa-update-banner');const button=document.getElementById('pwa-update-button');const show=worker=>{trixxxWaitingWorker=worker;banner.classList.add('show');};if(reg.waiting)show(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)show(worker);});});reg.update();setInterval(()=>reg.update(),3600000);button.addEventListener('click',()=>{banner.classList.remove('show');if(trixxxWaitingWorker)trixxxWaitingWorker.postMessage({type:'SKIP_WAITING'});else location.reload();});}).catch(()=>{});
     });
   }
 
-  /* ── PWA Install prompt ── */
+  let trixxxWaitingWorker=null;let trixxxReloading=false;navigator.serviceWorker?.addEventListener('controllerchange',()=>{if(trixxxReloading)return;trixxxReloading=true;location.reload();});
+/* ── PWA Install prompt ── */
   let deferredPrompt = null;
   const banner = document.getElementById("installBanner");
   window.addEventListener("beforeinstallprompt", e => {

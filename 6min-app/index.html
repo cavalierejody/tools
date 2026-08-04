@@ -116,6 +116,7 @@
   }
   #btn-dismiss-install:hover { color: #fff; }
 
+  #update-bar{display:none;position:fixed;top:max(12px,var(--safe-top));left:50%;transform:translateX(-50%);z-index:120;background:var(--ink);color:#fff;border-radius:999px;padding:10px 14px;align-items:center;gap:10px;box-shadow:0 8px 28px rgba(0,0,0,.25);font-size:13px}#update-bar.visible{display:flex}#update-bar button{border:0;border-radius:999px;padding:7px 12px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
   /* ---------- offline toast ---------- */
   #offline-toast {
     display: none;
@@ -623,6 +624,8 @@
 </div>
 
 <!-- ── offline toast ── -->
+<div id="update-bar" role="status" aria-live="polite"><span>Aggiornamento disponibile</span><button id="btn-update-app">Aggiorna</button></div>
+
 <div id="offline-toast" role="status" aria-live="assertive">📵 Offline — dati salvati localmente</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
@@ -636,12 +639,12 @@ document.addEventListener("touchmove", event => {
   if (event.touches && event.touches.length > 1) event.preventDefault();
 }, { passive: false });
 
+  let waitingUpdateWorker=null;const updateBar=document.getElementById('update-bar');const updateButton=document.getElementById('btn-update-app');let reloadingForUpdate=false;navigator.serviceWorker?.addEventListener('controllerchange',()=>{if(reloadingForUpdate)return;reloadingForUpdate=true;location.reload();});
+
   // ── PWA: Service Worker ────────────────────────────────────────────────
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').then(reg => {
-        console.log('[SW] Registrato:', reg.scope);
-      }).catch(err => {
+      navigator.serviceWorker.register('./sw.js').then(reg=>{console.log('[SW] Registrato:',reg.scope);const show=worker=>{waitingUpdateWorker=worker;updateBar.classList.add('visible');};if(reg.waiting)show(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)show(worker);});});reg.update();setInterval(()=>reg.update(),3600000);updateButton.addEventListener('click',()=>{updateBar.classList.remove('visible');if(waitingUpdateWorker)waitingUpdateWorker.postMessage({type:'SKIP_WAITING'});else location.reload();});}).catch(err => {
         console.warn('[SW] Errore registrazione:', err);
       });
     });

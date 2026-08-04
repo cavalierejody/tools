@@ -1,4 +1,4 @@
-const CACHE_NAME = 'super-tris-v1';
+const CACHE_NAME = 'super-tris-v2';
 const APP_SHELL = [
   './',
   './index.html',
@@ -33,3 +33,5 @@ self.addEventListener('fetch', event => {
     }).catch(() => caches.match('./index.html')))
   );
 });
+
+self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting();});

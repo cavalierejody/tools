@@ -3,7 +3,7 @@
 // IMPORTANTE: manifest.json NON viene mai cachato — deve essere sempre fresco
 // così il browser legge subito il nome corretto al momento dell'install prompt.
 
-const CACHE_NAME = '6min-v3';
+const CACHE_NAME = '6min-v4';
 
 // Shell dell'app da pre-cachare (NO manifest.json)
 const PRECACHE = [
@@ -98,3 +98,5 @@ self.addEventListener('fetch', event => {
     );
   }
 });
+
+self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting();});
