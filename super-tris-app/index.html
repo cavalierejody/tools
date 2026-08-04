@@ -296,6 +296,8 @@ h1{font-family:"Fraunces",serif; font-weight:900; font-size:clamp(2.4rem,9vw,3.4
 }
 :focus-visible{outline:2px solid var(--gold); outline-offset:2px}
 @media(prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important} }
+
+#pwa-update-banner{display:none;position:fixed;top:max(12px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:9999;background:var(--surface);color:var(--ink);border:1px solid var(--gold);border-radius:999px;padding:10px 14px;align-items:center;gap:10px;box-shadow:var(--shadow);font-size:.82rem;font-weight:600}#pwa-update-banner.show{display:flex}#pwa-update-banner button{border:0;border-radius:999px;padding:7px 12px;background:var(--gold);color:#161310;font-weight:800;cursor:pointer}
 </style>
 </head>
 <body>
@@ -388,6 +390,7 @@ h1{font-family:"Fraunces",serif; font-weight:900; font-size:clamp(2.4rem,9vw,3.4
   </div>
 </div>
 
+<div id="pwa-update-banner" role="status" aria-live="polite"><span>Aggiornamento disponibile</span><button id="pwa-update-button">Aggiorna</button></div>
 <script>
 const LINES=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 const gid=id=>document.getElementById(id);
@@ -728,10 +731,11 @@ class SuperTris{
 const game=new SuperTris();
 window.game=game;
 
+let superTrisWaitingWorker=null;let superTrisReloading=false;navigator.serviceWorker?.addEventListener('controllerchange',()=>{if(superTrisReloading)return;superTrisReloading=true;location.reload();});
 /* ---------- service worker (offline + installabilità) ---------- */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
+    navigator.serviceWorker.register('sw.js').then(reg=>{const banner=document.getElementById('pwa-update-banner');const button=document.getElementById('pwa-update-button');const show=worker=>{superTrisWaitingWorker=worker;banner.classList.add('show');};if(reg.waiting)show(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)show(worker);});});reg.update();setInterval(()=>reg.update(),3600000);button.addEventListener('click',()=>{banner.classList.remove('show');if(superTrisWaitingWorker)superTrisWaitingWorker.postMessage({type:'SKIP_WAITING'});else location.reload();});}).catch(()=>{});
   });
 }
 </script>

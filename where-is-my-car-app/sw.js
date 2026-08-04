@@ -1,4 +1,4 @@
-const CACHE_NAME = 'whereismycar-v1.4';
+const CACHE_NAME = 'whereismycar-v1.5';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -59,3 +59,5 @@ self.addEventListener('fetch', event => {
     })
   );
 });
+
+self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting();});

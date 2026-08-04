@@ -282,7 +282,9 @@
             .status-card { min-height: 220px; padding: 28px 20px; }
             .icon-circle { width: 68px; height: 68px; font-size: 34px; margin-bottom: 14px; }
         }
-    </style>
+
+#pwa-update-banner{display:none;position:fixed;top:max(12px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:9999;background:var(--card-current);color:var(--text-current);border-radius:999px;padding:10px 14px;align-items:center;gap:10px;box-shadow:var(--shadow);font-size:13px;font-weight:600}#pwa-update-banner.show{display:flex}#pwa-update-banner button{width:auto;height:34px;border-radius:999px;padding:0 13px;background:var(--accent);color:white;font-size:13px}
+</style>
 </head>
 <body>
     <div class="app-shell">
@@ -358,11 +360,12 @@
 
     <div id="toast" class="toast hidden" role="status">✓ Link copiato</div>
 
-    <script>
-        if ('serviceWorker' in navigator) {
+    <div id="pwa-update-banner" role="status" aria-live="polite"><span>Aggiornamento disponibile</span><button id="pwa-update-button">Aggiorna</button></div>
+<script>
+        let whereCarWaitingWorker=null;let whereCarReloading=false;navigator.serviceWorker?.addEventListener('controllerchange',()=>{if(whereCarReloading)return;whereCarReloading=true;location.reload();});
+if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('[SW] Registrato, scope:', reg.scope))
+                navigator.serviceWorker.register('./sw.js').then(reg=>{console.log('[SW] Registrato, scope:',reg.scope);const banner=document.getElementById('pwa-update-banner');const button=document.getElementById('pwa-update-button');const show=worker=>{whereCarWaitingWorker=worker;banner.classList.add('show');};if(reg.waiting)show(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)show(worker);});});reg.update();setInterval(()=>reg.update(),3600000);button.addEventListener('click',()=>{banner.classList.remove('show');if(whereCarWaitingWorker)whereCarWaitingWorker.postMessage({type:'SKIP_WAITING'});else location.reload();});})
                     .catch(err => console.warn('[SW] Errore registrazione:', err));
             });
         }
