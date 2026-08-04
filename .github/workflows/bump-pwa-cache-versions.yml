@@ -42,3 +42,5 @@ jobs:
           git diff --cached --check
           git commit -m "Aggiorna le versioni cache delle PWA"
           git push origin HEAD:agent/pwa-cache-version-bump
+
+# one-time workflow
