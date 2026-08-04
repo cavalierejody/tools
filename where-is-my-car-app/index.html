@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>WhereIsMyCar</title>
-    
-    <!-- PWA Meta -->
+
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="WhereIsMyCar">
@@ -13,15 +12,12 @@
     <meta name="application-name" content="WhereIsMyCar">
     <meta name="theme-color" content="#007AFF" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
-    <meta name="description" content="Salva la posizione della tua auto e ritrovala facilmente">
+    <meta name="description" content="Salva, ritrova e condividi la posizione della tua auto">
 
-    <!-- Icons -->
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
-
-    <!-- Manifest -->
     <link rel="manifest" href="manifest.json">
 
     <style>
@@ -34,6 +30,7 @@
             --text-dark: #ffffff;
             --accent: #007AFF;
             --success: #34C759;
+            --whatsapp: #25D366;
             --danger: #FF3B30;
             --shadow: 0 4px 20px rgba(0,0,0,0.08);
             --radius: 22px;
@@ -47,6 +44,7 @@
                 --subtext: #98989f;
             }
         }
+
         @media (prefers-color-scheme: light) {
             :root {
                 --bg-current: var(--bg-light);
@@ -79,11 +77,7 @@
             width: 100%;
         }
 
-        /* HEADER */
-        header {
-            padding-top: 20px;
-            text-align: center;
-        }
+        header { padding-top: 20px; text-align: center; }
 
         .header-icon {
             width: 52px;
@@ -101,7 +95,6 @@
             letter-spacing: -0.5px;
         }
 
-        /* CARD */
         .card-container {
             display: flex;
             align-items: center;
@@ -121,7 +114,6 @@
             align-items: center;
             justify-content: center;
             min-height: 250px;
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .icon-circle {
@@ -135,16 +127,8 @@
             margin-bottom: 20px;
         }
 
-        .status-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .status-desc {
-            font-size: 15px;
-            color: var(--subtext);
-        }
+        .status-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .status-desc { font-size: 15px; color: var(--subtext); }
 
         .time-badge {
             margin-top: 10px;
@@ -155,9 +139,8 @@
             font-weight: 600;
         }
 
-        /* FOOTER */
         .action-area {
-            min-height: 160px;
+            min-height: 200px;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
@@ -181,17 +164,18 @@
         }
 
         button:active { transform: scale(0.96); }
+        button:focus-visible { outline: 3px solid rgba(0,122,255,0.4); outline-offset: 3px; }
 
         .btn-primary { background: var(--accent); color: white; box-shadow: 0 4px 12px rgba(0,122,255,0.3); }
         .btn-success { background: var(--success); color: white; box-shadow: 0 4px 12px rgba(52,199,89,0.3); }
-        .btn-ghost { background: transparent; color: var(--danger); font-size: 15px; }
+        .btn-share { background: var(--accent); color: white; box-shadow: 0 4px 12px rgba(0,122,255,0.25); }
+        .btn-whatsapp { background: var(--whatsapp); color: white; box-shadow: 0 4px 12px rgba(37,211,102,0.25); }
+        .btn-ghost { background: transparent; color: var(--danger); font-size: 15px; height: 42px; }
 
-        /* Install prompt banner */
         #install-banner {
             background: var(--card-current);
             border-radius: 14px;
             padding: 12px 16px;
-            margin-bottom: 0;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -199,11 +183,7 @@
             font-size: 14px;
         }
 
-        #install-banner img {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-        }
+        #install-banner img { width: 36px; height: 36px; border-radius: 8px; }
 
         #install-banner .banner-text {
             flex: 1;
@@ -211,10 +191,7 @@
             line-height: 1.3;
         }
 
-        #install-banner .banner-text strong {
-            color: var(--text-current);
-            display: block;
-        }
+        #install-banner .banner-text strong { color: var(--text-current); display: block; }
 
         #btn-install {
             width: auto;
@@ -231,9 +208,9 @@
             0% { opacity: 0; transform: scale(0.9); }
             100% { opacity: 1; transform: scale(1); }
         }
+
         .animate-pop { animation: popIn 0.3s ease-out; }
 
-        /* ── Dialog conferma custom ─────────────────────────────────── */
         .dialog-overlay {
             position: fixed;
             inset: 0;
@@ -271,53 +248,58 @@
             padding: 0 8px 16px;
         }
 
-        .dialog-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+        .dialog-actions { display: flex; flex-direction: column; gap: 10px; }
+        .btn-danger { background: var(--danger); color: white; box-shadow: 0 4px 12px rgba(255,59,48,0.3); }
+        .btn-cancel { background: rgba(128,128,128,0.15); color: var(--text-current); box-shadow: none; }
 
-        .btn-danger {
-            background: var(--danger);
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: calc(env(safe-area-inset-bottom) + 24px);
+            transform: translateX(-50%);
+            z-index: 200;
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: rgba(30,30,32,0.94);
             color: white;
-            box-shadow: 0 4px 12px rgba(255,59,48,0.3);
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.22);
         }
 
-        .btn-cancel {
-            background: rgba(128,128,128,0.15);
-            color: var(--text-current);
-            box-shadow: none;
+        @media (min-width: 700px) {
+            .dialog-overlay { align-items: center; padding-bottom: 24px; }
+        }
+
+        @media (max-height: 720px) {
+            .action-area { min-height: 175px; }
+            .status-card { min-height: 220px; padding: 28px 20px; }
+            .icon-circle { width: 68px; height: 68px; font-size: 34px; margin-bottom: 14px; }
         }
     </style>
 </head>
 <body>
-
     <div class="app-shell">
-
         <header>
             <img class="header-icon" src="icon-192.png" alt="WhereIsMyCar">
             <h1>WhereIsMyCar</h1>
         </header>
 
-        <div class="card-container">
-
+        <div class="card-container" aria-live="polite">
             <div id="view-empty" class="status-card animate-pop">
-                <div class="icon-circle" style="background: rgba(0,122,255,0.1)">📍</div>
+                <div class="icon-circle" style="background: rgba(0,122,255,0.1)" aria-hidden="true">📍</div>
                 <div class="status-title">Dove hai parcheggiato?</div>
                 <div class="status-desc">Premi il tasto blu per salvare la posizione GPS attuale.</div>
             </div>
 
             <div id="view-saved" class="status-card animate-pop hidden">
-                <div class="icon-circle" style="background: rgba(52,199,89,0.1)">🚗</div>
-                <div class="status-title">Auto Parcheggiata</div>
+                <div class="icon-circle" style="background: rgba(52,199,89,0.1)" aria-hidden="true">🚗</div>
+                <div class="status-title">Auto parcheggiata</div>
                 <div class="time-badge" id="time-display">--:--</div>
             </div>
-
         </div>
 
         <div class="action-area">
-
-            <!-- Install banner (shown only when installable) -->
             <div id="install-banner" class="hidden">
                 <img src="icon-192.png" alt="">
                 <div class="banner-text">
@@ -328,40 +310,49 @@
             </div>
 
             <button id="btn-save" class="btn-primary" onclick="handleSave()">
-                📍 Memorizza Posizione
+                📍 Memorizza posizione
             </button>
 
-            <div id="group-saved" class="hidden" style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+            <div id="group-saved" class="hidden" style="display:flex; flex-direction:column; gap:12px; width:100%;">
                 <button class="btn-success" onclick="handleNavigate()">
                     🧭 Portami all'auto
+                </button>
+                <button class="btn-share" onclick="handleShare()">
+                    ↗ Condividi posizione
                 </button>
                 <button class="btn-ghost" onclick="handleDelete()">
                     Cancella posizione
                 </button>
             </div>
-
         </div>
-
     </div>
 
-    <!-- Dialog conferma cancellazione -->
     <div id="confirm-dialog" class="dialog-overlay hidden">
-        <div class="dialog-box animate-pop">
-            <div class="dialog-title">Cancella posizione</div>
+        <div class="dialog-box animate-pop" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+            <div class="dialog-title" id="delete-title">Cancella posizione</div>
             <div class="dialog-msg">Sei sicuro? La posizione dell'auto verrà rimossa.</div>
             <div class="dialog-actions">
-                <button class="btn-danger" onclick="confirmDelete()">
-                    🗑 Cancella
-                </button>
-                <button class="btn-cancel" onclick="closeDialog()">
-                    Annulla
-                </button>
+                <button class="btn-danger" onclick="confirmDelete()">🗑 Cancella</button>
+                <button class="btn-cancel" onclick="closeDialog('confirm-dialog')">Annulla</button>
             </div>
         </div>
     </div>
 
+    <div id="share-dialog" class="dialog-overlay hidden">
+        <div class="dialog-box animate-pop" role="dialog" aria-modal="true" aria-labelledby="share-title">
+            <div class="dialog-title" id="share-title">Condividi posizione</div>
+            <div class="dialog-msg">Invia il punto su WhatsApp oppure copia un link compatibile con qualsiasi app e browser.</div>
+            <div class="dialog-actions">
+                <button class="btn-whatsapp" onclick="shareOnWhatsApp()">◉ WhatsApp</button>
+                <button class="btn-share" onclick="copyShareLink()">🔗 Copia link</button>
+                <button class="btn-cancel" onclick="closeDialog('share-dialog')">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden" role="status">✓ Link copiato</div>
+
     <script>
-        // ── Service Worker registration ──────────────────────────────────
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
@@ -370,12 +361,11 @@
             });
         }
 
-        // ── PWA Install prompt ───────────────────────────────────────────
         let deferredPrompt = null;
 
-        window.addEventListener('beforeinstallprompt', e => {
-            e.preventDefault();
-            deferredPrompt = e;
+        window.addEventListener('beforeinstallprompt', event => {
+            event.preventDefault();
+            deferredPrompt = event;
             document.getElementById('install-banner').classList.remove('hidden');
         });
 
@@ -387,36 +377,50 @@
         async function handleInstall() {
             if (!deferredPrompt) return;
             deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
+            await deferredPrompt.userChoice;
             deferredPrompt = null;
             document.getElementById('install-banner').classList.add('hidden');
         }
 
-        // ── App logic ────────────────────────────────────────────────────
         const els = {
-            viewEmpty:   document.getElementById('view-empty'),
-            viewSaved:   document.getElementById('view-saved'),
-            btnSave:     document.getElementById('btn-save'),
-            groupSaved:  document.getElementById('group-saved'),
+            viewEmpty: document.getElementById('view-empty'),
+            viewSaved: document.getElementById('view-saved'),
+            btnSave: document.getElementById('btn-save'),
+            groupSaved: document.getElementById('group-saved'),
             timeDisplay: document.getElementById('time-display'),
-            dialog:      document.getElementById('confirm-dialog')
+            confirmDialog: document.getElementById('confirm-dialog'),
+            shareDialog: document.getElementById('share-dialog'),
+            toast: document.getElementById('toast')
         };
 
-        window.onload = () => {
-            if (localStorage.getItem('car_lat')) showSavedUI();
-        };
+        window.addEventListener('load', () => {
+            if (localStorage.getItem('car_lat') && localStorage.getItem('car_lng')) showSavedUI();
+        });
 
-        function haptic() { if (navigator.vibrate) navigator.vibrate(15); }
+        function haptic(pattern = 15) {
+            if (navigator.vibrate) navigator.vibrate(pattern);
+        }
+
+        function buildMapsUrl() {
+            const lat = localStorage.getItem('car_lat');
+            const lng = localStorage.getItem('car_lng');
+            if (!lat || !lng) return '';
+            return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${lat},${lng}`)}`;
+        }
 
         function handleSave() {
             haptic();
-            if (!navigator.geolocation) return alert("GPS non disponibile su questo dispositivo.");
+            if (!navigator.geolocation) {
+                alert('GPS non disponibile su questo dispositivo.');
+                return;
+            }
 
-            els.btnSave.innerText = "Ricerca GPS…";
+            els.btnSave.innerText = 'Ricerca GPS…';
             els.btnSave.style.opacity = 0.7;
+            els.btnSave.disabled = true;
 
             navigator.geolocation.getCurrentPosition(
-                (pos) => {
+                pos => {
                     const now = new Date();
                     const timeStr =
                         now.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }) + ', ' +
@@ -425,14 +429,12 @@
                     localStorage.setItem('car_lat', pos.coords.latitude);
                     localStorage.setItem('car_lng', pos.coords.longitude);
                     localStorage.setItem('car_time', timeStr);
-
                     showSavedUI();
-                    if (navigator.vibrate) navigator.vibrate([20, 50, 20]);
+                    haptic([20, 50, 20]);
                 },
                 () => {
-                    alert("Errore GPS. Assicurati di essere all'aperto e di aver concesso i permessi di posizione.");
-                    els.btnSave.innerText = "📍 Memorizza Posizione";
-                    els.btnSave.style.opacity = 1;
+                    alert("Errore GPS. Assicurati di aver concesso il permesso di posizione e riprova all'aperto.");
+                    resetSaveButton();
                 },
                 { enableHighAccuracy: true, timeout: 10000 }
             );
@@ -442,14 +444,74 @@
             haptic();
             const lat = localStorage.getItem('car_lat');
             const lng = localStorage.getItem('car_lng');
-            if (lat) {
-                window.location.href = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`;
+            if (!lat || !lng) return;
+            window.location.href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${lat},${lng}`)}&travelmode=walking`;
+        }
+
+        async function handleShare() {
+            haptic();
+            const url = buildMapsUrl();
+            if (!url) return;
+
+            const shareData = {
+                title: "Posizione dell'auto",
+                text: 'Ho parcheggiato qui.',
+                url
+            };
+
+            // Android, iOS/iPadOS e browser desktop che supportano Web Share.
+            if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
+                try {
+                    await navigator.share(shareData);
+                    return;
+                } catch (error) {
+                    // La chiusura volontaria del pannello non deve aprire il fallback.
+                    if (error && error.name === 'AbortError') return;
+                }
             }
+
+            // Fallback per browser desktop o WebView senza pannello nativo.
+            els.shareDialog.classList.remove('hidden');
+        }
+
+        function shareOnWhatsApp() {
+            haptic();
+            const message = `Ho parcheggiato qui: ${buildMapsUrl()}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+        }
+
+        async function copyShareLink() {
+            haptic();
+            const url = buildMapsUrl();
+
+            try {
+                if (!navigator.clipboard || !window.isSecureContext) throw new Error('Clipboard API non disponibile');
+                await navigator.clipboard.writeText(url);
+            } catch (_) {
+                const input = document.createElement('textarea');
+                input.value = url;
+                input.setAttribute('readonly', '');
+                input.style.position = 'fixed';
+                input.style.opacity = '0';
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                input.remove();
+            }
+
+            closeDialog('share-dialog');
+            showToast();
+        }
+
+        function showToast() {
+            els.toast.classList.remove('hidden');
+            clearTimeout(showToast.timer);
+            showToast.timer = setTimeout(() => els.toast.classList.add('hidden'), 2200);
         }
 
         function handleDelete() {
             haptic();
-            els.dialog.classList.remove('hidden');
+            els.confirmDialog.classList.remove('hidden');
         }
 
         function confirmDelete() {
@@ -457,37 +519,46 @@
             localStorage.removeItem('car_lat');
             localStorage.removeItem('car_lng');
             localStorage.removeItem('car_time');
-            closeDialog();
+            closeDialog('confirm-dialog');
             showEmptyUI();
         }
 
-        function closeDialog() {
-            els.dialog.classList.add('hidden');
+        function closeDialog(id) {
+            document.getElementById(id).classList.add('hidden');
         }
 
-        // Chiudi toccando lo sfondo
-        els.dialog.addEventListener('click', (e) => {
-            if (e.target === els.dialog) closeDialog();
+        [els.confirmDialog, els.shareDialog].forEach(dialog => {
+            dialog.addEventListener('click', event => {
+                if (event.target === dialog) dialog.classList.add('hidden');
+            });
         });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                closeDialog('confirm-dialog');
+                closeDialog('share-dialog');
+            }
+        });
+
+        function resetSaveButton() {
+            els.btnSave.innerText = '📍 Memorizza posizione';
+            els.btnSave.style.opacity = 1;
+            els.btnSave.disabled = false;
+        }
 
         function showSavedUI() {
             els.viewEmpty.classList.add('hidden');
             els.btnSave.classList.add('hidden');
-
             els.viewSaved.classList.remove('hidden');
             els.groupSaved.classList.remove('hidden');
             els.groupSaved.style.display = 'flex';
-
-            els.timeDisplay.innerText = localStorage.getItem('car_time');
-
-            els.btnSave.innerText = "📍 Memorizza Posizione";
-            els.btnSave.style.opacity = 1;
+            els.timeDisplay.innerText = localStorage.getItem('car_time') || 'Posizione salvata';
+            resetSaveButton();
         }
 
         function showEmptyUI() {
             els.viewSaved.classList.add('hidden');
             els.groupSaved.classList.add('hidden');
-
             els.viewEmpty.classList.remove('hidden');
             els.btnSave.classList.remove('hidden');
         }
