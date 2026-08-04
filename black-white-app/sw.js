@@ -3,7 +3,7 @@
    Strategia: cache-first per tutti gli asset statici, fallback shell per navigazione.
    Aggiorna CACHE_VERSION per forzare il refresh dell'utente dopo ogni deploy. */
 
-const CACHE_VERSION = "caselle-v4.0";
+const CACHE_VERSION = "caselle-v4.1";
 const STATIC_CACHE = CACHE_VERSION + "-static";
 const RUNTIME_CACHE = CACHE_VERSION + "-runtime";
 
