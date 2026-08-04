@@ -1,9 +1,9 @@
 /* Service worker per "Bianca o Nera" — offline cache-first.
-   Versione: 2.0
+   Versione: 2.1
    Strategia: cache-first per tutti gli asset statici, fallback shell per navigazione.
    Aggiorna CACHE_VERSION per forzare il refresh dell'utente dopo ogni deploy. */
 
-const CACHE_VERSION = "caselle-v4.1";
+const CACHE_VERSION = "caselle-v4.2";
 const STATIC_CACHE = CACHE_VERSION + "-static";
 const RUNTIME_CACHE = CACHE_VERSION + "-runtime";
 
@@ -16,6 +16,29 @@ const PRECACHE_ASSETS = [
   "./icons/icon-192-maskable.png",
   "./icons/icon-512-maskable.png"
 ];
+
+/*
+  Correzione compatibile anche con l'HTML già pubblicato:
+  la virgola tra lettera e numero induceva il sintetizzatore vocale
+  a inserire una pausa innaturale (es. "A, uno").
+*/
+async function withNaturalCoordinateSpeech(response) {
+  if (!response) return response;
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("text/html")) return response;
+
+  const html = await response.text();
+  const fixedHtml = html.replace(
+    'return "Casella "+id.charAt(0).toUpperCase()+", "+numbers[+id.slice(1)];',
+    'return "Casella "+id.charAt(0).toUpperCase()+" "+numbers[+id.slice(1)];'
+  );
+
+  return new Response(fixedHtml, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers
+  });
+}
 
 /* ---- Install: precache tutti gli asset critici ---- */
 self.addEventListener("install", (event) => {
@@ -51,11 +74,11 @@ self.addEventListener("fetch", (event) => {
   event.respondWith((async () => {
     // 1. Cerca in cache statica prima (asset precachati)
     const staticHit = await caches.match(req, { cacheName: STATIC_CACHE, ignoreSearch: true });
-    if (staticHit) return staticHit;
+    if (staticHit) return withNaturalCoordinateSpeech(staticHit);
 
     // 2. Cerca in cache runtime (asset caricati dinamicamente)
     const runtimeHit = await caches.match(req, { cacheName: RUNTIME_CACHE, ignoreSearch: true });
-    if (runtimeHit) return runtimeHit;
+    if (runtimeHit) return withNaturalCoordinateSpeech(runtimeHit);
 
     // 3. Rete → metti in cache runtime per uso futuro
     try {
@@ -64,14 +87,14 @@ self.addEventListener("fetch", (event) => {
         const cache = await caches.open(RUNTIME_CACHE);
         cache.put(req, networkRes.clone());
       }
-      return networkRes;
+      return withNaturalCoordinateSpeech(networkRes);
     } catch (err) {
       // 4. Offline fallback: per navigazione restituisci la shell dell'app
       if (req.mode === "navigate") {
         const shell =
           (await caches.match("./index.html", { cacheName: STATIC_CACHE })) ||
           (await caches.match("./",           { cacheName: STATIC_CACHE }));
-        if (shell) return shell;
+        if (shell) return withNaturalCoordinateSpeech(shell);
       }
       throw err;
     }
