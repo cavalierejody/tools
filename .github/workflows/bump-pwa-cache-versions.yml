@@ -1,0 +1,44 @@
+name: Bump PWA cache versions
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/bump-pwa-cache-versions.yml
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/pwa-cache-version-bump
+          fetch-depth: 0
+      - shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              Path('6min-app/sw.js'): ("const CACHE_NAME = '6min-v2';", "const CACHE_NAME = '6min-v3';"),
+              Path('calm-breath-app/sw.js'): ("const CACHE_VERSION = 'v1.0.1';", "const CACHE_VERSION = 'v1.0.2';"),
+              Path('where-is-my-car-app/sw.js'): ("const CACHE_NAME = 'whereismycar-v1.3';", "const CACHE_NAME = 'whereismycar-v1.4';"),
+          }
+
+          for path, (old, new) in replacements.items():
+              text = path.read_text(encoding='utf-8')
+              if old not in text:
+                  raise SystemExit(f'Expected version not found in {path}: {old}')
+              path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+      - shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 6min-app/sw.js calm-breath-app/sw.js where-is-my-car-app/sw.js
+          git diff --cached --check
+          git commit -m "Aggiorna le versioni cache delle PWA"
+          git push origin HEAD:agent/pwa-cache-version-bump
