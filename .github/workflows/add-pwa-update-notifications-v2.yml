@@ -1,0 +1,92 @@
+name: Add PWA update notifications v2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/add-pwa-update-notifications-v2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/pwa-update-notifications
+          fetch-depth: 0
+      - shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          def inject(path, style, body, pre_script, reg_pattern, reg_replacement):
+              p=Path(path); text=p.read_text(encoding='utf-8')
+              if 'pwa-update-banner' in text or 'id="update-bar"' in text:
+                  raise SystemExit(f'Update UI already present in {path}')
+              text=text.replace('</style>', style+'</style>', 1)
+              text=text.replace('<script>', body+'<script>', 1)
+              marker = "if ('serviceWorker' in navigator)" if path=='where-is-my-car-app/index.html' else ('/* ---------- service worker (offline + installabilità) ---------- */' if path=='super-tris-app/index.html' else ('/* ── PWA Install prompt ── */' if path=='trixxx-app/index.html' else '// ── PWA: Service Worker'))
+              idx=text.find(marker)
+              if idx<0: raise SystemExit(f'Script marker missing in {path}')
+              text=text[:idx]+pre_script+text[idx:]
+              text2,n=re.subn(reg_pattern,reg_replacement,text,count=1,flags=re.S)
+              if n!=1: raise SystemExit(f'Registration anchor missing in {path}')
+              p.write_text(text2,encoding='utf-8')
+
+          inject('trixxx-app/index.html',
+            '''\n#pwa-update-banner{display:none;position:fixed;top:max(12px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:9999;background:#111827;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:10px 14px;align-items:center;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.35);font:600 13px system-ui}#pwa-update-banner.show{display:flex}#pwa-update-banner button{border:0;border-radius:999px;padding:7px 12px;background:#22c55e;color:#07120b;font-weight:800;cursor:pointer}\n''',
+            '''<div id="pwa-update-banner" role="status" aria-live="polite"><span>Aggiornamento disponibile</span><button id="pwa-update-button">Aggiorna</button></div>\n''',
+            '''let trixxxWaitingWorker=null;let trixxxReloading=false;navigator.serviceWorker?.addEventListener('controllerchange',()=>{if(trixxxReloading)return;trixxxReloading=true;location.reload();});\n''',
+            r"navigator\.serviceWorker\.register\(['\"]\./sw\.js['\"]\)\.catch\(\(\)=>\{\}\);",
+            """navigator.serviceWorker.register('./sw.js').then(reg=>{const banner=document.getElementById('pwa-update-banner');const button=document.getElementById('pwa-update-button');const show=worker=>{trixxxWaitingWorker=worker;banner.classList.add('show');};if(reg.waiting)show(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)show(worker);});});reg.update();setInterval(()=>reg.update(),3600000);button.addEventListener('click',()=>{banner.classList.remove('show');if(trixxxWaitingWorker)trixxxWaitingWorker.postMessage({type:'SKIP_WAITING'});else location.reload();});}).catch(()=>{});""")
+
+          inject('super-tris-app/index.html',
+            '''\n#pwa-update-banner{display:none;position:fixed;top:max(12px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:9999;background:var(--surface);color:var(--ink);border:1px solid var(--gold);border-radius:999px;padding:10px 14px;align-items:center;gap:10px;box-shadow:var(--shadow);font-size:.82rem;font-weight:600}#pwa-update-banner.show{display:flex}#pwa-update-banner button{border:0;border-radius:999px;padding:7px 12px;background:var(--gold);color:#161310;font-weight:800;cursor:pointer}\n''',
+            '''<div id="pwa-update-banner" role="status" aria-live="polite"><span>Aggiornamento disponibile</span><button id="pwa-update-button">Aggiorna</button></div>\n''',
+            '''let superTrisWaitingWorker=null;let superTrisReloading=false;navigator.serviceWorker?.addEventListener('controllerchange',()=>{if(superTrisReloading)return;superTrisReloading=true;location.reload();});\n''',
+            r"navigator\.serviceWorker\.register\(['\"](?:\./)?sw\.js['\"]\)\.catch\(\(\)=>\{\}\);",
+            """navigator.serviceWorker.register('sw.js').then(reg=>{const banner=document.getElementById('pwa-update-banner');const button=document.getElementById('pwa-update-button');const show=worker=>{superTrisWaitingWorker=worker;banner.classList.add('show');};if(reg.waiting)show(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)show(worker);});});reg.update();setInterval(()=>reg.update(),3600000);button.addEventListener('click',()=>{banner.classList.remove('show');if(superTrisWaitingWorker)superTrisWaitingWorker.postMessage({type:'SKIP_WAITING'});else location.reload();});}).catch(()=>{});""")
+
+          inject('where-is-my-car-app/index.html',
+            '''\n#pwa-update-banner{display:none;position:fixed;top:max(12px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:9999;background:var(--card-current);color:var(--text-current);border-radius:999px;padding:10px 14px;align-items:center;gap:10px;box-shadow:var(--shadow);font-size:13px;font-weight:600}#pwa-update-banner.show{display:flex}#pwa-update-banner button{width:auto;height:34px;border-radius:999px;padding:0 13px;background:var(--accent);color:white;font-size:13px}\n''',
+            '''<div id="pwa-update-banner" role="status" aria-live="polite"><span>Aggiornamento disponibile</span><button id="pwa-update-button">Aggiorna</button></div>\n''',
+            '''let whereCarWaitingWorker=null;let whereCarReloading=false;navigator.serviceWorker?.addEventListener('controllerchange',()=>{if(whereCarReloading)return;whereCarReloading=true;location.reload();});\n''',
+            r"navigator\.serviceWorker\.register\(['\"]\./sw\.js['\"]\)\s*\.then\(reg\s*=>\s*console\.log\('\[SW\] Registrato, scope:',\s*reg\.scope\)\)",
+            """navigator.serviceWorker.register('./sw.js').then(reg=>{console.log('[SW] Registrato, scope:',reg.scope);const banner=document.getElementById('pwa-update-banner');const button=document.getElementById('pwa-update-button');const show=worker=>{whereCarWaitingWorker=worker;banner.classList.add('show');};if(reg.waiting)show(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)show(worker);});});reg.update();setInterval(()=>reg.update(),3600000);button.addEventListener('click',()=>{banner.classList.remove('show');if(whereCarWaitingWorker)whereCarWaitingWorker.postMessage({type:'SKIP_WAITING'});else location.reload();});})""")
+
+          p=Path('6min-app/index.html');text=p.read_text(encoding='utf-8')
+          if 'id="update-bar"' in text: raise SystemExit('Update UI already present in 6min')
+          text=text.replace('  /* ---------- offline toast ---------- */', '''  #update-bar{display:none;position:fixed;top:max(12px,var(--safe-top));left:50%;transform:translateX(-50%);z-index:120;background:var(--ink);color:#fff;border-radius:999px;padding:10px 14px;align-items:center;gap:10px;box-shadow:0 8px 28px rgba(0,0,0,.25);font-size:13px}#update-bar.visible{display:flex}#update-bar button{border:0;border-radius:999px;padding:7px 12px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}\n  /* ---------- offline toast ---------- */''',1)
+          text=text.replace('<div id="offline-toast"','<div id="update-bar" role="status" aria-live="polite"><span>Aggiornamento disponibile</span><button id="btn-update-app">Aggiorna</button></div>\n\n<div id="offline-toast"',1)
+          marker='  // ── PWA: Service Worker'
+          idx=text.find(marker)
+          if idx<0: raise SystemExit('6min script marker missing')
+          pre="""  let waitingUpdateWorker=null;const updateBar=document.getElementById('update-bar');const updateButton=document.getElementById('btn-update-app');let reloadingForUpdate=false;navigator.serviceWorker?.addEventListener('controllerchange',()=>{if(reloadingForUpdate)return;reloadingForUpdate=true;location.reload();});\n\n"""
+          text=text[:idx]+pre+text[idx:]
+          pattern=r"navigator\.serviceWorker\.register\('\./sw\.js'\)\.then\(reg\s*=>\s*\{\s*console\.log\('\[SW\] Registrato:',\s*reg\.scope\);\s*\}\)"
+          repl="""navigator.serviceWorker.register('./sw.js').then(reg=>{console.log('[SW] Registrato:',reg.scope);const show=worker=>{waitingUpdateWorker=worker;updateBar.classList.add('visible');};if(reg.waiting)show(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)show(worker);});});reg.update();setInterval(()=>reg.update(),3600000);updateButton.addEventListener('click',()=>{updateBar.classList.remove('visible');if(waitingUpdateWorker)waitingUpdateWorker.postMessage({type:'SKIP_WAITING'});else location.reload();});})"""
+          text,n=re.subn(pattern,repl,text,count=1,flags=re.S)
+          if n!=1: raise SystemExit('6min registration anchor missing')
+          p.write_text(text,encoding='utf-8')
+
+          versions={Path('6min-app/sw.js'):('6min-v3','6min-v4'),Path('trixxx-app/sw.js'):('trixxx-v1','trixxx-v2'),Path('super-tris-app/sw.js'):('super-tris-v1','super-tris-v2'),Path('where-is-my-car-app/sw.js'):('whereismycar-v1.4','whereismycar-v1.5')}
+          for p,(old,new) in versions.items():
+              text=p.read_text(encoding='utf-8')
+              if old not in text: raise SystemExit(f'{old} missing in {p}')
+              text=text.replace(old,new,1)
+              if "type === 'SKIP_WAITING'" not in text:
+                  text += "\nself.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting();});\n"
+              p.write_text(text,encoding='utf-8')
+          PY
+      - shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 6min-app/index.html 6min-app/sw.js trixxx-app/index.html trixxx-app/sw.js super-tris-app/index.html super-tris-app/sw.js where-is-my-car-app/index.html where-is-my-car-app/sw.js
+          git diff --cached --check
+          git commit -m "Aggiunge notifiche aggiornamento alle PWA"
+          git push origin HEAD:agent/pwa-update-notifications
