@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Trixxx</title>
 
 <!-- ── PWA ── -->
@@ -351,6 +351,14 @@
 <script>
 (function(){
   "use strict";
+
+  // Impedisce pinch-to-zoom e gesti di ingrandimento, mantenendo lo scroll a un dito.
+for (const eventName of ["gesturestart", "gesturechange", "gestureend"]) {
+  document.addEventListener(eventName, event => event.preventDefault(), { passive: false });
+}
+document.addEventListener("touchmove", event => {
+  if (event.touches && event.touches.length > 1) event.preventDefault();
+}, { passive: false });
 
   /* ── Service Worker ── */
   if("serviceWorker" in navigator){
