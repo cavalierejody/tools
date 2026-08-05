@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <script>
+    for (const type of ["gesturestart", "gesturechange", "gestureend"]) {
+      document.addEventListener(type, event => event.preventDefault(), { passive: false, capture: true });
+    }
+    document.addEventListener("touchmove", event => {
+      if (event.touches.length > 1) event.preventDefault();
+    }, { passive: false, capture: true });
+  </script>
+  <meta name="theme-color" content="#070914">
+  <meta name="color-scheme" content="dark">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Night Navigator">
+  <title>Night Navigator</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">IMPARA IL CIELO</p>
+        <h1>Night Navigator</h1>
+      </div>
+      <button class="icon-button" id="settings-button" type="button" aria-label="Apri impostazioni">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg>
+      </button>
+    </header>
+
+    <main>
+      <section class="view active" id="sky-view" data-view="sky" aria-labelledby="sky-heading">
+        <div class="status-row">
+          <button class="location-chip" id="location-button" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.1 6-11a6 6 0 1 0-12 0c0 5.9 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg>
+            <span id="location-label">Torino · posizione predefinita</span>
+          </button>
+          <span class="time-chip" id="sky-time">--:--</span>
+        </div>
+
+        <div class="sky-card">
+          <div class="sky-heading-row">
+            <div>
+              <p class="section-kicker">CIELO SOPRA DI TE</p>
+              <h2 id="sky-heading">Guarda verso l’alto</h2>
+            </div>
+            <button class="small-icon-button" id="refresh-sky" type="button" aria-label="Aggiorna il cielo">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>
+            </button>
+          </div>
+          <div class="sky-canvas-wrap">
+            <canvas id="sky-canvas" aria-label="Mappa polare del cielo visibile"></canvas>
+            <div class="cardinal north">N</div>
+            <div class="cardinal east">E</div>
+            <div class="cardinal south">S</div>
+            <div class="cardinal west">O</div>
+            <div class="empty-sky" id="empty-sky" hidden>Nessuna stella del catalogo è sopra l’orizzonte.</div>
+          </div>
+          <p class="sky-help">Centro = zenit · bordo = orizzonte · tocca una stella per riconoscerla</p>
+        </div>
+
+        <article class="mission-card">
+          <div class="mission-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="20"/><path d="M24 9l4.2 10.8L39 24l-10.8 4.2L24 39l-4.2-10.8L9 24l10.8-4.2L24 9Z"/></svg>
+          </div>
+          <div class="mission-copy">
+            <p class="section-kicker">MISSIONE DI STASERA</p>
+            <h3>Trova la Stella Polare</h3>
+            <p>Usa le due stelle esterne del Grande Carro e prolunga la loro distanza circa cinque volte.</p>
+          </div>
+          <button class="text-button" id="polaris-button" type="button">Mostramela</button>
+        </article>
+
+        <div class="selection-sheet" id="star-sheet" hidden>
+          <button class="sheet-close" id="star-sheet-close" type="button" aria-label="Chiudi dettaglio">×</button>
+          <p class="section-kicker" id="star-constellation">COSTELLAZIONE</p>
+          <h3 id="star-name">Stella</h3>
+          <div class="star-facts">
+            <span><strong id="star-altitude">0°</strong> altezza</span>
+            <span><strong id="star-azimuth">0°</strong> azimut</span>
+            <span><strong id="star-magnitude">0</strong> magnitudine</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="training-view" data-view="training" aria-labelledby="training-heading" hidden>
+        <div class="training-head">
+          <div>
+            <p class="section-kicker" id="exercise-progress">ESERCIZIO 1 DI 8</p>
+            <h2 id="training-heading">Riconosci la forma</h2>
+          </div>
+          <span class="score-chip"><strong id="session-score">0</strong> corrette</span>
+        </div>
+
+        <div class="quiz-card">
+          <p class="quiz-prompt" id="quiz-prompt">Quale costellazione stai osservando?</p>
+          <div class="quiz-visual" id="quiz-visual">
+            <canvas id="quiz-canvas" aria-label="Figura della costellazione da riconoscere"></canvas>
+          </div>
+          <div class="answer-grid" id="answer-grid"></div>
+          <div class="feedback" id="quiz-feedback" role="status" aria-live="polite" hidden></div>
+          <div class="quiz-actions">
+            <button class="secondary-button" id="hint-button" type="button">Indizio</button>
+            <button class="primary-button" id="next-button" type="button" disabled>Avanti</button>
+          </div>
+        </div>
+
+        <article class="lesson-card">
+          <p class="section-kicker">PER ORIENTARTI DAVVERO</p>
+          <h3>Impara una relazione, non una figura</h3>
+          <p id="lesson-copy">Il Grande Carro funziona come una freccia: Merak e Dubhe indicano la direzione della Stella Polare.</p>
+        </article>
+      </section>
+
+      <section class="view" id="progress-view" data-view="progress" aria-labelledby="progress-heading" hidden>
+        <div class="progress-head">
+          <p class="section-kicker">APPRENDIMENTO LOCALE</p>
+          <h2 id="progress-heading">I tuoi progressi</h2>
+          <p>Non devi collezionare punti: devi imparare a guardare il cielo senza telefono.</p>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card"><strong id="mastered-count">0</strong><span>costellazioni</span></article>
+          <article class="stat-card"><strong id="accuracy-count">0%</strong><span>precisione</span></article>
+          <article class="stat-card"><strong id="night-count">1</strong><span>notti</span></article>
+        </div>
+
+        <article class="mastery-card">
+          <div class="mastery-title-row">
+            <div>
+              <p class="section-kicker">PERCORSO</p>
+              <h3>Orientamento essenziale</h3>
+            </div>
+            <span id="overall-progress">0%</span>
+          </div>
+          <div id="mastery-list" class="mastery-list"></div>
+        </article>
+
+        <article class="next-step-card">
+          <div>
+            <p class="section-kicker">PROSSIMO PASSO</p>
+            <h3 id="next-topic">Orsa Maggiore</h3>
+            <p id="next-topic-copy">Impara a riconoscere il Grande Carro in qualunque orientamento.</p>
+          </div>
+          <button class="text-button" id="practice-next" type="button">Allenati</button>
+        </article>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Navigazione principale">
+      <button class="nav-button active" type="button" data-target="sky" aria-current="page">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/><path d="M19 3v4M17 5h4M5 17v4M3 19h4"/></svg>
+        <span>Cielo</span>
+      </button>
+      <button class="nav-button" type="button" data-target="training">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16M7 8v8M17 8v8M2 10v4M22 10v4"/></svg>
+        <span>Allenati</span>
+      </button>
+      <button class="nav-button" type="button" data-target="progress">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20v-6M12 20V8M19 20V3"/></svg>
+        <span>Progressi</span>
+      </button>
+    </nav>
+  </div>
+
+  <dialog class="settings-dialog" id="settings-dialog">
+    <form method="dialog">
+      <div class="dialog-head">
+        <div><p class="section-kicker">NIGHT NAVIGATOR</p><h2>Impostazioni</h2></div>
+        <button class="icon-button" value="close" aria-label="Chiudi impostazioni">×</button>
+      </div>
+      <label class="setting-row">
+        <span><strong>Linee delle costellazioni</strong><small>Collega le stelle nella mappa</small></span>
+        <input id="constellation-lines" type="checkbox" checked>
+      </label>
+      <label class="setting-row">
+        <span><strong>Modalità luce rossa</strong><small>Riduce l’impatto sulla visione notturna</small></span>
+        <input id="red-mode" type="checkbox">
+      </label>
+      <button class="danger-button" id="reset-progress" type="button">Azzera i progressi</button>
+      <p class="privacy-note">Posizione e progressi restano esclusivamente su questo dispositivo.</p>
+    </form>
+  </dialog>
+
+  <div class="install-banner" id="install-banner" hidden>
+    <div><strong>Installa Night Navigator</strong><span id="install-copy">Usala anche offline, sotto le stelle.</span></div>
+    <button id="install-button" type="button">Installa</button>
+    <button class="banner-close" id="install-close" type="button" aria-label="Chiudi">×</button>
+  </div>
+
+  <div class="update-banner" id="update-banner" hidden>
+    <span>È disponibile una nuova versione.</span>
+    <button id="update-button" type="button">Aggiorna</button>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
