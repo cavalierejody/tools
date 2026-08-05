@@ -209,6 +209,10 @@ Alcune app caricano font, Tailwind o altre risorse da CDN.
 - Prima del commit, controllare l'elenco esatto dei file modificati e assicurarsi che non ci siano cambiamenti estranei.
 - Usare una PR con titolo e descrizione che spieghino causa, modifica e impatto sugli utenti già installati.
 - Dopo il merge, verificare il deploy GitHub Pages.
+- Non considerare sufficiente lo stato “deploy completato”: attendere la propagazione e verificare che l'URL pubblico serva realmente la nuova versione.
+- Confermare la versione pubblicata tramite indicatori osservabili pertinenti alla modifica, per esempio nuovo asset locale, assenza della vecchia CDN, nuova cache key o contenuto HTML aggiornato.
+- Se il browser di test non consente di aprire direttamente un asset, verificarne separatamente URL, stato HTTP e contenuto; non dedurre la pubblicazione dal solo caricamento della pagina contenitore.
+- Non chiudere il lavoro mentre GitHub Pages serve ancora la versione precedente.
 - Eliminare workflow o file temporanei eventualmente creati durante il lavoro.
 
 ## Validazione minima
@@ -242,6 +246,25 @@ Per una PWA, verificare almeno:
 - fallback HTML limitato alle sole navigazioni.
 
 Quando non è possibile eseguire un test reale sul dispositivo, dichiarare esplicitamente cosa è stato verificato staticamente e cosa richiede una prova manuale.
+
+### Livelli di evidenza dei test
+
+Tenere distinti nel resoconto finale:
+
+1. controlli statici e di sintassi;
+2. simulazioni del ciclo di vita del Service Worker e delle condizioni di errore;
+3. test tramite server HTTP locale;
+4. smoke test nel browser sull'URL GitHub Pages effettivamente pubblicato;
+5. prove su dispositivo fisico.
+
+Non descrivere come “test reale su dispositivo” una verifica statica, una simulazione o un browser remoto. Un browser pubblicato può confermare caricamento, console, asset, interazioni di base e versione distribuita, ma non sostituisce necessariamente:
+
+- il pinch-to-zoom dal primo frame su un vero dispositivo Android;
+- GPS, permessi, precisione e condizioni ambientali reali;
+- resa e temporizzazione della sintesi vocale del dispositivo;
+- installazione, standalone e comportamenti specifici del browser o sistema operativo.
+
+Quando una di queste prove non è eseguibile, indicarla come limite residuo senza trasformarla in un esito positivo implicito. Dopo il deploy eseguire comunque tutti gli smoke test pubblicati possibili e riportare separatamente ciò che resta da provare fisicamente.
 
 ## Checklist prima di chiudere una modifica PWA
 
